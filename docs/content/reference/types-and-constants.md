@@ -1,6 +1,6 @@
 # Types and constants
 
-The root package preserves upstream names and C layout. Names such as `VSVideoInfo`, `getVideoInfo`, and `pfGray8` intentionally remain familiar to readers of the VapourSynth headers. A parameter that would collide with an Odin keyword receives a trailing underscore, as in `in_`, `map_`, or `type_`.
+The raw package preserves upstream names and C layout. Names such as `VSVideoInfo`, `getVideoInfo`, and `pfGray8` intentionally remain familiar to readers of the VapourSynth headers. A parameter that would collide with an Odin keyword receives a trailing underscore, as in `in_`, `map_`, or `type_`.
 
 ## C to Odin mapping
 
@@ -48,10 +48,10 @@ An empty opaque declaration is a type marker, not a zero-byte VapourSynth object
 | `VSCoreInfo2` | Version text, explicitly named core/API versions, creation flags, threads, cache usage | Filled by the API 4.2 `getCoreInfo2` entry. Cache byte fields are `i64`; copying the structure does not copy the version string. |
 | `VSFilterDependency` | Source node and request pattern | Describes scheduling dependencies. It does not remove the filter instance's responsibility for its input references. |
 
-The declarations below are included directly from `types.odin`. They also provide the complete callback signatures.
+The declarations below are included directly from `src/vapoursynth/types.odin`. They also provide the complete callback signatures.
 
-```odin title="types.odin"
---8<-- "types.odin"
+```odin title="src/vapoursynth/types.odin"
+--8<-- "src/vapoursynth/types.odin"
 ```
 
 ## Callback context
@@ -104,8 +104,8 @@ Start with a `u64(1)` before shifting. Positions such as `acWideRight` and `acLo
 
 ## Complete core constant declarations
 
-```odin title="constants.odin"
---8<-- "constants.odin"
+```odin title="src/vapoursynth/constants.odin"
+--8<-- "src/vapoursynth/constants.odin"
 ```
 
 ## Frame property constants and API 4.2 range
@@ -125,8 +125,8 @@ These constants describe values stored in frame property maps. They do not autom
 
     `_ColorRange` used the reverse numeric convention. The API 4.2 bindings select `VSRange` and `_Range`, with `VSC_RANGE_LIMITED = 0` and `VSC_RANGE_FULL = 1`. Renaming a property without translating its value would invert its meaning.
 
-```odin title="frame_properties.odin"
---8<-- "frame_properties.odin"
+```odin title="src/vapoursynth/frame_properties.odin"
+--8<-- "src/vapoursynth/frame_properties.odin"
 ```
 
 The local declarations are translated from the pinned [VapourSynth4.h](https://github.com/vapoursynth/vapoursynth/blob/aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7/include/VapourSynth4.h) and [VSConstants4.h](https://github.com/vapoursynth/vapoursynth/blob/aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7/include/VSConstants4.h). Use the [raw map reference](raw-api.md#maps-and-properties) for property access and the [frame guide](../guides/frames.md) for sample interpretation.

@@ -14,7 +14,7 @@ The helper builds the executable and selects the core library from the uv
 environment on every supported platform. Use
 `uv run tools/examples.py build easy_host` to compile without executing it.
 No external plugins or source media are required. See the
-[build guide](../../docs/guides/previewing-examples.md) for prerequisites.
+[build guide](../../docs/content/guides/previewing-examples.md) for prerequisites.
 
 `make_blank_clip` destroys its temporary maps before returning. `map_get_node`
 acquires an independent reference, so the returned node remains valid. The host

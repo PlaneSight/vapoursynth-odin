@@ -4,20 +4,20 @@ The repository exposes two layers over VapourSynth core API 4.2: an exact C ABI 
 
 | Package import suffix | Reference | Purpose |
 | --- | --- | --- |
-| `vapoursynth-odin` | [Raw API](raw-api.md), [types and constants](types-and-constants.md) | All 117 stable core function-table entries, plugin initialization, callbacks, handles, layouts, and constants. |
-| `vapoursynth-odin/easy` | [Idiomatic host interface](easy.md) | Explicit resource owners, typed map access, plugin calls, synchronous frame requests, and borrowed video rows. |
-| `vapoursynth-odin/link` | [Loading and linking](../guides/loading-and-linking.md) | Optional linked `getVapourSynthAPI` entry point. |
-| `vapoursynth-odin/vsscript` | [VSScript](vsscript.md) | The independent 16-entry VSScript API 4.2 table. |
-| `vapoursynth-odin/vsscript/link` | [VSScript loading](vsscript.md#loading-and-version-negotiation) | Optional linked `getVSScriptAPI` entry point. |
+| `vapoursynth` | [Raw API](raw-api.md), [types and constants](types-and-constants.md) | All 117 stable core function-table entries, plugin initialization, callbacks, handles, layouts, and constants. |
+| `vapoursynth/easy` | [Idiomatic host interface](easy.md) | Explicit resource owners, typed map access, plugin calls, synchronous frame requests, and borrowed video rows. |
+| `vapoursynth/link` | [Loading and linking](../guides/loading-and-linking.md) | Optional linked `getVapourSynthAPI` entry point. |
+| `vapoursynth/vsscript` | [VSScript](vsscript.md) | The independent 16-entry VSScript API 4.2 table. |
+| `vapoursynth/vsscript/link` | [VSScript loading](vsscript.md#loading-and-version-negotiation) | Optional linked `getVSScriptAPI` entry point. |
 
-Examples use an Odin collection named `deps` whose directory contains this repository:
+Application examples use an Odin collection named `deps` pointing to this repository's `src` directory:
 
 ```odin
-import vs "deps:vapoursynth-odin"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import easy "deps:vapoursynth/easy"
 ```
 
-Pass `-collection:deps=vendor` when the checkout is `vendor/vapoursynth-odin`. The collection name belongs to your application; it is not a package installation requirement.
+Pass `-collection:deps=vendor/vapoursynth-odin/src` when the checkout is `vendor/vapoursynth-odin`. The collection name belongs to your application; it is not a package installation requirement.
 
 ## Choosing a starting point
 

@@ -42,7 +42,7 @@ extension, architecture, and optimized compiler flags automatically. The
 covers platform prerequisites. The inline Python program below and the preview
 script load this same artifact.
 
-The plugin needs a host implementing core API 4.2. Build for the architecture used by that host. The root bindings introduce no core-library linker dependency for this plugin because all core operations go through supplied function pointers.
+The plugin needs a host implementing core API 4.2. Build for the architecture used by that host. The raw bindings introduce no core-library linker dependency for this plugin because all core operations go through supplied function pointers.
 
 ## Load and exercise it
 

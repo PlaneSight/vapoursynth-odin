@@ -1,6 +1,6 @@
 # Choosing an interface
 
-Use `easy` for synchronous host applications that build graphs, pass properties, and read output frames. Use the raw root package for full API access, particularly filter implementations and asynchronous scheduling. Both interfaces use the same VapourSynth API 4.2 table and can coexist in one program.
+Use `easy` for synchronous host applications that build graphs, pass properties, and read output frames. Use the raw package for full API access, particularly filter implementations and asynchronous scheduling. Both interfaces use the same VapourSynth API 4.2 table and can coexist in one program.
 
 The choice is about how much behavior your application wants to handle directly. It does not select a different runtime or change which format identifiers and frame-property constants apply.
 
@@ -14,7 +14,7 @@ The choice is about how much behavior your application wants to handle directly.
 | `vsscript` | Raw VSScript API 4.2 declarations. | No. |
 | `vsscript/link` | Linked declaration of `getVSScriptAPI`. | Adds a linker dependency. |
 
-The root package retains C spellings such as `VSNode`, `getFrame`, and `pfGray8`. The host interface uses Odin-style procedure names such as `get_frame`, returns typed errors, and groups each owned handle with its API pointer and, where applicable, its associated core.
+The raw package retains C spellings such as `VSNode`, `getFrame`, and `pfGray8`. The host interface uses Odin-style procedure names such as `get_frame`, returns typed errors, and groups each owned handle with its API pointer and, where applicable, its associated core.
 
 ## Start with `easy` for hosting
 

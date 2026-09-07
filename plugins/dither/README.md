@@ -85,5 +85,5 @@ separate scalar, serpentine scan with per-frame scratch rows and double-precisio
 error accumulation; `simd` does not change it. Frames remain independent and
 can run in parallel. No method carries error across video frames.
 
-See the [full plugin guide](../../docs/plugins/dither-plus.md) for the argument
+See the [full plugin guide](../../docs/content/plugins/dither-plus.md) for the argument
 contract, generated comparisons, numerical boundaries, and implementation design.

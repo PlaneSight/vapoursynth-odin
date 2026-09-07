@@ -4,20 +4,15 @@ on:
   push:
     paths:
       - 'docs/**'
-      - 'overrides/**'
       - 'zensical.toml'
       - '.python-version'
       - 'pyproject.toml'
       - 'uv.lock'
-      - 'hatch_build.py'
       - 'THIRD_PARTY_LICENSES.md'
       - 'tools/**'
-      - '*.odin'
-      - 'easy/**'
+      - 'src/**'
       - 'examples/**'
       - 'plugins/**'
-      - 'vsscript/**'
-      - 'link/**'
       - 'tests/**'
       - 'LICENSE'
       - '.github/workflows/docs.yml'
@@ -65,7 +60,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: example-images
-          path: docs/assets/generated
+          path: docs/content/assets/generated
           if-no-files-found: error
           retention-days: 7
       - uses: actions/upload-artifact@v4
@@ -104,7 +99,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: example-images
-          path: docs/assets/generated
+          path: docs/content/assets/generated
       - name: Configure the repository and Pages URLs
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}

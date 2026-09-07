@@ -46,11 +46,11 @@ Each teaching script exposes output 0 as a side-by-side comparison, output 1 as 
 source or rounding baseline, and output 2 as the filtered result. These are named
 in VSView. `--no-build` reuses compiled plugins; close a running viewer before
 rebuilding its loaded libraries. All source scenes and lookup tables are generated
-locally. See the [preview guide](../docs/guides/previewing-examples.md) for details.
+locally. See the [preview guide](../docs/content/guides/previewing-examples.md) for details.
 
 `uv run tools/run_host.py core_info` runs an individual host using the core library
 from the active Python environment. An explicit `uv build` packages all five
-plugins into a native wheel; see the [packaging guide](../docs/guides/python-packaging.md).
+plugins into a native wheel; see the [packaging guide](../docs/content/guides/python-packaging.md).
 
 ## Build or run individual examples
 
@@ -69,7 +69,7 @@ the active Python environment. To build without executing a host, use
 autoloading; those that invoke filters use the core's built-in `std` plugin.
 They need no third-party source plugins or video files. For an independently
 installed native runtime, see the
-[loading guide](../docs/guides/loading-and-linking.md).
+[loading guide](../docs/content/guides/loading-and-linking.md).
 
 The last four are shared-library plugins. Build the two introductory plugins with:
 
@@ -140,6 +140,6 @@ uv run --group docs tools/docs.py build
 
 The first command builds the plugins and exports each script's designated
 documentation outputs into `.build/showcase`. The second builds the eight
-examples and Dither Plus, regenerates the images under `docs/assets/generated`, and validates the
+examples and Dither Plus, regenerates the images under `docs/content/assets/generated`, and validates the
 Zensical site. The images come from the same graph and filter calls displayed
 in VSView; the renderer does not maintain a second implementation of the scene.

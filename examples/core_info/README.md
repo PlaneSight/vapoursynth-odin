@@ -14,4 +14,4 @@ The helper builds the native executable and selects the core library from the
 uv environment. The same command works on every supported platform. To compile
 without executing it, run `uv run tools/examples.py build core_info`. The example
 disables automatic plugin loading, so it does not depend on installed plugins.
-See the [build guide](../../docs/guides/previewing-examples.md) for prerequisites.
+See the [build guide](../../docs/content/guides/previewing-examples.md) for prerequisites.

@@ -46,7 +46,7 @@ points in the [loading guide](loading-and-linking.md).
 
 ## Keep runtime and ABI versions distinct
 
-The development lock selects a tested runtime release; the root bindings continue
+The development lock selects a tested runtime release; the raw bindings continue
 to describe the pinned R76 **API 4.2** headers. R79 also exposes core API 4.2.
 Updating the Python dependency does not silently regenerate declarations or add
 new format constants to the Odin package.

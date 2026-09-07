@@ -6,7 +6,7 @@ import "core:c/libc"
 import "core:hash"
 import stbi "stb:image"
 
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 MAX_FILE_BYTES :: 16 * 1024 * 1024
 MAX_PATH_BYTES :: 32767

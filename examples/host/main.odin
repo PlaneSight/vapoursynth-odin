@@ -6,7 +6,7 @@ import "core:dynlib"
 import "core:fmt"
 import "core:os"
 
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 main :: proc() {
 	if !run() {

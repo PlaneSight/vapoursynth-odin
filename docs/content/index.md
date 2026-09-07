@@ -65,7 +65,7 @@ hide:
 
 ## Two interfaces, one API foundation
 
-The root package translates the pinned VapourSynth R76 public headers into Odin.
+The raw package translates the pinned VapourSynth R76 public headers into Odin.
 It includes the complete stable core table, plugin initialization table, callback
 types, format definitions, frame property constants, and a separate experimental
 graph extension. C integer widths and table field order remain part of the ABI.

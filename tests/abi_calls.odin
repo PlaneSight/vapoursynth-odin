@@ -2,8 +2,8 @@
 package main
 
 import "core:c"
-import vs "vapoursynth:."
-import script "vapoursynth:vsscript"
+import vs "deps:vapoursynth"
+import script "deps:vapoursynth/vsscript"
 
 filter_callback: vs.VSFilterGetFrame = proc "system" (
     n, activation_reason: c.int,

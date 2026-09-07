@@ -2,7 +2,7 @@
 
 The raw host performs the same broad workflow as the `easy` host: load VapourSynth, create a core, invoke `std.BlankClip`, obtain a node, and read a frame. It spells out the C-level calls and error checks so you can see exactly what a wrapper must own and validate.
 
-The package is `examples/host`. It uses only the root bindings and Odin's standard library. The root package provides types and tables without choosing a loader or creating a core for the application.
+The package is `examples/host`. It uses only the raw bindings and Odin's standard library. The raw package provides types and tables without choosing a loader or creating a core for the application.
 
 ## Run and compare
 

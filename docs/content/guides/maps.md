@@ -31,7 +31,7 @@ The snippet uses this import when the repository is available through the
 `deps` collection:
 
 ```odin
-import easy "deps:vapoursynth-odin/easy"
+import easy "deps:vapoursynth/easy"
 ```
 
 A wrapper map records the core and API table it belongs to. This association

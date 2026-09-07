@@ -3,7 +3,7 @@ package dither_plus
 
 import "core:c"
 import "core:c/libc"
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 Dither :: struct {
 	source: ^vs.VSNode,

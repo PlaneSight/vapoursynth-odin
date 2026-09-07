@@ -1,6 +1,6 @@
 # Loading, linking, and API negotiation
 
-Every core API operation is called through a `^vs.VSAPI` table. A native host obtains that table from the exported `getVapourSynthAPI` entry point. A plugin receives the table from VapourSynth. The raw root package declares the ABI but does not choose either loading strategy for you.
+Every core API operation is called through a `^vs.VSAPI` table. A native host obtains that table from the exported `getVapourSynthAPI` entry point. A plugin receives the table from VapourSynth. The raw package declares the ABI but does not choose either loading strategy for you.
 
 The host interface accepts an API pointer obtained by dynamic loading, a linked entry point, or your application's own loader. Its `load_library` helper provides one explicit implementation of runtime loading; the rest of `easy` does not depend on how you acquired that pointer.
 
@@ -93,9 +93,9 @@ Import `link` when you want the compiler and platform linker to resolve the nati
 package main
 
 import "core:fmt"
-import vs "deps:vapoursynth-odin"
-import vs_link "deps:vapoursynth-odin/link"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import vs_link "deps:vapoursynth/link"
+import easy "deps:vapoursynth/easy"
 
 main :: proc() {
     api := vs_link.getVapourSynthAPI(vs.VAPOURSYNTH_API_VERSION)
@@ -127,19 +127,19 @@ The linked package's default foreign library configuration is `system:vapoursynt
 === "Windows"
 
     ```powershell
-    odin build . -collection:deps=vendor "-define:VAPOURSYNTH_LIBRARY=C:/path/to/vapoursynth.lib"
+    odin build . -collection:deps=vendor/vapoursynth-odin/src "-define:VAPOURSYNTH_LIBRARY=C:/path/to/vapoursynth.lib"
     ```
 
 === "Linux"
 
     ```console
-    odin build . -collection:deps=vendor -define:VAPOURSYNTH_LIBRARY=/absolute/path/to/libvapoursynth.so
+    odin build . -collection:deps=vendor/vapoursynth-odin/src -define:VAPOURSYNTH_LIBRARY=/absolute/path/to/libvapoursynth.so
     ```
 
 === "macOS"
 
     ```console
-    odin build . -collection:deps=vendor -define:VAPOURSYNTH_LIBRARY=/absolute/path/to/libvapoursynth.dylib
+    odin build . -collection:deps=vendor/vapoursynth-odin/src -define:VAPOURSYNTH_LIBRARY=/absolute/path/to/libvapoursynth.dylib
     ```
 
 The Windows `.lib` file is an import library used during linking; the corresponding runtime DLL remains necessary when the executable runs. Providing an import-library path does not make the executable self-contained. Dynamic loading avoids the import-library requirement because the program resolves the export at runtime.

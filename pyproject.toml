@@ -25,17 +25,14 @@ preview = { requires-python = ">=3.12,<3.15" }
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "/*.odin",
-  "/easy/",
-  "/link/",
-  "/vsscript/",
+  "/src/",
   "/examples/",
   "/plugins/",
   "/tests/test_packaging.py",
   "/tests/test_native_build.py",
   "/tools/native_build.py",
   "/tools/packagecheck.py",
-  "/hatch_build.py",
+  "/tools/hatch_build.py",
   "/pyproject.toml",
   "/README.md",
   "/LICENSE",
@@ -46,4 +43,4 @@ include = [
 bypass-selection = true
 
 [tool.hatch.build.targets.wheel.hooks.custom]
-path = "hatch_build.py"
+path = "tools/hatch_build.py"

@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from hatch_build import INSTALL_DIRECTORY, PLUGINS, build_plugins, native_target
+from tools.hatch_build import INSTALL_DIRECTORY, PLUGINS, build_plugins, native_target
 
 
 class NativePackaging(unittest.TestCase):
@@ -42,7 +42,7 @@ class NativePackaging(unittest.TestCase):
                 self.assertNotIn("universal", target.wheel_platform)
 
     def test_missing_sources_fail_before_compilation(self):
-        with tempfile.TemporaryDirectory() as directory, patch("hatch_build.subprocess.run") as run:
+        with tempfile.TemporaryDirectory() as directory, patch("tools.hatch_build.subprocess.run") as run:
             with self.assertRaisesRegex(RuntimeError, "Missing Odin plugin sources"):
                 root = Path(directory)
                 build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
@@ -53,7 +53,7 @@ class NativePackaging(unittest.TestCase):
             root = Path(directory)
             self.create_sources(root)
             failure = subprocess.CalledProcessError(1, ["odin", "build"])
-            with patch("hatch_build.subprocess.run", side_effect=failure) as run:
+            with patch("tools.hatch_build.subprocess.run", side_effect=failure) as run:
                 with self.assertRaises(subprocess.CalledProcessError):
                     build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
             self.assertEqual(run.call_count, 1)
@@ -70,8 +70,8 @@ class NativePackaging(unittest.TestCase):
                 self.assertIn("-microarch:x86-64", command)
                 self.assertTrue(kwargs["check"])
 
-            with patch("hatch_build.prepare_stb_image", return_value=("-collection:stb=private stb",)) as prepare:
-                with patch("hatch_build.subprocess.run", side_effect=compile_plugin) as run:
+            with patch("tools.hatch_build.prepare_stb_image", return_value=("-collection:stb=private stb",)) as prepare:
+                with patch("tools.hatch_build.subprocess.run", side_effect=compile_plugin) as run:
                     artifacts = build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
             prepare.assert_called_once_with("odin", native_target("win-amd64"), root / ".build/packaging/unit")
             for (source, _), call in zip(PLUGINS, run.call_args_list, strict=True):
@@ -86,7 +86,7 @@ class NativePackaging(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.create_sources(root)
-            with patch("hatch_build.subprocess.run"):
+            with patch("tools.hatch_build.subprocess.run"):
                 with self.assertRaisesRegex(RuntimeError, "nonempty plugin"):
                     build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
 
@@ -94,7 +94,7 @@ class NativePackaging(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.create_sources(root)
-            with patch("hatch_build.subprocess.run") as run:
+            with patch("tools.hatch_build.subprocess.run") as run:
                 with self.assertRaisesRegex(RuntimeError, "must remain inside"):
                     build_plugins(root, native_target("win-amd64"), "odin", root / "elsewhere")
             run.assert_not_called()

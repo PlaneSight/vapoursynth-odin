@@ -16,7 +16,7 @@ The command builds `.build/examples/plugin` with the platform's shared-library
 extension and opens [demo.vpy](demo.vpy). Named outputs show a side-by-side
 comparison (`0`), original synthetic scene (`1`), and identity output (`2`).
 Both sides should match exactly. `uv run tools/examples.py check` checks all
-four scripts without a GUI; the [preview guide](../../docs/guides/previewing-examples.md)
+four scripts without a GUI; the [preview guide](../../docs/content/guides/previewing-examples.md)
 explains the shared workflow. Documentation images come from these same outputs.
 
 To build without opening a viewer:

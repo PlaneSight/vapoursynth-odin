@@ -15,4 +15,4 @@ __pycache__/
 /.cache/
 /.zensical-pages.toml
 /dist/
-/docs/assets/generated/
+/docs/content/assets/generated/

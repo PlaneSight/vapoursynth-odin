@@ -14,7 +14,7 @@ The command builds the plugin under `.build/examples` and opens [demo.vpy](demo.
 in VSView. The optional group installs the viewer and Qt and requires Python
 3.12–3.14. Output `0` compares the synthetic source and inversion side by side;
 outputs `1` and `2` expose them separately. The documentation renders the same
-nodes. See the [preview guide](../../docs/guides/previewing-examples.md) for
+nodes. See the [preview guide](../../docs/content/guides/previewing-examples.md) for
 headless checks, multiple examples, and generated images.
 
 To build without opening a viewer:

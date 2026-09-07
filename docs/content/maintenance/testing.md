@@ -58,9 +58,9 @@ dependency selection, plugin discovery, and platform requirements.
 These checks do not load the core library:
 
 ```console
-odin check . -no-entry-point -vet
-odin check easy -no-entry-point -vet
-odin check vsscript -no-entry-point -vet
+odin check src/vapoursynth -no-entry-point -vet
+odin check src/vapoursynth/easy -no-entry-point -vet
+odin check src/vapoursynth/vsscript -no-entry-point -vet
 odin check examples/core_info -vet
 odin check examples/properties -vet
 odin check examples/easy_host -vet
@@ -91,8 +91,8 @@ on Linux or macOS.
 To type-check another target, add Odin's `-target` option. For example:
 
 ```console
-odin check . -no-entry-point -vet -target:windows_i386
-odin check easy -no-entry-point -vet -target:linux_amd64
+odin check src/vapoursynth -no-entry-point -vet -target:windows_i386
+odin check src/vapoursynth/easy -no-entry-point -vet -target:linux_amd64
 odin check examples/invert -no-entry-point -vet -target:darwin_arm64
 odin check examples/dither -no-entry-point -vet -target:linux_amd64
 ```

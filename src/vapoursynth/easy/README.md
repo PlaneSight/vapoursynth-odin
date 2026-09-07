@@ -6,13 +6,13 @@ and row views for video frames. It has no global core and performs no loading or
 initialization until you call a procedure.
 
 ```odin
-import vs "deps:vapoursynth-odin"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import easy "deps:vapoursynth/easy"
 ```
 
-Start with [core information](../examples/core_info), then
-[typed properties](../examples/properties) and
-[frame reading](../examples/easy_host). All three are complete runnable programs.
+Start with [core information](../../../examples/core_info), then
+[typed properties](../../../examples/properties) and
+[frame reading](../../../examples/easy_host). All three are complete runnable programs.
 
 ## Resources and scope
 
@@ -49,7 +49,7 @@ insert another core's nodes through the raw handle.
 The first version focuses on maps, nodes, synchronous requests, and video plane
 access. Filter callbacks, asynchronous scheduling, frame writes, and VSScript
 remain available through the raw packages. See the
-[invert example](../examples/invert) for a complete raw filter.
+[invert example](../../../examples/invert) for a complete raw filter.
 
 ## Errors and diagnostics
 
@@ -156,7 +156,7 @@ Keep an owned frame reference for the complete duration of every read.
 Compile without a runtime:
 
 ```console
-odin check easy -no-entry-point -vet
+odin check src/vapoursynth/easy -no-entry-point -vet
 ```
 
 Run the runtime and failure-boundary tests with your core library:

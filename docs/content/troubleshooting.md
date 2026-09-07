@@ -70,7 +70,7 @@ table's `getVSAPI(VAPOURSYNTH_API_VERSION)`. These are independent interfaces.
 
 ## Linking and architecture
 
-The root bindings and dynamic host examples do not require an import library.
+The raw bindings and dynamic host examples do not require an import library.
 Importing `link` selects normal linker resolution. On Windows the default is
 `vapoursynth.lib`, and the runtime DLL is also required at execution time.
 `-define:VAPOURSYNTH_LIBRARY=...` can override the linked library's path.
@@ -261,7 +261,7 @@ If a preview fails before showing a frame, run `uv run tools/examples.py check`
 to exercise the scripts without the GUI.
 
 Build documentation with `uv run --group docs tools/docs.py build`. Direct
-Zensical commands do not create the ignored PNGs under `docs/assets/generated`.
+Zensical commands do not create the ignored PNGs under `docs/content/assets/generated`.
 The wrapper builds the examples and renders their actual script outputs before
 validating the site. It stops on a compiler, script, or frame error instead of
 falling back to stale images. When using `tools/docs.py serve`, restart it after

@@ -16,8 +16,8 @@ The snippets use these imports with the repository in the `deps` collection:
 
 ```odin
 import "core:fmt"
-import vs "deps:vapoursynth-odin"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import easy "deps:vapoursynth/easy"
 ```
 
 Given an owned `easy.Node`, request frame zero and schedule cleanup immediately:

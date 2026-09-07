@@ -4,7 +4,7 @@ package invert
 import "core:c"
 import "core:c/libc"
 
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 // Immutable after construction, so separate frames can be processed in parallel.
 Invert :: struct {

@@ -3,8 +3,8 @@ package main
 
 import "core:c"
 
-import vs "../.."
-import easy "../../easy"
+import vs "../../src/vapoursynth"
+import easy "../../src/vapoursynth/easy"
 
 test_typed_rows :: proc() {
 	u8_samples := [?]u8{0, 255, 17, 99}

@@ -3,11 +3,11 @@
 `easy` adds checked synchronous host operations to the raw core API 4.2 bindings. It makes common ownership changes explicit, translates raw map statuses into an `Error` enum, and returns borrowed frame rows with their dimensions and representation checked. It does not introduce a global library, a global core, implicit initialization, or automatic destruction.
 
 ```odin
-import vs "deps:vapoursynth-odin"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import easy "deps:vapoursynth/easy"
 ```
 
-Use the [examples](../examples/index.md) for complete programs and the [ownership guide](../guides/ownership.md) for lifecycle diagrams. This page covers every public procedure in the package. The `vs` qualifier in signatures refers to the raw root package, and `c` refers to `core:c`.
+Use the [examples](../examples/index.md) for complete programs and the [ownership guide](../guides/ownership.md) for lifecycle diagrams. This page covers every public procedure in the package. The `vs` qualifier in signatures refers to the raw package, and `c` refers to `core:c`.
 
 ## Owner and view types
 
@@ -268,8 +268,8 @@ The [raw API reference](raw-api.md) lists every available table entry. When mixi
 
 ## Complete public type declarations
 
-This listing is included directly from `easy/types.odin` and gives the exact fields of the owners, diagnostic, view, and enums discussed above. A field's presence supports interoperability; it does not change the documented ownership contract.
+This listing is included directly from `src/vapoursynth/easy/types.odin` and gives the exact fields of the owners, diagnostic, view, and enums discussed above. A field's presence supports interoperability; it does not change the documented ownership contract.
 
-```odin title="easy/types.odin"
---8<-- "easy/types.odin"
+```odin title="src/vapoursynth/easy/types.odin"
+--8<-- "src/vapoursynth/easy/types.odin"
 ```

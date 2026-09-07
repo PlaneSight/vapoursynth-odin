@@ -14,7 +14,7 @@ uv run tools/run_host.py properties
 The helper builds the executable and selects the core library from the uv
 environment on every supported platform. Use
 `uv run tools/examples.py build properties` to compile without executing it.
-See the [build guide](../../docs/guides/previewing-examples.md) for prerequisites.
+See the [build guide](../../docs/content/guides/previewing-examples.md) for prerequisites.
 
 The setters copy their inputs into the map, so the local arrays in
 `write_properties` can go out of scope when that procedure returns. The strings

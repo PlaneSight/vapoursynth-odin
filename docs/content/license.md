@@ -39,11 +39,11 @@ This documentation explains the bindings and examples in this repository and
 links to the official VapourSynth reference where upstream behavior matters.
 The source-included reference listings carry the repository's source notices.
 The site is built with [Zensical](https://zensical.org/); the logo, additional
-styles are stored locally in `docs/assets`. Identity, invert, dither, and Hald
+styles are stored locally in `docs/content/assets`. Identity, invert, dither, and Hald
 CLUT comparison images are generated during documentation builds by running
 the repository's preview scripts. The inputs are generated locally, and
 `tools/render_showcase.py` exports those scripts' actual output nodes into
-`docs/assets/generated`. These PNGs are build artifacts, not checked-in assets.
+`docs/content/assets/generated`. These PNGs are build artifacts, not checked-in assets.
 
 VapourSynth and Odin are separate upstream projects. This repository's API
 translation, convenience interface, examples, and documentation do not imply

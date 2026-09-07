@@ -3,8 +3,8 @@ package main
 
 import "core:c"
 
-import vs "../.."
-import easy "../../easy"
+import vs "../../src/vapoursynth"
+import easy "../../src/vapoursynth/easy"
 
 // Only the mock callbacks see these tokens; no VapourSynth call dereferences them.
 Mock_State :: struct {

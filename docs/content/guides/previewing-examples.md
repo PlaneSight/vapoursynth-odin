@@ -235,7 +235,7 @@ uv run --group docs tools/docs.py build
 ```
 
 This builds the eight Odin examples and Dither Plus, evaluates all five visual demonstrations,
-exports their images into the ignored `docs/assets/generated` directory, runs a
+exports their images into the ignored `docs/content/assets/generated` directory, runs a
 clean strict Zensical build, and checks local links and assets. Failure to compile,
 evaluate, or render stops the build; there is no fallback to checked-in screenshots.
 The published pages are static HTML and PNG files. Readers do not need Odin or

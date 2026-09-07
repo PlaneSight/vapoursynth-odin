@@ -4,7 +4,7 @@ package dither
 import "core:c"
 import "core:c/libc"
 
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 @(private="file", rodata)
 blue_noise := BLUE_NOISE

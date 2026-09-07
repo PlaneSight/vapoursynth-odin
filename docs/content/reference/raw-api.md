@@ -1,6 +1,6 @@
 # Raw core API
 
-The root package is a direct translation of the VapourSynth R76 headers with core API 4.2 selected. `VSAPI` contains **117 stable function pointers** in ABI order and ends at `getCoreInfo2`. `VSPLUGINAPI` supplies three functions for plugin initialization. The experimental `VSGraphAPI` appends four inspection entries separately.
+The raw package is a direct translation of the VapourSynth R76 headers with core API 4.2 selected. `VSAPI` contains **117 stable function pointers** in ABI order and ends at `getCoreInfo2`. `VSPLUGINAPI` supplies three functions for plugin initialization. The experimental `VSGraphAPI` appends four inspection entries separately.
 
 Raw calls retain their C names, parameter types, status conventions, and ownership rules. They do not receive the validation or typed errors of [`easy`](easy.md). Invalid raw arguments can cause a fatal error; check media types, indices, formats, keys, and buffer capacities before crossing the boundary.
 
@@ -267,7 +267,7 @@ All three preconditions are required before casting or using the extension:
 2. The inspected core was created with `ccfEnableGraphInspection`.
 3. No frame request or other API call runs concurrently with inspection.
 
-This fragment belongs inside a procedure returning `bool`, with a non-nil, already negotiated `^vs.VSAPI` named `api` and the root package imported as `vs`. The core-creation flag and absence of concurrent API use are preconditions established by the host.
+This fragment belongs inside a procedure returning `bool`, with a non-nil, already negotiated `^vs.VSAPI` named `api` and the raw package imported as `vs`. The core-creation flag and absence of concurrent API use are preconditions established by the host.
 
 ```odin
 if api.getAPIVersion() != vs.VAPOURSYNTH_API_VERSION {
@@ -290,10 +290,10 @@ Use this extension for controlled debugging and graph visualization. It is unsui
 
 ## Complete function-table declaration
 
-This listing is included directly from `api.odin`. It is the complete signature reference for the 117 stable core entries, three initialization entries, and four graph entries described above. Callback typedefs and concrete layouts are in [types and constants](types-and-constants.md).
+This listing is included directly from `src/vapoursynth/api.odin`. It is the complete signature reference for the 117 stable core entries, three initialization entries, and four graph entries described above. Callback typedefs and concrete layouts are in [types and constants](types-and-constants.md).
 
-```odin title="api.odin"
---8<-- "api.odin"
+```odin title="src/vapoursynth/api.odin"
+--8<-- "src/vapoursynth/api.odin"
 ```
 
 For upstream parameter details, consult the [official core API reference](https://www.vapoursynth.com/doc/api/vapoursynth4.h.html). The checked-in [R76 header](https://github.com/vapoursynth/vapoursynth/blob/aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7/include/VapourSynth4.h) remains the authority for the exact ABI selected by this package.

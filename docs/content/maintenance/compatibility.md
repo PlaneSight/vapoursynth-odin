@@ -73,7 +73,7 @@ and **33 pages** from the current sources.
 ## Stable and experimental tables
 
 The stable `VSAPI` contains **117 function pointers** in header order. Its 4.2
-tail adds `getCoreInfo2`. The root package does not enlarge
+tail adds `getCoreInfo2`. The raw package does not enlarge
 this stable table to include optional experimental functions.
 
 `VSGraphAPI` exposes the same stable prefix followed by four graph inspection

@@ -36,7 +36,7 @@ The build command selects the native target on Windows x64, Linux x64/ARM64,
 and macOS x64/ARM64. Binaries go into `.build/examples`. For Hald CLUT, missing
 Unix stb archives are built privately using a native C compiler and archiver;
 macOS requires Xcode command line tools and macOS 13 or newer. See the
-[build and preview guide](docs/guides/previewing-examples.md) for prerequisites
+[build and preview guide](docs/content/guides/previewing-examples.md) for prerequisites
 and output selection. Native runtime verification currently covers Windows x64.
 
 Select a single plugin or run a host:
@@ -49,46 +49,52 @@ uv run tools/run_host.py easy_host
 
 ## Use the bindings
 
-Place this repository at `vendor/vapoursynth-odin` and add `vendor` as an Odin
-collection:
+Place this repository at `vendor/vapoursynth-odin` and point an Odin collection
+at its `src` directory:
 
 ```odin
-import vs "deps:vapoursynth-odin"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import easy "deps:vapoursynth/easy"
 ```
 
 ```console
-odin build . -collection:deps=vendor
+odin build . -collection:deps=vendor/vapoursynth-odin/src
 ```
 
 A plugin receives its API table from VapourSynth. A host obtains one through
 `getVapourSynthAPI`, requesting `vs.VAPOURSYNTH_API_VERSION` and checking for
 `nil`. The table is borrowed; do not copy, modify, or free it. The
-[first-program guide](docs/getting-started/quickstart.md) demonstrates a complete
+[first-program guide](docs/content/getting-started/quickstart.md) demonstrates a complete
 host with explicit cleanup.
 
 | Source | Purpose |
 | --- | --- |
-| Root Odin package | Raw core API 4.2 declarations |
-| [`easy/`](easy/README.md) | Typed hosting interface and resource ownership |
-| `link/` | Optional linked core entry point |
-| `vsscript/`, `vsscript/link/` | Raw VSScript API 4.2 and linked entry point |
+| `src/vapoursynth/` | Raw core API 4.2 declarations |
+| [`src/vapoursynth/easy/`](src/vapoursynth/easy/README.md) | Typed hosting interface and resource ownership |
+| `src/vapoursynth/link/` | Optional linked core entry point |
+| `src/vapoursynth/vsscript/` | Raw VSScript API 4.2 and its optional `link/` package |
 | [`examples/`](examples/README.md) | Eight teaching examples and their preview scripts |
 | [`plugins/dither/`](plugins/dither/README.md) | Standalone Dither Plus plugin |
 | `tests/` | Maintained ABI, ownership, pixel, and tooling regression checks |
 | `tools/` | Native builds, previews, documentation, and package checks |
-| `docs/` | Zensical documentation source |
+| `docs/content/` | Documentation pages, styles, and illustrations |
+| `docs/overrides/` | Zensical theme templates |
+
+The repository root holds configuration, licensing, and this README. All Odin
+library source lives under `src/vapoursynth`; build hooks live under `tools`.
+Generated binaries, probes, and fixtures stay in ignored `.build/`, and the
+generated documentation site stays in `.venv/site/`.
 
 The bindings remain API 4.2 while the development environment uses VapourSynth
 R79. R76 and R79 have both been exercised. Consult the
-[compatibility record](docs/maintenance/compatibility.md) for the tested platforms
+[compatibility record](docs/content/maintenance/compatibility.md) for the tested platforms
 and the distinction between stable and experimental tables.
 
 ## Documentation
 
-Start with [installation](docs/getting-started/installation.md),
-[choosing an interface](docs/getting-started/choosing-an-interface.md), or the
-[example progression](docs/examples/index.md). The [documentation](docs/index.md)
+Start with [installation](docs/content/getting-started/installation.md),
+[choosing an interface](docs/content/getting-started/choosing-an-interface.md), or the
+[example progression](docs/content/examples/index.md). The [documentation](docs/content/index.md)
 also covers ownership, errors, maps, frames, loading, public API contracts, and
 plugin parameters.
 
@@ -102,7 +108,7 @@ the same scripts used in VSView. The build runs Zensical strictly and checks
 local links. Generated HTML lives in **`.venv/site`** and is ignored by Git.
 Restart the preview command after changing native code or image scripts.
 
-The [publishing guide](docs/maintenance/documentation.md) describes the included
+The [publishing guide](docs/content/maintenance/documentation.md) describes the included
 GitHub Pages workflow. It validates pull requests and deploys the default branch
 once **Settings → Pages → GitHub Actions** is enabled. Repository and site URLs
 come from GitHub metadata.
@@ -118,7 +124,7 @@ uv run --locked tests/dither_plus.py
 ```
 
 ABI verification additionally needs a C compiler. See the
-[testing guide](docs/maintenance/testing.md) for toolchain selection, ownership
+[testing guide](docs/content/maintenance/testing.md) for toolchain selection, ownership
 checks, and which checks apply to a change. Generated fixtures and native probes
 stay in `.build`. Historical performance results remain in the documentation;
 the development-only collection tools are preserved at revision `f59ecbd`.
@@ -130,7 +136,7 @@ uv build
 An explicit build packages all five native plugins in a platform-specific wheel
 using VapourSynth's autoload convention. Ordinary `uv sync` does not compile or
 install this repository as an editable plugin package. See the
-[packaging guide](docs/guides/python-packaging.md) for source builds, installation,
+[packaging guide](docs/content/guides/python-packaging.md) for source builds, installation,
 and verification.
 
 ## License

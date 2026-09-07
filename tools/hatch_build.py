@@ -10,7 +10,7 @@ import tempfile
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.native_build import NativeTarget, native_target, prepare_stb_image
 
 

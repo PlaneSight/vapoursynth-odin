@@ -135,8 +135,8 @@ def qualified(name: str, graph: bool) -> str:
 def probes(header: str, stable_fields: list[str], graph: bool) -> tuple[str, str, int]:
     structures, types, constants = declarations(header)
     c_lines = [INCLUDES, '#include <stdio.h>', "int main(void) {"]
-    odin_lines = ["package main", 'import "core:fmt"', 'import vs "vapoursynth:."',
-                  'import script "vapoursynth:vsscript"', "main :: proc() {", "    test_calls()"]
+    odin_lines = ["package main", 'import "core:fmt"', 'import vs "deps:vapoursynth"',
+                  'import script "deps:vapoursynth/vsscript"', "main :: proc() {", "    test_calls()"]
     count = 0
 
     def value(key: str, c_expression: str, odin_expression: str) -> None:
@@ -193,7 +193,7 @@ def verify(compiler: Compiler, odin: str, graph: bool, stable_fields: list[str])
     (odin_directory / "main.odin").write_text(odin_probe, encoding="utf-8")
     shutil.copyfile(ROOT / "tests" / "abi_calls.odin", odin_directory / "calls.odin")
     (odin_directory / "shim.odin").write_text(
-        'package main\nimport "core:c"\nimport vs "vapoursynth:."\nimport script "vapoursynth:vsscript"\n'
+        'package main\nimport "core:c"\nimport vs "deps:vapoursynth"\nimport script "deps:vapoursynth/vsscript"\n'
         f'foreign import shim "{shim.name}"\n'
         'foreign shim {\n'
         '    abi_get_api :: proc "system" () -> ^vs.VSAPI ---\n'
@@ -203,7 +203,7 @@ def verify(compiler: Compiler, odin: str, graph: bool, stable_fields: list[str])
         '}\n', encoding="utf-8",
     )
     odin_executable = directory / f"odin_layout{executable_suffix}"
-    run([odin, "build", str(odin_directory), f"-out:{odin_executable}", f"-collection:vapoursynth={ROOT}"],
+    run([odin, "build", str(odin_directory), f"-out:{odin_executable}", f"-collection:deps={ROOT / 'src'}"],
         env=compiler.env, cwd=directory)
     actual = metrics(run([str(odin_executable)], env=compiler.env, cwd=directory))
     differences = [f"{key}: C={expected.get(key)}, Odin={actual.get(key)}"

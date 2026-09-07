@@ -6,8 +6,9 @@ description: Preview the Zensical site, validate source includes and links, and 
 # Build and publish these docs
 
 This site is built with [Zensical](https://zensical.org/docs/), configured in
-`zensical.toml`, and published as static HTML. Markdown lives in `docs/`; the
-generated `.venv/site/` directory is ignored by Git. The repository includes a GitHub
+`zensical.toml`, and published as static HTML. Markdown lives in `docs/content/`
+and theme templates live in `docs/overrides/`. The generated `.venv/site/`
+directory is ignored by Git. The repository includes a GitHub
 Actions workflow that validates pull requests and deploys the default branch
 to GitHub Pages once Pages is enabled for the repository.
 
@@ -57,7 +58,7 @@ uv run --locked --group docs python -m unittest discover -s tests -p test_check_
 
 The build command compiles the eight Odin examples and Dither Plus, executes every plugin
 demonstration in a fresh process, and exports the selected first frames into
-`docs/assets/generated`. It then runs Zensical with `--clean --strict` and checks
+`docs/content/assets/generated`. It then runs Zensical with `--clean --strict` and checks
 the generated links. A failed compilation, script, or frame request fails the
 build before publication. Generated PNGs are ignored by Git; there is no
 checked-in screenshot fallback.
@@ -83,15 +84,15 @@ code, not a visible include directive.
 
 | File or directory | Responsibility |
 | --- | --- |
-| `docs/index.md` | Landing page and learning paths |
-| `docs/getting-started/` | Installation, first program, interface choice |
-| `docs/guides/` | Concepts and ownership contracts across APIs |
-| `docs/examples/` | Progressive explanations of the eight host and plugin examples |
-| `docs/plugins/` | Standalone plugin guides and visual comparisons |
-| `docs/reference/` | Public declarations, procedure behavior, types, and constants |
-| `docs/maintenance/` | Verification, compatibility, and publishing |
-| `docs/assets/` | Local logo and CSS; ignored `generated/` contains current filter outputs |
-| `overrides/404.html` | Accessible not-found page and recovery links |
+| `docs/content/index.md` | Landing page and learning paths |
+| `docs/content/getting-started/` | Installation, first program, interface choice |
+| `docs/content/guides/` | Concepts and ownership contracts across APIs |
+| `docs/content/examples/` | Progressive explanations of the eight host and plugin examples |
+| `docs/content/plugins/` | Standalone plugin guides and visual comparisons |
+| `docs/content/reference/` | Public declarations, procedure behavior, types, and constants |
+| `docs/content/maintenance/` | Verification, compatibility, and publishing |
+| `docs/content/assets/` | Local logo and CSS; ignored `generated/` contains current filter outputs |
+| `docs/overrides/404.html` | Accessible not-found page and recovery links |
 | `zensical.toml` | Navigation, theme, extensions, and validation |
 | `pyproject.toml` and `uv.lock` | Authoritative dependency declarations and resolved versions |
 | `.python-version` | Shared interpreter pin for local and CI builds |
@@ -143,7 +144,7 @@ uv run tools/render_showcase.py
 
 This builds the plugins and exports the images with a record of the run under
 `.build/showcase`. The documentation wrapper directs the same rendering process
-to `docs/assets/generated`. PNGs embedded in Markdown therefore reflect the code
+to `docs/content/assets/generated`. PNGs embedded in Markdown therefore reflect the code
 that was compiled for that build. A frame at index zero is exported for each
 selected output. The exported nodes use static scenes; Dither Plus also provides
 animated outputs for interactive playback. The mappings currently export

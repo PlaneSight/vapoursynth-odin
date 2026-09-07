@@ -6,9 +6,9 @@ The `vsscript` package contains the opaque `VSScript` handle, the `VSGetVSScript
 
 ```odin
 import "core:c"
-import vs "deps:vapoursynth-odin"
-import script "deps:vapoursynth-odin/vsscript"
-import script_link "deps:vapoursynth-odin/vsscript/link"
+import vs "deps:vapoursynth"
+import script "deps:vapoursynth/vsscript"
+import script_link "deps:vapoursynth/vsscript/link"
 ```
 
 Core API 4.2 and VSScript API 4.2 are independent contracts. A core table cannot be cast into a VSScript table, and one successful version request does not establish the other. The package deliberately excludes the separate exported `getVSScriptAPILastError` function introduced for VSScript API 4.3.
@@ -176,14 +176,14 @@ This fragment deliberately rejects more than 16 outputs. A general host should a
 
 The following source listing fixes the exact 4.2 table order and all C ABI types. It is included directly from the package, so documentation cannot silently add a newer table entry.
 
-```odin title="vsscript/vsscript.odin"
---8<-- "vsscript/vsscript.odin"
+```odin title="src/vapoursynth/vsscript/vsscript.odin"
+--8<-- "src/vapoursynth/vsscript/vsscript.odin"
 ```
 
 The separate linking declaration is likewise included from source:
 
-```odin title="vsscript/link/link.odin"
---8<-- "vsscript/link/link.odin"
+```odin title="src/vapoursynth/vsscript/link/link.odin"
+--8<-- "src/vapoursynth/vsscript/link/link.odin"
 ```
 
 Refer to the [pinned VSScript4.h](https://github.com/vapoursynth/vapoursynth/blob/aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7/include/VSScript4.h) for the selected ABI and the [upstream VSScript documentation](https://www.vapoursynth.com/doc/api/vsscript4.h.html) for embedding details. The [compatibility page](../maintenance/compatibility.md) distinguishes script API versions, core API versions, compile checks, and actual runtime verification.

@@ -4,8 +4,8 @@ package main
 import "core:fmt"
 import "core:os"
 
-import vs "../.."
-import easy "../../easy"
+import vs "../../src/vapoursynth"
+import easy "../../src/vapoursynth/easy"
 
 main :: proc() {
 	if !run() {

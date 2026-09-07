@@ -20,7 +20,7 @@ supplies VSView and Qt. The script creates a shaded-sphere scene and generates
 its level-4 RGB16 cinematic table under `.build/example-assets` automatically.
 Named outputs show the comparison (`0`), original (`1`), and graded result (`2`).
 The documentation uses images exported from those same output nodes; see the
-[preview guide](../../docs/guides/previewing-examples.md) for headless checks and
+[preview guide](../../docs/content/guides/previewing-examples.md) for headless checks and
 rendering. No external video or PNG download is required.
 
 To build the native plugin and generate LUTs for the minimal Python program
@@ -41,13 +41,13 @@ missing, it compiles the bundled C sources into a private directory under
 `.build` with `cc` and `ar`. That fallback requires a native C compiler and
 archiver on Linux, or Xcode command line tools on macOS. Windows uses the
 libraries shipped with Odin. The compiler installation is left intact; see the
-[build guide](../../docs/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+[build guide](../../docs/content/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 for platform prerequisites.
 
 The source imports `stb:image`. The build helper supplies the `stb` collection,
 mapping it to Odin's `vendor/stb` directory or a private copy with prepared
 libraries. This keeps the compiler installation intact while using its original
-bindings and C sources. The [walkthrough](../../docs/examples/haldlut-plugin.md#import-an-odin-vendor-library)
+bindings and C sources. The [walkthrough](../../docs/content/examples/haldlut-plugin.md#import-an-odin-vendor-library)
 explains how to provide the collection in another build system.
 
 Runtime verification for this example was performed on Windows x64. The core

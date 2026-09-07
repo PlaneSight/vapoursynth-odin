@@ -3,7 +3,7 @@ package plugin
 
 import "core:c"
 
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 @(export)
 VapourSynthPluginInit2 :: proc "system"(plugin: ^vs.VSPlugin, api: ^vs.VSPLUGINAPI) {

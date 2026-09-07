@@ -149,6 +149,6 @@ Library unloading also has a deliberate failure contract. `unload_library` prese
 
 ## Raw status conventions remain operation-specific
 
-The root package faithfully exposes the C API. It does not normalize all status values to one enum. Map setters generally use zero for success, while plugin configuration, function registration, and format queries use nonzero for success. Property getters can use an output error parameter, and graph construction can place an error on an output map.
+The raw package faithfully exposes the C API. It does not normalize all status values to one enum. Map setters generally use zero for success, while plugin configuration, function registration, and format queries use nonzero for success. Property getters can use an output error parameter, and graph construction can place an error on an output map.
 
 Check each raw function's contract before applying a status convention. The [raw API reference](../reference/raw-api.md) and [plugin examples](../examples/index.md) connect those native conventions to complete uses. Within `easy`, rely on the documented `.None` success convention and preserve the diagnostic at the point where the underlying failure occurs.

@@ -5,7 +5,7 @@ import "core:c"
 import "core:c/libc"
 import stbi "stb:image"
 
-import vs "../.."
+import vs "../../src/vapoursynth"
 
 Hald :: struct {
 	source:     ^vs.VSNode,

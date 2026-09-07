@@ -31,7 +31,7 @@ These views use `scale=1` to preserve black and white. One-bit RGB has two level
 per channel and therefore eight possible RGB combinations; it is not a
 two-color palette. Each plane uses a different phase of the dither tile.
 Documentation images are exported from these same nodes during each site build.
-See the [preview guide](../../docs/guides/previewing-examples.md) for headless checks
+See the [preview guide](../../docs/content/guides/previewing-examples.md) for headless checks
 and image generation.
 
 To build the same optimized library without opening a viewer:
@@ -44,7 +44,7 @@ This command selects the native target, output extension, and CPU baseline on
 every supported platform. On x64, the baseline is x86-64. Separate AVX2 row
 functions are selected only after checking runtime support, so loading the
 plugin does not require an AVX2-capable CPU. See the
-[build guide](../../docs/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+[build guide](../../docs/content/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 for prerequisites.
 
 In a Python environment with VapourSynth installed:
@@ -253,7 +253,7 @@ uv run tests/advanced.py
 
 Use the runner's `--runtime` option when selecting an existing local Python runtime package directory. See the repository's testing documentation for the configured environment.
 
-The [performance comparison](../../docs/maintenance/dither-performance.md) records
+The [performance comparison](../../docs/content/maintenance/dither-performance.md) records
 single-thread measurements against FMTConv's void-and-cluster mode across
 resolutions through 3840 × 2160 and several integer formats. Both filters use
 `core.num_threads = 1`. The report gives the exact parameters, build, runtime,

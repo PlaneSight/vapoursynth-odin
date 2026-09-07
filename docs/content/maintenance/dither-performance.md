@@ -18,7 +18,7 @@ dispersion; small differences should be read in that context.
 
 ## Measured results
 
---8<-- "docs/assets/benchmarks/dither-summary.inc"
+--8<-- "docs/content/assets/benchmarks/dither-summary.inc"
 
 ![Odin throughput relative to FMTConv for every tested conversion and resolution](../assets/benchmarks/dither-speedup.svg)
 
@@ -32,7 +32,7 @@ The plotted error bars are **median absolute deviations** of elapsed times,
 not confidence intervals. The complete tables include the original Odin
 implementation, current Odin, and FMTConv.
 
---8<-- "docs/assets/benchmarks/dither-tables.inc"
+--8<-- "docs/content/assets/benchmarks/dither-tables.inc"
 
 Download the [complete comparison JSON](../assets/benchmarks/dither-fmtconv.json)
 or [CSV](../assets/benchmarks/dither-fmtconv.csv) for raw timings, FPS,
@@ -156,7 +156,7 @@ They use the same timing settings, `scale=1`, and eight-bit output storage.
 The input cases are Gray8, RGB24, Gray16, and RGB48; effective output depths
 are 1, 2, 4, and 7.
 
---8<-- "docs/assets/benchmarks/dither-low-bits.inc"
+--8<-- "docs/content/assets/benchmarks/dither-low-bits.inc"
 
 The low-bit tile check compares the correctly expanded neighboring levels and
 bounds the mean error to 0.01 of a quantization step. Raw data are available as

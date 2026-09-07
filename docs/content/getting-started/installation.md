@@ -33,23 +33,28 @@ my-application/
 ├── main.odin
 └── vendor/
     └── vapoursynth-odin/
-        ├── api.odin
-        ├── easy/
-        ├── link/
-        └── vsscript/
+        └── src/
+            └── vapoursynth/
+                ├── api.odin
+                ├── constants.odin
+                ├── frame_properties.odin
+                ├── types.odin
+                ├── easy/
+                ├── link/
+                └── vsscript/
 ```
 
-Define a library collection that points to the parent directory of the repository:
+Define a library collection that points to the repository's `src` directory:
 
 ```console
-odin build . -collection:deps=vendor
+odin build . -collection:deps=vendor/vapoursynth-odin/src
 ```
 
 Your application can then import the raw bindings and the optional host interface:
 
 ```odin
-import vs "deps:vapoursynth-odin"
-import easy "deps:vapoursynth-odin/easy"
+import vs "deps:vapoursynth"
+import easy "deps:vapoursynth/easy"
 ```
 
 `deps` is the collection name chosen by your build command. It does not have to be `deps`, but the import prefix and command must agree. Odin resolves an import without a collection prefix relative to the importing file; the examples in this repository use that approach so they build directly from the checkout. See the [Odin package overview](https://odin-lang.org/docs/overview/#packages) for the language's import rules.
@@ -140,9 +145,9 @@ With the loader configured correctly, the path can be omitted. The defaults are 
 From the repository root, these checks require no VapourSynth runtime:
 
 ```console
-odin check . -no-entry-point -vet
-odin check easy -no-entry-point -vet
-odin check vsscript -no-entry-point -vet
+odin check src/vapoursynth -no-entry-point -vet
+odin check src/vapoursynth/easy -no-entry-point -vet
+odin check src/vapoursynth/vsscript -no-entry-point -vet
 odin check examples/core_info -vet
 ```
 
