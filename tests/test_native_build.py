@@ -9,7 +9,26 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from tools.native_build import STB_IMAGE_LIBRARIES, native_target, prepare_stb_image
+from tools.native_build import STB_IMAGE_LIBRARIES, core_library, native_target, prepare_stb_image
+
+
+class CoreLibrary(unittest.TestCase):
+    def test_package_precedes_system_and_missing_library_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory)
+            with patch("tools.native_build.sys.platform", "linux"), patch(
+                "tools.native_build.find_library", return_value="system-core"
+            ) as discover:
+                self.assertEqual(core_library(package), "system-core")
+                library = package / "libvapoursynth.so.4"
+                library.write_bytes(b"core")
+                discover.reset_mock()
+                self.assertEqual(core_library(package), str(library.resolve()))
+                discover.assert_not_called()
+                library.unlink()
+                discover.return_value = None
+                with self.assertRaisesRegex(RuntimeError, "Cannot locate"):
+                    core_library(package)
 
 
 class NativeTargets(unittest.TestCase):

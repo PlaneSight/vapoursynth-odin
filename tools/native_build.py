@@ -1,17 +1,33 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Shared native targets and workspace-local dependencies for Odin builds."""
 
-from __future__ import annotations
-
+from ctypes.util import find_library
 from dataclasses import dataclass
 from pathlib import Path
 import platform
 import shutil
 import subprocess
+import sys
 
 
 BUILD_TIMEOUT = 300
 STB_IMAGE_LIBRARIES = ("stb_image", "stb_image_write", "stb_image_resize")
+
+
+def core_library(package: Path) -> str:
+    """Prefer the active Python package's core, then the system loader's library."""
+    names = {
+        "win32": ("libvapoursynth.dll",),
+        "darwin": ("libvapoursynth.4.dylib", "libvapoursynth.dylib"),
+        "linux": ("libvapoursynth.so.4", "libvapoursynth.so"),
+    }
+    for name in names.get(sys.platform, ()):
+        candidate = package / name
+        if candidate.is_file():
+            return str(candidate.resolve())
+    if discovered := find_library("vapoursynth"):
+        return discovered
+    raise RuntimeError(f"Cannot locate the VapourSynth core in {package} or the system library path")
 
 
 @dataclass(frozen=True)
