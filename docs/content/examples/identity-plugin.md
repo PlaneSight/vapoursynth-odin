@@ -49,7 +49,6 @@ The plugin needs a host implementing core API 4.2. Build for the architecture us
 Save this Python example as `identity_demo.py` in the repository root, then run `uv run identity_demo.py`:
 
 ```python
-from pathlib import Path
 import runpy
 
 import vapoursynth as vs

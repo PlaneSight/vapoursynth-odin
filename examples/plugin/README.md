@@ -65,7 +65,6 @@ uv run build.py
 Load the resulting native library from a script run in this directory:
 
 ```python
-from pathlib import Path
 import runpy
 
 import vapoursynth as vs

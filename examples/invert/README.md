@@ -68,7 +68,6 @@ for `malloc`/`free`.
 Load the plugin in a VapourSynth Python script:
 
 ```python
-from pathlib import Path
 import runpy
 
 import vapoursynth as vs
