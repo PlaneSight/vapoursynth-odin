@@ -61,7 +61,7 @@ uv sync --locked
 uv run examples/haldlut/generate.py
 ```
 
-The default output directory, `.build/haldlut-luts`, receives `identity.png` and
+The default output directory, `examples/haldlut/.build/haldlut-luts`, receives `identity.png` and
 `cinematic.png`. Both are level-4, 64 × 64 RGB PNGs with 16 bits per channel.
 The cinematic transform combines a modest S-curve, reduced saturation, cool
 shadows, and warm highlights. It is an example look, with no camera-specific
@@ -130,7 +130,7 @@ source = vs.core.std.BlankClip(
 )
 graded = vs.core.odin_hald.HaldCLUT(
     source,
-    path=str(Path(".build/haldlut-luts/cinematic.png").resolve()),
+    path=str(Path("examples/haldlut/.build/haldlut-luts/cinematic.png").resolve()),
     strength=1.0,
 )
 

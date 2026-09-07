@@ -111,7 +111,7 @@ uv run tools/examples.py build dither
 ```
 
 This prepares the uv environment and builds the optimized
-`.build/examples/dither` library used by the preview script and inline Python
+`.build/examples/dither` library used by the inline Python
 program. The command chooses the native architecture and shared-library
 extension. See the [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 for supported targets and prerequisites.
