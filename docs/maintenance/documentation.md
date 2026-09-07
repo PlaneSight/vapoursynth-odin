@@ -13,46 +13,59 @@ to GitHub Pages once Pages is enabled for the repository.
 
 ## Set up a local environment
 
-Use **Python 3.11 or newer**. The documentation tooling reads TOML with Python's
-standard `tomllib`; the CI workflow uses Python 3.12. The directly required
-packages are pinned in `requirements-docs.txt`:
+Use **Python 3.12 or newer** and [uv](https://docs.astral.sh/uv/). The repository's
+Python project declares its documentation dependencies in the `docs` dependency
+group in `pyproject.toml`; `uv.lock` records the resolved versions and hashes.
+Run these commands from the repository root:
 
-```text
---8<-- "requirements-docs.txt"
+```console
+uv sync --locked --group docs
+uv run zensical serve
 ```
 
-Create a virtual environment from the repository root. Activation is optional
-if you invoke its Python executable explicitly, as below.
-
-=== "Windows PowerShell"
-
-    ```powershell
-    python -m venv .venv
-    .venv/Scripts/python.exe -m pip install -r requirements-docs.txt
-    .venv/Scripts/python.exe -m zensical serve
-    ```
-
-=== "Linux / macOS"
-
-    ```sh
-    python3 -m venv .venv
-    .venv/bin/python -m pip install -r requirements-docs.txt
-    .venv/bin/python -m zensical serve
-    ```
+The first command creates or updates `.venv` from the committed lockfile. The
+project sets `tool.uv.package = false`, so synchronization provisions the Python
+environment without compiling or installing the native Odin examples. Odin is
+not required to preview the documentation.
 
 Open the local address printed by Zensical, normally `http://127.0.0.1:8000`.
 The development server rebuilds when files change. Stop it with `Ctrl+C` when
 finished. It does not publish the site or alter the GitHub repository.
 
-The remaining commands use `python` to mean that virtual environment's Python.
-Activate the environment or substitute its executable path.
+### Use pip for a documentation-only environment
+
+The checked-in `requirements-docs.txt` is a generated export containing only the
+documentation group and its transitive dependencies. The GitHub Pages workflow
+installs this export with pip. You can use the same route locally without
+installing the VapourSynth runtime or the development group:
+
+=== "Windows PowerShell"
+
+    ```powershell
+    python -m venv .build/docs-venv
+    .build/docs-venv/Scripts/python.exe -m pip install -r requirements-docs.txt
+    .build/docs-venv/Scripts/python.exe -m zensical serve
+    ```
+
+=== "Linux / macOS"
+
+    ```sh
+    python3 -m venv .build/docs-venv
+    .build/docs-venv/bin/python -m pip install -r requirements-docs.txt
+    .build/docs-venv/bin/python -m zensical serve
+    ```
+
+The local validation commands below use uv. With the pip environment, invoke its
+Python executable instead: replace `uv run --locked --group docs python` with
+`.build/docs-venv/Scripts/python.exe` on Windows or `.build/docs-venv/bin/python`
+on Unix.
 
 ## Build a release candidate
 
 ```console
-python -m zensical build --clean --strict
-python tools/check_docs.py
-python -m unittest discover -s tests -p test_check_docs.py
+uv run --locked --group docs python -m zensical build --clean --strict
+uv run --locked --group docs python tools/check_docs.py
+uv run --locked --group docs python -m unittest discover -s tests -p test_check_docs.py
 ```
 
 `--clean` replaces the generated site, and `--strict` makes reported warnings fail
@@ -78,12 +91,14 @@ code, not a visible include directive.
 | `docs/index.md` | Landing page and learning paths |
 | `docs/getting-started/` | Installation, first program, interface choice |
 | `docs/guides/` | Concepts and ownership contracts across APIs |
-| `docs/examples/` | Progressive explanations of the six host and plugin examples |
+| `docs/examples/` | Progressive explanations of the eight host and plugin examples |
 | `docs/reference/` | Public declarations, procedure behavior, types, and constants |
 | `docs/maintenance/` | Verification, compatibility, and publishing |
-| `docs/assets/` | Local logo and CSS |
+| `docs/assets/` | Local logo, CSS, and images rendered by the dither and Hald CLUT filters |
 | `overrides/404.html` | Accessible not-found page and recovery links |
 | `zensical.toml` | Navigation, theme, extensions, and validation |
+| `pyproject.toml` and `uv.lock` | Authoritative dependency declarations and resolved versions |
+| `requirements-docs.txt` | Generated documentation dependency export for pip and Pages |
 | `tools/check_docs.py` | Offline check of generated links and fragments |
 | `tools/pages_config.py` | Deployment URL overlay derived from GitHub metadata |
 | `.github/workflows/docs.yml` | Pull request validation and Pages deployment |
@@ -147,7 +162,8 @@ describes the required Pages permissions and artifact/deployment sequence.
 ### What the workflow does
 
 The **build** job runs for pull requests, matching pushes, and manual dispatches.
-It installs the documentation requirements, performs a clean strict build, checks
+It uses Python 3.12 and installs the generated `requirements-docs.txt` with pip,
+performs a clean strict build, checks
 local links, and stores a `documentation-preview` artifact for seven days. This
 job has read access to repository contents.
 
@@ -195,7 +211,8 @@ Do not commit a generated overlay containing temporary test URLs.
 
 | Symptom | Check |
 | --- | --- |
-| `tomllib` cannot be imported | The selected Python is at least 3.11 |
+| Python version or dependency resolution fails | Select Python 3.12 or newer, matching the project's declared minimum |
+| `uv sync --locked` reports an outdated lockfile | Update `uv.lock` after changing `pyproject.toml`, then regenerate the documentation export |
 | Source inclusion fails | Run from the repository root; confirm the included path exists and the file is tracked |
 | Strict build fails after adding a page | Add it to navigation and resolve all warnings in the build log |
 | Local link checker reports a fragment | Inspect the generated heading ID; update the source link or retain a stable anchor |
@@ -203,7 +220,23 @@ Do not commit a generated overlay containing temporary test URLs.
 | Build succeeds but deployment is skipped | Confirm the event is not a pull request and the branch is the actual default branch |
 | Site uses the wrong repository path | Inspect the configure-pages output and generated overlay; avoid hardcoded root-absolute internal links |
 
-For dependency upgrades, change the version pin deliberately, make a clean build,
-run the link checks, and inspect navigation, search, diagrams, and source listings.
+## Update documentation dependencies
+
+`pyproject.toml` and `uv.lock` are the source of truth. Change the desired pin in
+the `docs` dependency group, resolve the lockfile, and regenerate the pip export:
+
+```console
+uv lock
+uv export --only-group docs --format requirements-txt --output-file requirements-docs.txt --no-emit-project
+uv sync --locked --group docs
+```
+
+Do not edit `requirements-docs.txt` by hand. Its exact versions and hashes are
+generated from the lockfile, and the Pages workflow consumes that export. Commit
+the changed declaration, lockfile, and export together so local uv environments
+and the pip-based deployment use the same documentation dependencies.
+
+After an upgrade, make a clean strict build, run the link checks, and inspect
+navigation, search, diagrams, and source listings.
 Use [Zensical's documentation](https://zensical.org/docs/publish-your-site/) for
 version-sensitive configuration and deployment guidance.

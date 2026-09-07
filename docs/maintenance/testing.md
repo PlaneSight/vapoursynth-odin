@@ -1,6 +1,6 @@
 ---
 title: Testing and verification
-description: Reproduce compile checks, C/Odin ABI measurements, ownership tests, and the complete example runtime suite.
+description: Reproduce ABI and ownership checks, introductory and advanced runtime suites, dither benchmarks, and native wheel verification.
 ---
 
 # Testing and verification
@@ -12,24 +12,46 @@ Run the checks that exercise the boundary you changed. A successful compile
 alone does not establish ABI compatibility or correct reference ownership.
 
 All commands below run from the repository root. Generated probes, executables,
-and plugin libraries belong in the ignored `.build` directory.
+plugin libraries, and test fixtures belong in the ignored `.build` directory.
+Explicit distribution builds write their wheel and source archives to `dist`.
 
 ## Requirements by check
 
 | Check | Required tools | VapourSynth installation |
 | --- | --- | --- |
-| Package and example type checking | Odin | None |
+| Package and example type checking | Odin; Hald also needs Odin's native stb library | None |
 | C/Odin ABI verification | Python 3.10+, Odin, native C compiler | None; headers are checked in |
 | `easy` ownership and error suite | Odin, matching core shared library | Core API 4.2 |
-| All six example runtime checks | Python 3.10+, Odin, matching Python module and core | Core API 4.2 |
-| Documentation | Python 3.11+, `requirements-docs.txt` | None |
+| Six introductory examples | Project Python environment, Odin, matching Python module and core | Core API 4.2 |
+| Dither and Hald correctness; dither benchmark | Project Python environment, Odin, native stb library for Hald | Core API 4.2 |
+| Native wheel build and installation check | Project Python environment, uv, Odin, native stb library | Installed-wheel check uses a matching Python runtime |
+| Documentation | Project Python environment and the `docs` dependency group | None |
 
 See [installation](../getting-started/installation.md) for the compiler and runtime
 setup, and [compatibility](compatibility.md) for the exact environment previously
 verified. Do not infer runtime support on a target from another target's results.
-The example runner's Python 3.10 syntax minimum does not override the installed
-VapourSynth module's Python requirement; use a Python version supported by that
-runtime distribution.
+The Python project requires **Python 3.12 or newer**. Some standalone verification
+scripts use Python 3.10-compatible syntax, but that does not lower the project's
+requirement or the installed VapourSynth distribution's requirement.
+
+## Select the development environment
+
+```console
+uv sync --locked
+uv run tools/run_host.py core_info
+```
+
+`uv sync --locked` creates the project environment from `uv.lock`. The root
+project is not installed as an editable package, so synchronizing dependencies
+does not build or autoload this repository's plugins. `run_host.py` passes the
+core library from the active VapourSynth Python package to the selected Odin
+host. The recorded uv environment used CPython 3.14.6 and VapourSynth R79, which
+provides core API 4.2. R76 remains the unchanged header baseline.
+
+Use `uv run` for the Python commands below. An existing environment can also run
+the scripts directly with its own `python`. The
+[Python environment and wheel guide](../guides/python-packaging.md) explains
+dependency selection, plugin discovery, and platform requirements.
 
 ## Check the Odin packages
 
@@ -45,6 +67,8 @@ odin check examples/easy_host -vet
 odin check examples/host -vet
 odin check examples/plugin -no-entry-point -vet
 odin check examples/invert -no-entry-point -vet
+odin check examples/dither -no-entry-point -vet
+odin check examples/haldlut -no-entry-point -vet
 ```
 
 The library packages and plugins have no application `main`; this is why those
@@ -52,12 +76,20 @@ commands specify `-no-entry-point`. The optional `link` packages are exercised
 by a consuming application when the platform's import library or shared library
 is available. A dynamic host does not need that link-time dependency.
 
+Hald imports `vendor:stb/image`, which needs the matching native stb static
+library in the Odin installation. On Unix, build that library natively using
+the bundled stb build instructions; see the
+[Hald walkthrough](../examples/haldlut-plugin.md). The Windows compiler
+installation used for verification did not contain the Unix stb libraries,
+so its cross-target checks do not establish Hald support on Linux or macOS.
+
 To type-check another target, add Odin's `-target` option. For example:
 
 ```console
 odin check . -no-entry-point -vet -target:windows_i386
 odin check easy -no-entry-point -vet -target:linux_amd64
 odin check examples/invert -no-entry-point -vet -target:darwin_arm64
+odin check examples/dither -no-entry-point -vet -target:linux_amd64
 ```
 
 These commands check the selected target's declarations and conditional code.
@@ -67,7 +99,7 @@ verify a native C compiler's layout there.
 ## Compare the C and Odin ABI
 
 ```console
-python tests/abi.py
+uv run tests/abi.py
 ```
 
 The runner preprocesses the checked-in R76 headers twice: once with
@@ -88,14 +120,14 @@ PASS stable: 435 sizes, alignments, field offsets and constants; C/Odin calls pa
 PASS graph: 439 sizes, alignments, field offsets and constants; C/Odin calls passed.
 ```
 
-This test needs no installed VapourSynth library. The C shim supplies the
-representative API implementations. It catches declaration mistakes without
-depending on a particular machine's multimedia setup.
+The script can also run as `python tests/abi.py` without an installed VapourSynth
+library. The C shim supplies representative API implementations, catching
+declaration mistakes without depending on a machine's multimedia setup.
 
 ### Select the toolchain
 
 ```console
-python tests/abi.py --cc clang --odin odin
+uv run tests/abi.py --cc clang --odin odin
 ```
 
 `--cc` accepts a compiler executable; the `CC` environment variable is also
@@ -149,13 +181,13 @@ Keep assertions enabled for this test executable: the assertions express the
 test expectations. If an assertion fails, record the compiler, runtime version,
 architecture, and the failing procedure before changing the test or implementation.
 
-## Run every example against a runtime
+## Run the six introductory examples
 
 Use the Python environment in which `import vapoursynth` resolves to the runtime
 you intend to test:
 
 ```console
-python tests/examples.py
+uv run tests/examples.py
 ```
 
 If the module lives in an isolated local directory, select that directory
@@ -176,8 +208,10 @@ python tests/examples.py --runtime .build/runtime --library /absolute/path/to/co
 The library must match the Python runtime and the process architecture. An
 unrelated DLL with the right filename is not a valid substitute.
 
-The runner builds all six examples into `.build/examples`, checks the four host
-programs' output, and loads both plugins through VapourSynth's Python API. It
+The runner builds the six introductory examples into `.build/examples`: four
+host programs (`core_info`, `properties`, `easy_host`, and `host`) and two plugins
+(`plugin` and `invert`). It checks the host programs' output and loads both
+plugins through VapourSynth's Python API. It
 then verifies the identity plugin and the invert filter against Gray8, RGB24,
 YUV420P10, and Gray16 fixtures. The invert checks cover every visible pixel,
 subsampled planes, padded layouts, retained frame properties, unchanged source
@@ -189,14 +223,108 @@ This is a correctness suite, not a benchmark. It does not establish throughput,
 exhaustively explore scheduler interleavings, or test every installed third-party
 plugin.
 
-## Validate documentation changes
-
-After installing the documentation requirements in a virtual environment:
+## Check the advanced filters
 
 ```console
-python -m zensical build --clean --strict
-python tools/check_docs.py
-python -m unittest discover -s tests -p test_check_docs.py
+uv run tests/advanced.py
+```
+
+The advanced runner builds `dither` and `haldlut` with `-vet -o:speed` into
+`.build/advanced`. On x64 it explicitly selects `-microarch:x86-64`, matching the
+native wheel's baseline. It generates its own PNG fixtures using Python's
+standard library and compares every active output pixel with independent
+reference calculations.
+
+- **Dither: 68 oracle cases**, covering scalar/SIMD parity, both scaling modes,
+  input depths 8–16, multiple output depths, vector tails, tile and seed
+  boundaries, RGB and subsampled YUV planes. Additional checks cover exact
+  nominal code points, endpoints, static temporal behavior, malformed sample
+  clamping, passthrough, concurrent requests, properties, retained source-frame
+  immutability, and invalid inputs.
+- **Hald: 81 oracle cases**, covering RGB/RGBA PNG8/16, all five PNG row filters,
+  every tetrahedral ordering, nonlinear lookups across multiple cells, input
+  depths 8–16, strengths, identity tables, and levels 2, 3, and 8. Boundary checks
+  cover Unicode paths, cached data after file deletion, properties, retained
+  source frames, unsupported formats and parameters, truncated files, wrong
+  dimensions, level 9, excessive decompressed data, and IHDR/IDAT/IEND CRC errors.
+
+Both complete suites passed with R76 and R79 on Windows x64. Select a single
+filter while developing it, or use an already existing isolated runtime:
+
+```console
+uv run tests/advanced.py --only dither
+uv run tests/advanced.py --only haldlut
+python tests/advanced.py --runtime .build/runtime
+```
+
+The `--runtime` directory must contain the intended VapourSynth Python module.
+The runner verifies its provenance and prints the imported module and version.
+It performs no package installation.
+
+## Measure dither throughput
+
+```console
+uv run tests/benchmark_dither.py
+```
+
+The benchmark first requires exact scalar/SIMD pixel parity, then builds its
+timing around unique output frame indices with output caching disabled. It uses
+a reusable in-memory source, warms both modes, alternates their order between
+runs, and reports median elapsed time and throughput. The default workload is
+1920 × 1080 Gray16 to Gray8, four worker threads and outstanding requests,
+16 warmup frames, and five measured runs of 256 frames per mode.
+
+The optimized x64 build uses the same `x86-64` baseline as the wheel. Results
+include frame allocation, scheduling, Python request delivery, and release;
+they measure end-to-end frame throughput rather than an isolated arithmetic
+kernel. The runner bounds runtime and imposes no speedup threshold. Use
+`--help` to adjust the workload and record the compiler, runtime, CPU, and
+request concurrency with each result. See the
+[dither walkthrough](../examples/dither-plugin.md) for the recorded measurements
+and their environment.
+
+## Build and check native distributions
+
+```console
+uv run python -m unittest discover -s tests -p test_packaging.py
+uv build --wheel
+uv build --sdist
+```
+
+The packaging unit tests cover platform selection, baseline compiler arguments,
+missing sources, compiler failures, artifact validation, and output containment.
+They complement a real native build and installed-wheel check:
+
+```console
+uv run tools/packagecheck.py dist/vapoursynth_odin_examples-0.1.0-py3-none-win_amd64.whl
+```
+
+Use the actual filename produced by the native build on your platform. The
+checker audits the archive's four plugin binaries, native tags, metadata, and
+license notices. It then creates an isolated environment under `.build/packaging`,
+installs the wheel and the chosen VapourSynth version, starts a fresh process,
+and verifies automatic discovery and frame output from all four plugins. This
+step invokes uv to install dependencies; unlike the runtime correctness runners,
+it can require package downloads. `--runtime 76` selects R76 explicitly; the
+default uses the active environment's VapourSynth version.
+
+Native Windows x64 wheel builds and isolated installation checks passed. A
+source distribution was also extracted outside the Git checkout and successfully
+rebuilt into a wheel, demonstrating that its included sources are sufficient.
+For release validation, repeat that clean source-archive build and audit the
+resulting wheel. These results do not establish native Linux or macOS wheel
+compatibility; Hald's stb library must be built for each target. See the
+[packaging guide](../guides/python-packaging.md) for wheel layout and platform
+tag requirements.
+
+## Validate documentation changes
+
+Use the locked documentation dependency group:
+
+```console
+uv run --group docs python -m zensical build --clean --strict
+uv run --group docs python tools/check_docs.py
+uv run python -m unittest discover -s tests -p test_check_docs.py
 ```
 
 The build includes the real Odin sources in reference pages and tutorials.
@@ -215,7 +343,9 @@ describes previewing the rendered result and the GitHub Actions workflow.
 | --- | --- |
 | C-facing field, constant, callback, or calling convention | Package checks, native ABI suite, relevant target checks |
 | Ownership, errors, maps, or row views in `easy` | Package checks, `tests/easy`, affected example runtime checks |
-| Filter callbacks or pixel processing | Plugin check and complete example runtime suite |
+| Identity/invert callbacks or pixel processing | Plugin check and `tests/examples.py` |
+| Dither/Hald callbacks, pixel kernels, or PNG loading | Plugin check and `tests/advanced.py`; measure kernel changes with the dither benchmark when relevant |
+| Native build hook, distribution contents, or autoloading | Packaging unit tests, native wheel and source-archive builds, isolated `tools/packagecheck.py` |
 | Runtime loading or linked declarations | Relevant host execution on the affected platform; linked consumer build when applicable |
 | Prose, navigation, CSS, or source includes | Strict documentation build, local link checker, visual preview |
 | Header baseline or API version | Full ABI and runtime suites, followed by the [upgrade procedure](compatibility.md#updating-the-header-baseline) |

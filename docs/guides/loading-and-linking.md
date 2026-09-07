@@ -55,6 +55,14 @@ The default path is a platform-specific filename:
 
 An explicit absolute path selects a particular core library. A bare filename delegates discovery to the operating system loader and its configured search paths. The bindings do not search Python installations, inspect a registry, download a runtime, or adjust environment variables.
 
+The repository's optional development helper does perform Python-package discovery:
+
+```console
+uv run tools/run_host.py core_info
+```
+
+It selects the library beside the installed VapourSynth module and passes its absolute path to the Odin host. Official Unix wheels use versioned names, `libvapoursynth.so.4` on Linux and `libvapoursynth.4.dylib` on macOS; those differ from the bare defaults above. See [Python environments and plugin wheels](python-packaging.md) for uv setup and native plugin discovery.
+
 Loading the main file can still fail because one of its dependencies is missing or has the wrong architecture. Preserve the loader diagnostic and verify the selected library's dependencies when the file visibly exists but cannot be loaded. Consult the [official VapourSynth installation guide](https://www.vapoursynth.com/doc/installation.html) for current platform installation and configuration procedures.
 
 The [core information example](../examples/core-info.md) accepts the path as its sole optional argument. The [raw host](../examples/raw-host.md) shows the equivalent sequence directly through `core:dynlib`, including casting the resolved symbol to `vs.VSGetVapourSynthAPI`.

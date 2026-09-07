@@ -80,7 +80,10 @@ def core_library(vs, requested: Path | None) -> str:
         require(requested.is_file(), f"Core library does not exist: {requested}")
         return str(requested.resolve())
     package = Path(vs.__file__).resolve().parent
-    for name in ("libvapoursynth.dll", "libvapoursynth.dylib", "libvapoursynth.so"):
+    for name in (
+        "libvapoursynth.dll", "libvapoursynth.so.4", "libvapoursynth.4.dylib",
+        "libvapoursynth.so", "libvapoursynth.dylib",
+    ):
         candidate = package / name
         if candidate.is_file():
             return str(candidate)

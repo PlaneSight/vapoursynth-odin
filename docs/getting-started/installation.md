@@ -56,7 +56,29 @@ You do not need to copy these packages into Odin's own `core` or `vendor` instal
 
 ## Install a compatible runtime
 
-The host interface requests **core API 4.2**. The project's documented minimum is VapourSynth R74, and runtime verification used R76. An incompatible core returns `nil` when API 4.2 is requested; `easy.load_library` reports this as `.Unsupported_API`.
+The host interface requests **core API 4.2**. That core API is available from R74;
+runtime verification covers R76 and R79 on Windows x64. An incompatible core
+returns `nil` when API 4.2 is requested; `easy.load_library` reports this as
+`.Unsupported_API`.
+
+### Use the locked Python environment
+
+The quickest path through this repository's examples is the uv project. Install
+[uv](https://docs.astral.sh/uv/getting-started/installation/), keep Odin on your
+executable search path, and run:
+
+```console
+uv sync --locked
+uv run tools/run_host.py core_info
+```
+
+This installs the official VapourSynth runtime in `.venv` and passes its core
+library to the example explicitly. The project requires CPython 3.12 or newer.
+The lockfile selects R79; it does not alter the pinned R76 API 4.2 declarations.
+See [Python environments and wheels](../guides/python-packaging.md) for platform
+availability, documentation dependency groups, and native plugin distribution.
+
+### Use an existing native installation
 
 Follow the [official VapourSynth installation instructions](https://www.vapoursynth.com/doc/installation.html) for your platform. Native host applications need the core library and its dependencies. The Python module is additionally needed for the Python demonstrations and the complete example test runner.
 

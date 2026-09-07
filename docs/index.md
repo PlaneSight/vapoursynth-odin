@@ -20,7 +20,7 @@ hide:
 
 <div class="capabilities">
   <span><strong>117</strong> stable core functions</span>
-  <span><strong>6</strong> runnable examples</span>
+  <span><strong>8</strong> runnable examples</span>
   <span><strong>4.2</strong> core and script APIs</span>
   <span><strong>LGPL</strong> 2.1 or later</span>
 </div>
@@ -41,8 +41,8 @@ hide:
 
 -   **Write a VapourSynth plugin**
 
-    Begin with an identity function, then implement an invert filter with upstream
-    dependencies, parallel requests, and processing for padded, subsampled planes.
+    Begin with identity and invert, then explore SIMD blue-noise dithering and
+    tetrahedral color grading with Odin's bundled image decoder.
 
     [Follow the plugin tutorials →](examples/identity-plugin.md)
 
@@ -85,6 +85,24 @@ when called and keeps access to the raw table available through its owners.
 
 [Compare the interfaces in detail](getting-started/choosing-an-interface.md).
 
+## A runtime you can reproduce
+
+Use uv to provision VapourSynth and run an Odin host with the selected core library:
+
+```console
+uv sync --locked
+uv run tools/run_host.py easy_host
+```
+
+An explicit `uv build` packages the four native plugins into a Python wheel that
+VapourSynth can discover automatically. The Odin packages remain ordinary source
+imports. Read [Python environments and wheels](guides/python-packaging.md) for
+the build and distribution model.
+
+For the advanced examples, start with [SIMD blue-noise dithering](examples/dither-plugin.md)
+or [Hald CLUT color grading](examples/haldlut-plugin.md). Their walkthroughs connect
+numerical algorithms with frame layout, immutable filter data, and native library use.
+
 ## Learn the contracts that matter
 
 Reference ownership determines when an object can be released. Stride determines
@@ -105,7 +123,7 @@ context, with concrete consequences for your code:
 
 The repository includes pinned C headers, a C/Odin ABI comparison, failure and
 ownership tests for `easy`, and a runtime runner for every example. Verification
-on Windows x64 with R76 covers the invert filter's pixels across Gray8, RGB24,
+on Windows x64 with R76 and R79 covers the invert filter's pixels across Gray8, RGB24,
 YUV420P10, and Gray16, including concurrent requests and unchanged source frames.
 Other listed targets have compile checks; see the
 [compatibility record](maintenance/compatibility.md) for the scope of that evidence.

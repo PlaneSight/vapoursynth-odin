@@ -15,27 +15,52 @@ of these raw ABI bindings.
 The optional [`easy` package](easy/README.md) adds typed map access, explicit
 resource ownership, plugin invocation, synchronous frame requests, durable error
 diagnostics, and stride-aware row views. Start with the
-[six examples](examples/README.md), which progress from core information and map
-properties to a complete parallel invert filter.
+[eight examples](examples/README.md), which progress from core information and map
+properties to parallel invert, SIMD blue-noise dither, and Hald CLUT color-grading
+filters. The Hald example uses Odin's bundled `vendor:stb/image` library.
+
+## Reproducible environment and plugin wheels
+
+With [uv](https://docs.astral.sh/uv/) and Odin installed, provision the official
+VapourSynth runtime and run a host without finding its library path manually:
+
+```console
+uv sync --locked
+uv run tools/run_host.py core_info
+uv run tools/run_host.py easy_host
+uv run tests/examples.py
+uv run tests/advanced.py
+```
+
+The lockfile selects VapourSynth R79; the raw declarations remain pinned to R76
+API 4.2. Both runtimes have been exercised on Windows x64. Python 3.12 or newer is
+required by the runtime distribution. Odin remains the native compiler.
+
+Ordinary sync installs development dependencies. An explicit `uv build` compiles
+the four native plugins and packages them as a platform-specific wheel under
+`vapoursynth/plugins/odin_examples`, following VapourSynth's autoload convention.
+The Python distribution is named `vapoursynth-odin-examples`; it distributes
+native example filters. Odin applications import the source packages as usual.
+See [Python environments and wheels](docs/guides/python-packaging.md) for the
+layout, source builds, third-party notices, and installation verification.
 
 ## Documentation
 
 The [documentation site](docs/index.md) includes installation and first-program
-guides, ownership and error handling, maps and frame layout, all six example
+guides, ownership and error handling, maps and frame layout, all eight example
 walkthroughs, complete API references, and testing and compatibility guidance.
 It is built with [Zensical](https://zensical.org/) and includes the actual Odin
 sources directly in tutorials and reference pages.
 
-To preview it with Python 3.11 or newer, create and activate a virtual environment,
-then run these commands from the repository root:
+To preview it through the locked environment, run from the repository root:
 
 ```console
-python -m pip install -r requirements-docs.txt
-python -m zensical serve
+uv run --group docs python -m zensical serve
 ```
 
-For validation, run `python -m zensical build --clean --strict` followed by
-`python tools/check_docs.py`. The [publishing guide](docs/maintenance/documentation.md)
+For validation, run `uv run --group docs python -m zensical build --clean --strict`
+followed by `uv run python tools/check_docs.py`. A generated `requirements-docs.txt`
+also supports pip-based builds. The [publishing guide](docs/maintenance/documentation.md)
 explains the included GitHub Pages workflow, which validates pull requests and
 deploys the repository's default branch once **Settings → Pages → GitHub Actions**
 is enabled. The deployment derives its repository and site URLs from GitHub.
@@ -275,6 +300,21 @@ source frames. The `easy` suite also passed runtime and injected failure tests
 for ownership, diagnostics, maps, and typed row views. Compile checks cover
 Windows x86, Linux x64, and macOS ARM64; those targets have not been runtime-tested
 here. The C ABI suite still passes all 435 stable and 439 extended measurements.
+
+The same introductory and `easy` suites also pass with the uv-provisioned R79
+runtime. The advanced runner independently checks dither's exact integer results
+and scalar/SIMD parity, plus Hald CLUT's tetrahedral interpolation, PNG decoding,
+cached lookup data, frame properties, and failures:
+
+```console
+uv run tests/advanced.py
+uv run tests/benchmark_dither.py
+```
+
+The benchmark reports measured end-to-end frame throughput using optimized
+baseline CPU builds, verifies parity before timing, and includes scheduler and
+frame-allocation overhead. See the [dither walkthrough](docs/examples/dither-plugin.md)
+for the algorithm and measurement limits.
 
 ## References and license
 

@@ -9,13 +9,14 @@ These bindings target **VapourSynth core API 4.2** and, in a separate package,
 **VSScript API 4.2**. Both tables are translated from the R76 public headers at
 commit [`aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7`](https://github.com/vapoursynth/vapoursynth/tree/aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7).
 The exact headers are checked into `tests/headers`; the running library is a
-separate dependency supplied by the application or host.
+separate dependency supplied by the application or host. Verification against
+R79 does not change these declarations or the pinned R76 headers.
 
 ## Version numbers describe different things
 
 | Version | Meaning | How this repository uses it |
 | --- | --- | --- |
-| VapourSynth release, such as R76 | A distributed implementation and its headers | R76 is the declaration baseline and recorded runtime |
+| VapourSynth release, such as R76 or R79 | A distributed implementation and its headers | R76 is the declaration baseline; R76 and R79 have recorded runtime checks |
 | Core API 4.2 | The requested `VSAPI` ABI | `VAPOURSYNTH_API_VERSION` is `(4 << 16) \| 2` |
 | VSScript API 4.2 | The script environment's separate ABI | `VSSCRIPT_API_VERSION` is `(4 << 16) \| 2` |
 | Odin compiler build | Language, standard library, and code generator | Record `odin version` when reproducing a result |
@@ -74,22 +75,56 @@ verification layer.
 
 ## Verification record
 
-The following records the environment used for the initial implementation. It
-is evidence from these checks, rather than a promise that every combination of
-runtime, compiler, and operating system has been tested.
+The following records completed checks. It is evidence from these environments,
+rather than a promise that every combination of runtime, compiler, and operating
+system has been tested. Both R76 and R79 runtime checks request core API 4.2.
 
 | Target | Compiler | Verification |
 | --- | --- | --- |
-| Windows x64 | Odin `dev-2026-09-nightly:a2fb372` | Native C/Odin ABI checks; `easy` runtime and injected failure suite; all six examples with VapourSynth R76 |
-| Windows x86 | Same compiler build | Compile checks for raw declarations, `easy`, tests, and invert; no runtime execution recorded |
-| Linux x64 | Same compiler build | Compile checks for raw declarations, `easy`, tests, and invert; no runtime execution recorded |
-| macOS ARM64 | Same compiler build | Compile checks for raw declarations, `easy`, tests, and invert; no runtime execution recorded |
+| Windows x64 | Odin `dev-2026-09-nightly:a2fb372` | Native C/Odin ABI checks; `easy` runtime and injected failure suite; introductory examples and advanced dither/Hald suites with VapourSynth R76 and R79; native wheel build, installation, autoload, and package checks |
+| Windows x86 | Same compiler build | Compile checks for raw declarations, `easy`, tests, invert, and dither; no runtime execution recorded |
+| Linux x64 | Same compiler build | Compile checks for raw declarations, `easy`, tests, invert, and dither; no runtime execution recorded |
+| macOS ARM64 | Same compiler build | Compile checks for raw declarations, `easy`, tests, invert, and dither; no runtime execution recorded |
 
-The native ABI checks passed 435 stable and 439 extended measurements, together
-with representative C/Odin calls. Runtime invert coverage included Gray8,
-RGB24, YUV420P10, and Gray16, concurrent requests, frame properties, and source
-immutability. The [testing guide](testing.md) explains how to reproduce and extend
-that evidence.
+The native ABI checks passed **435 stable and 439 graph-extension measurements**,
+together with representative C/Odin calls. These compare against the pinned R76
+headers; they do not validate a newer runtime's experimental graph suffix.
+
+`tests/examples.py` builds and runs the six introductory examples: `core_info`,
+`properties`, `easy_host`, `host`, `plugin`, and `invert`. Invert coverage includes
+Gray8, RGB24, YUV420P10, and Gray16, concurrent requests, preserved properties,
+unchanged retained source frames, double inversion, and rejected inputs.
+
+`tests/advanced.py` passed **68 dither and 81 Hald pixel-oracle cases** on both
+R76 and R79. Dither checks cover both scaling modes, scalar/SIMD parity, bit
+depths, vector tails, padded rows, subsampled planes, seed boundaries, exact
+endpoints, temporal stability, concurrent requests, malformed-sample clamping,
+and rejected parameters. Hald checks cover
+RGB/RGBA PNGs at 8 and 16 bits, all five row filters, all six tetrahedral
+orderings, nonlinear tables, fractional strength, Unicode paths, and malformed
+files, including CRC failures. Both suites also check preserved properties and
+unchanged retained source frames.
+
+The dither benchmark passed on R79 using the baseline `x86-64` target. It measures
+end-to-end frame throughput, including frame allocation, scheduling, request
+delivery, and release. The [dither example](../examples/dither-plugin.md) records
+the workload and measured scalar/SIMD results. These timings describe the tested
+machine and are not a performance guarantee for another target.
+
+Hald was built and tested natively on Windows x64. Its `vendor:stb/image`
+dependency requires native libraries built for the target platform. The tested
+Windows Odin installation does not contain the Unix stb libraries, so the Linux
+and macOS compile checks above do **not** include Hald. No Unix native execution
+or wheel verification is recorded.
+
+The root Python project declares Python **3.12 or newer**. The verified uv
+environment uses **CPython 3.14.6 and VapourSynth R79**; the declared minimum is
+not evidence of a run on every supported Python version. Windows x64 packaging
+checks verified wheel construction, installation, VapourSynth autoload, and
+`tools/packagecheck.py`. A wheel was also rebuilt from the source distribution
+outside Git.
+See the [packaging guide](../guides/python-packaging.md) for the native build
+requirements and the [testing guide](testing.md) for reproduction commands.
 
 This project does not currently declare a minimum supported Odin release. Odin
 is evolving, and the recorded compiler build is the known working point. When

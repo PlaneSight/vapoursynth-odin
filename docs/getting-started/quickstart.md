@@ -6,6 +6,15 @@ The examples are deliberately separate executables. You can build each one while
 
 ## Run the smallest example
 
+With the repository's [uv environment](../guides/python-packaging.md) synchronized:
+
+```console
+uv run tools/run_host.py core_info
+```
+
+The helper selects the core library from the active VapourSynth Python package.
+The equivalent manual command below is useful with a separate native installation.
+
 After [installing Odin and a compatible core](installation.md), run this command from the repository root, replacing the path with your actual core library:
 
 ```console

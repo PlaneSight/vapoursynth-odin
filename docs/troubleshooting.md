@@ -221,6 +221,45 @@ color-managed or limited-range-aware visual negative. If a YUV result looks
 different from a desired artistic inversion, first define the color and range
 transformation you need, then implement that operation explicitly.
 
+## Python environments and packaged plugins
+
+`uv sync` provisions the Python dependencies. The root project's
+`tool.uv.package = false` setting means it does not compile the example plugins.
+Use `uv run tests/advanced.py` for local filter development or `uv build --wheel`
+for a distributable artifact. Odin must be available on `PATH` for either build.
+
+Test wheel installation in a separate environment: an exact `uv sync` can remove
+a manually installed wheel that is not declared by the development project.
+Start a fresh Python process after installation and inspect
+`vapoursynth.get_plugin_dir()`. The four plugin files belong beneath that
+directory. A core created with `ccfDisableAutoLoading` will not discover them.
+The [packaging guide](guides/python-packaging.md) includes a clean-environment
+check that requests actual frames through every packaged plugin.
+
+If Hald CLUT fails to link against `stb`, check the Odin installation's native
+vendor libraries. Source installations on Unix may need
+`vendor/stb/src/build_stb.sh` run inside the Odin toolchain. A Windows toolchain's
+bundled `.lib` files do not supply Linux or macOS static archives.
+
+## Advanced filter input and appearance
+
+The dither filter accepts constant integer Gray, RGB, or YUV, with an output
+depth between 8 and the input depth. Its default `scale=0` preserves the usual
+power-of-two relation between YUV code values at different bit depths.
+`scale=1` maps full-range endpoints exactly; neutral chroma can then alternate
+between adjacent output codes. Choose the scale that matches the signal, as
+explained in the [dither tutorial](examples/dither-plugin.md). Neither choice
+performs a matrix, transfer-function, or color-range conversion.
+
+Hald CLUT accepts integer RGB and a non-interlaced RGB/RGBA PNG of Hald level
+2–8. It rejects invalid dimensions, corrupt chunk checksums, oversized input,
+and non-finite or out-of-range strength. A general image is not a valid Hald LUT
+merely because it has a supported square size: its pixels must encode the
+expected red-fastest cube ordering. Use the provided generator to establish a
+known-good fixture. The LUT is loaded once during construction; create a new
+filter instance after changing the file. Read the [Hald tutorial](examples/haldlut-plugin.md)
+for the exact format and interpolation contract.
+
 ## Capture a useful failure report
 
 Include `odin version`, operating system and architecture, the runtime release

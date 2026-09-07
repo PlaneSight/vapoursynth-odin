@@ -12,3 +12,4 @@ __pycache__/
 /site/
 /.cache/
 /.zensical-pages.toml
+/dist/

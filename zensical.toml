@@ -18,6 +18,7 @@ nav = [
     { "Maps and properties" = "guides/maps.md" },
     { "Frames and pixel layout" = "guides/frames.md" },
     { "Loading and linking" = "guides/loading-and-linking.md" },
+    { "Python environments and wheels" = "guides/python-packaging.md" },
   ] },
   { "Examples" = [
     "examples/index.md",
@@ -27,6 +28,8 @@ nav = [
     { "4 · Use the raw API" = "examples/raw-host.md" },
     { "5 · Identity plugin" = "examples/identity-plugin.md" },
     { "6 · Invert filter" = "examples/invert-plugin.md" },
+    { "7 · SIMD blue-noise dither" = "examples/dither-plugin.md" },
+    { "8 · Hald CLUT color grading" = "examples/haldlut-plugin.md" },
   ] },
   { "Reference" = [
     "reference/index.md",

@@ -2,7 +2,7 @@
 
 The examples form a progression from a small host executable to a complete video filter. Each directory is an independently buildable Odin package, and every tutorial explains the source that is compiled by the example test runner. You can read the rendered source at the end of each tutorial or edit the corresponding package in your checkout.
 
-The first three examples use the optional `easy` package to make resource ownership and error handling explicit. The fourth exposes the raw API calls behind those operations. The last two run inside VapourSynth as shared-library plugins, where the host supplies the API and schedules the work.
+The first three examples use the optional `easy` package to make resource ownership and error handling explicit. The fourth exposes the raw API calls behind those operations. The remaining four run inside VapourSynth as shared-library plugins, where the host supplies the API and schedules the work.
 
 ## Choose a starting point
 
@@ -14,8 +14,12 @@ The first three examples use the optional `easy` package to make resource owners
 | 4 | [Host through the raw API](raw-host.md) | `examples/host` | Resolve the entry point, use C return codes, inspect result-map errors, and manage raw references. |
 | 5 | [Register an identity plugin](identity-plugin.md) | `examples/plugin` | Export the plugin entry point, declare a function signature, and transfer an owned node reference. |
 | 6 | [Implement an invert filter](invert-plugin.md) | `examples/invert` | Declare dependencies, respond to activation reasons, process planar samples, and manage a parallel filter's lifetime. |
+| 7 | [Dither with SIMD](dither-plugin.md) | `examples/dither` | Reduce integer bit depth with a reproducible blue-noise tile, explicit range scaling, eight-lane SIMD, and a scalar reference. |
+| 8 | [Apply a Hald CLUT](haldlut-plugin.md) | `examples/haldlut` | Decode a PNG through Odin's bundled `stb` library, validate bounded input, and apply an immutable 3D lookup table with tetrahedral interpolation. |
 
 For a host application, start at step 1 and work through step 4. For a filter plugin, skim the [ownership guide](../guides/ownership.md), then work through steps 5 and 6. The identity function establishes the registration and reference-transfer contract before the invert filter introduces frame scheduling.
+
+Steps 7 and 8 build on that lifecycle. Dither concentrates on quantization quality, vector arithmetic, and performance measurement. Hald CLUT demonstrates native library integration, creation-time asset loading, and color interpolation. Both have independent numerical tests and generated visual comparisons.
 
 ## What you need
 
@@ -23,11 +27,18 @@ Run all commands from the repository root. Follow the [quickstart](../getting-st
 
 The four host executables accept an optional path to the VapourSynth **core** library. They use `std.BlankClip` where a clip is needed; no video file, source plugin, or Python interpreter is involved in those hosts. Plugin autoloading is disabled when their cores are created, while the built-in `std` plugin remains available.
 
-The two plugin demonstrations need a VapourSynth host to load them. Their tutorials use Python with the VapourSynth module installed. Match the plugin architecture to that host and its core library. See [loading and linking](../guides/loading-and-linking.md) for library selection and deployment details.
+The four plugin demonstrations need a VapourSynth host to load them. Their tutorials use Python with the VapourSynth module installed. Match the plugin architecture to that host and its core library. See [loading and linking](../guides/loading-and-linking.md) for library selection and deployment details. The [Python packaging guide](../guides/python-packaging.md) explains how to provision the runtime with uv and build all four plugins into a native wheel.
 
 ## Run a single host
 
 The core-information example is the shortest environment check:
+
+```console
+uv sync --locked
+uv run tools/run_host.py core_info
+```
+
+The helper selects the core library from the active Python environment. To select a separately installed runtime directly:
 
 === "Windows"
 
@@ -49,13 +60,16 @@ The core-information example is the shortest environment check:
 
 Substitute another host package from the table to run it. If the library is already discoverable by your platform's loader, omit the path and the `--`. A successful example exits with status zero; a reported failure exits with status one.
 
-## Run the complete example suite
+## Run the example suites
 
 ```sh
-python tests/examples.py
+uv run tests/examples.py
+uv run tests/advanced.py
 ```
 
-The runner builds all six packages into `.build/examples`, runs the host executables, loads both plugins, and checks their behavior. It exercises every active pixel for Gray8, RGB24, YUV420P10, and Gray16 inversion; concurrent requests; custom frame properties; source preservation; double inversion; unsupported input; and missing-library diagnostics.
+The introductory runner builds the first six packages into `.build/examples`, runs the host executables, loads identity and invert, and checks their behavior. It exercises every active pixel for Gray8, RGB24, YUV420P10, and Gray16 inversion; concurrent requests; custom frame properties; source preservation; double inversion; unsupported input; and missing-library diagnostics.
+
+The advanced runner builds dither and Hald CLUT into `.build/advanced`. It compares scalar and SIMD quantization against independently calculated pixels, exercises tetrahedral interpolation against a separate numerical reference, and tests malformed inputs and resource lifetimes. Both runners print the selected runtime.
 
 To select an existing runtime directory containing the Python module:
 

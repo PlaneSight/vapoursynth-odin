@@ -12,6 +12,13 @@ API used to implement host and plugin behavior.
 | 4 | [host](host) | Perform hosting operations directly through the raw API table; compare with the previous example. |
 | 5 | [plugin](plugin) | Export a plugin entry point, register `Identity`, and transfer a node reference. |
 | 6 | [invert](invert) | Implement an actual filter: dependencies, activation reasons, instance lifetime, parallel requests, and sample processing. |
+| 7 | [dither](dither) | Reduce bit depth with reproducible blue noise, exact SIMD kernels, scalar tails, range scaling, and measured performance. |
+| 8 | [haldlut](haldlut) | Use Odin's bundled stb image decoder, cache a Hald lookup table, and apply tetrahedral color interpolation. |
+
+For a ready-to-run runtime environment, use `uv sync --locked` followed by
+`uv run tools/run_host.py core_info`. The helper passes the core library from
+the active Python environment to Odin. An explicit `uv build` packages all four
+plugins into a native wheel; see the [packaging guide](../docs/guides/python-packaging.md).
 
 The first four are executables. Build or run them from the repository root:
 
@@ -29,7 +36,7 @@ invoke filters use the core's built-in `std` plugin. They need no third-party
 source plugins or video files. Set up library loading before creating the core; release all objects
 before destroying the core and unloading the library.
 
-The last two are shared-library plugins:
+The last four are shared-library plugins. The two introductory plugins build as:
 
 ```console
 odin build examples/plugin -build-mode:dll -out:odin_identity.dll
@@ -56,7 +63,7 @@ errors. See its [README](invert/README.md) for the arithmetic and callback contr
 
 ## Run all examples and their checks
 
-The test runner builds all six examples into `.build/examples`, runs the hosts,
+The introductory test runner builds its six examples into `.build/examples`, runs the hosts,
 and loads both plugins into VapourSynth. It verifies pixel values across several
 formats, frame properties, source immutability, concurrent requests, invalid input,
 and missing-library diagnostics.
@@ -75,3 +82,12 @@ python tests/examples.py --runtime .build/runtime
 
 Use `--library` to specify a core library path and `--odin` to select the compiler.
 The runner does not install or download dependencies.
+
+The advanced suite builds dither and Hald CLUT with optimization and tests them
+against independent numerical oracles. The dither benchmark measures scalar and
+SIMD throughput after checking output parity:
+
+```console
+uv run tests/advanced.py
+uv run tests/benchmark_dither.py
+```
