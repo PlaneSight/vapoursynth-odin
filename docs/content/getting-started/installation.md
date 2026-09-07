@@ -85,7 +85,7 @@ The lockfile selects R79; it does not alter the pinned R76 API 4.2 declarations.
 See [Python environments and wheels](../guides/python-packaging.md) for platform
 availability, documentation dependency groups, and native plugin distribution.
 
-To compile the eight examples and Dither Plus and inspect the five plugin demonstrations:
+To compile the eight binding examples and inspect the four plugin demonstrations:
 
 ```console
 uv run tools/examples.py build

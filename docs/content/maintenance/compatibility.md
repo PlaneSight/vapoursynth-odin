@@ -52,24 +52,6 @@ with R76 and R79. Initial VSView loading of the four demonstrations was verified
 with R79 before those additional views were added. These checks establish script and frame evaluation; the filter
 pixel-oracle suites below provide separate numerical validation.
 
-### Dither Plus validation · 2026-09-07
-
-The standalone [Dither Plus plugin](../plugins/dither-plus.md) was verified on
-Windows x64 with VapourSynth R76 and R79. Each runtime passed **1,094 independent
-oracle cases**, **72 exact comparisons with the original blue-noise example**,
-and **70 low-bit level cases**, plus behavioral and invalid-input checks. The
-R79 suite also passed with AVX2 disabled, exercising the portable processing path.
-
-The full plugin passed `odin check plugins/dither/src -collection:deps=src -no-entry-point -vet` with
-both `-target:linux_amd64` and `-target:darwin_arm64`. These are compile checks;
-native Linux and macOS execution remains unverified.
-
-A Windows wheel rebuilt from the source distribution passed isolated
-installation, automatic discovery, and frame rendering for all five packaged
-plugins and all five Dither Plus modes. The twelve new preview outputs passed
-headless frame checks. The complete documentation build generated **21 PNGs**
-and **33 pages** from the current sources.
-
 ## Stable and experimental tables
 
 The stable `VSAPI` contains **117 function pointers** in header order. Its 4.2
@@ -150,13 +132,6 @@ sample values, byte-reading path for eight-bit input, preserved endpoints, and
 rejection of zero bits are covered by the numerical suite. This feature does not
 change the API version or require a custom sub-eight-bit VapourSynth format.
 
-The dither benchmark passed on R79 using the baseline `x86-64` target. It measures
-end-to-end frame throughput, including frame allocation, scheduling, request
-delivery, and release. The [performance comparison](dither-performance.md) records
-single-thread measurements against FMTConv across formats and resolutions up to
-4K. These timings describe the tested
-machine and are not a performance guarantee for another target.
-
 Hald was built and tested natively on Windows x64. Its Odin stb image
 dependency requires native libraries built for the target platform. The common
 build helper supplies the `stb:image` collection and prepares missing Unix
@@ -166,15 +141,6 @@ The tested
 Windows Odin installation does not contain the Unix stb libraries, so the Linux
 and macOS compile checks above do **not** include Hald. No Unix native execution
 or wheel verification is recorded.
-
-The root Python project declares Python **3.12 or newer**. The verified uv
-environment uses **CPython 3.14.6 and VapourSynth R79**; the declared minimum is
-not evidence of a run on every supported Python version. Windows x64 packaging
-checks verified wheel construction, installation, VapourSynth autoload, and
-`tools/packagecheck.py`. A wheel was also rebuilt from the source distribution
-outside Git.
-See the [packaging guide](../guides/python-packaging.md) for the native build
-requirements and the [testing guide](testing.md) for reproduction commands.
 
 This project does not currently declare a minimum supported Odin release. Odin
 is evolving, and the recorded compiler build is the known working point. When

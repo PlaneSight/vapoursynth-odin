@@ -15,10 +15,10 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = {
-    **{name: ROOT / "examples" / name for name in (
+    name: ROOT / "examples" / name
+    for name in (
         "core_info", "properties", "easy_host", "host", "plugin", "invert", "dither", "haldlut",
-    )},
-    "dither_plus": ROOT / "plugins" / "dither",
+    )
 }
 
 
@@ -71,7 +71,7 @@ def check(name: str, python: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("projects", nargs="*", help="Project names; default: invert. Use --all for all nine.")
+    parser.add_argument("projects", nargs="*", help="Project names; default: invert. Use --all for all eight.")
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--python", default=sys.executable, help="Interpreter for copied projects and isolated wheels")
     args = parser.parse_args()

@@ -1,5 +1,8 @@
 # Raw host
 
+This example demonstrates runtime loading and frame requests through the raw API table
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

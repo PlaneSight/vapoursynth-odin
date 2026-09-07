@@ -1,5 +1,8 @@
 # 2. Read and write map properties
 
+This example demonstrates typed map access, borrowed data, and property errors
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

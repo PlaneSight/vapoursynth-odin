@@ -51,12 +51,12 @@ endorsement by either project.
 
 ## Native wheel dependencies
 
-The `vapoursynth-odin-examples` wheel contains four compiled example plugins.
+Individual binding examples can package their compiled plugin as a wheel.
 Their source retains the repository's LGPL-2.1-or-later notices. Compiling these
 plugins also incorporates code from the Odin toolchain, and the Hald CLUT example
 links the toolchain's bundled `stb_image` decoder. Their upstream notices are
-collected in the root `THIRD_PARTY_LICENSES.md` and included in the wheel beside
-the root `LICENSE` under its distribution metadata's `licenses/` directory.
+collected in the root `THIRD_PARTY_LICENSES.md`. Each example retains its own
+license and third-party notices for inclusion in its wheel's distribution metadata.
 
 | Component | Provenance retained in `THIRD_PARTY_LICENSES.md` |
 | --- | --- |
@@ -87,7 +87,7 @@ The following is included directly from the repository's `LICENSE` file.
     ```
 
 The following notices are included directly from the root
-`THIRD_PARTY_LICENSES.md` used by the wheel build.
+`THIRD_PARTY_LICENSES.md`.
 
 ??? abstract "Bundled third-party notices"
 

@@ -1,5 +1,8 @@
 # Identity plugin
 
+This example demonstrates plugin registration and node-reference transfer
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

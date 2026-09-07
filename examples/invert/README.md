@@ -1,5 +1,8 @@
 # Invert filter plugin
 
+This example demonstrates frame activation, dependencies, ownership, and plane strides
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

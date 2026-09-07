@@ -1,5 +1,8 @@
 # 3. Invoke a plugin and read a frame
 
+This example demonstrates invocation, node and frame ownership, and checked row views
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

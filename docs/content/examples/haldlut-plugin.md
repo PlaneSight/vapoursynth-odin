@@ -1,11 +1,11 @@
 ---
-title: Hald CLUT color grading with stb_image
+title: Native library resources
 description: Load a 16-bit Hald PNG through Odin's stb_image binding and apply a cached color cube using tetrahedral interpolation.
 ---
 
-# Hald CLUT color grading with stb_image
+# Native library resources
 
-`odin_hald.HaldCLUT` applies a three-dimensional color lookup table stored in a
+This binding example uses `odin_hald.HaldCLUT` to apply a lookup table stored in a
 PNG image. It combines VapourSynth's planar frame API with Odin's
 bundled stb image binding, loads the table once during filter creation, and
 uses tetrahedral interpolation to grade 8–16 bit integer RGB video.
@@ -83,7 +83,7 @@ libraries shipped with Odin. The build does not modify the Odin installation.
 The [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 explains target selection and platform prerequisites.
 
-The repository also packages the compiled Hald plugin through `uv build --wheel`.
+The optional packaging lesson uses `uv build` inside `examples/haldlut`.
 See [Python environments and wheels](../guides/python-packaging.md) for native
 dependency notices and automatic discovery. The binary statically links stb_image;
 its bundled third-party notice accompanies redistribution, as described in
@@ -156,101 +156,6 @@ The output keeps the source format, dimensions, timing, and frame properties.
 `strength=0.0` returns acquired source frames without pixel processing, but table
 loading and validation still happen during construction. A missing or invalid
 table therefore remains an invocation error at zero strength.
-
-## Understand the Hald layout
-
-A Hald image flattens a regular RGB cube into a square image. For level `L`:
-
-```text
-cube edge = L²
-PNG side = L³
-number of RGB entries = L⁶
-entry index = red + edge × (green + edge × blue)
-```
-
-Red varies fastest, then green, then blue. PNG pixels are read in row order, so
-the decoder's interleaved RGB triples already have the lookup order needed by
-the interpolator. No second cube allocation or rearrangement is necessary.
-
-| Level | PNG dimensions | RGB grid | Cached RGB16 data |
-| ---: | --- | --- | ---: |
-| 2 | 8 × 8 | 4 × 4 × 4 | 384 bytes |
-| 4 | 64 × 64 | 16 × 16 × 16 | 24 KiB |
-| 8 | 512 × 512 | 64 × 64 × 64 | 1.5 MiB |
-
-The generator accepts `--level 2` through `--level 8`, `--bits 8` or `--bits 16`,
-`--look identity`, `--look cinematic`, or `--look all`, and an `--output` directory.
-A larger grid samples the transform more densely and costs more cache space.
-A 16-bit PNG also preserves more precision in each lattice value; it does not
-require 16-bit input video.
-
-A LUT image encodes coordinates, so resizing, blurring, or JPEG compression
-changes the transform itself. Author the look through operations on individual
-colors and preserve the image's dimensions and channel ordering.
-
-The native representation is explicit:
-
-```odin
-Hald_Table :: struct {
-    pixels: [^][3]u16,
-    edge:   int,
-}
-```
-
-The PNG loader requests three output channels through
-`stbi.load_16_from_memory`. An eight-bit table is promoted to sixteen-bit channel
-storage by multiplying each value by 257; alpha, when present, is discarded. Input video remains planar, so the
-frame loop reads one sample from each of the three source planes to form a
-lookup coordinate.
-
-## Interpolate four cube vertices
-
-For source maximum `M = 2^bits - 1`, each channel becomes a cube coordinate:
-
-```text
-coordinate = source_sample × (edge - 1) / M
-```
-
-The interpolator clamps coordinates to the cube, selects the lower cell corner,
-and computes three fractions within that cell. At the maximum endpoint it uses
-the final cell with fraction one, keeping all vertex indices inside the table.
-
-Sorting the fractions chooses one of six tetrahedra. For fractions
-`red=0.8`, `green=0.5`, and `blue=0.2`, the four relative vertices are
-`000`, `100`, `110`, and `111`, with weights:
-
-```text
-1 - 0.8 = 0.2
-0.8 - 0.5 = 0.3
-0.5 - 0.2 = 0.3
-0.2       = 0.2
-```
-
-These nonnegative weights sum to one. Each vertex supplies an entire RGB triple,
-so the same interpolation weights transform all three output channels. Three
-comparisons select the fraction ordering, with a stable RGB order for ties.
-The calculations use `f64`.
-
-After interpolation, the filter scales the RGB16 result back to the source code
-range, blends it with the original sample, clamps, and rounds:
-
-```text
-graded = interpolated_RGB16 × M / 65535
-mixed = original + strength × (graded - original)
-output = floor(clamp(mixed, 0, M) + 0.5)
-```
-
-An identity LUT approximates identity according to the precision of its stored
-lattice values. Do not assume every identity image at every grid size produces
-bit-exact output. Tests use exactly representable lattice values when asserting
-that stronger property, and otherwise compare against the stored table's actual
-interpolation result.
-
-??? info "Complete tetrahedral interpolation"
-
-    ```odin title="examples/haldlut/src/interpolation.odin"
-    --8<-- "examples/haldlut/src/interpolation.odin"
-    ```
 
 ## Bound decoding before handing memory to stb_image
 

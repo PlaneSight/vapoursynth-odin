@@ -1,5 +1,8 @@
 # Hald CLUT color-grading plugin
 
+This example demonstrates foreign-library integration, bounded input, and persistent resource ownership
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

@@ -1,5 +1,8 @@
 # 1. Inspect a core
 
+This example demonstrates runtime loading, API version negotiation, and core ownership
+through the VapourSynth Odin bindings.
+
 ## Build this project
 
 Install [Odin](https://odin-lang.org/docs/install/) and

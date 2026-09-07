@@ -19,8 +19,8 @@ uv run --group preview tools/examples.py preview --no-build
 ```
 
 `uv run` prepares the project environment as needed. The first command compiles
-the eight example packages and standalone Dither Plus. The second reuses those
-binaries and launches the five plugin scripts in VSView, ready to inspect.
+the eight binding examples. The second reuses those
+binaries and launches the four plugin scripts in VSView, ready to inspect.
 For an optional headless check of
 their output frames after the build:
 
@@ -42,8 +42,7 @@ uv build
 
 These commands compile the plugin, request every preview output's first and last
 frames, open the named outputs, and build a source distribution and native wheel.
-Hosts use `uv run build.py --run` to execute their program. The same convention
-applies to the separate `plugins/dither` project.
+Hosts use `uv run build.py --run` to execute their program.
 
 ### Copy an example into your own project
 
@@ -97,8 +96,8 @@ uv run build.py --bindings /absolute/path/to/vapoursynth-odin
 The repository command `uv run tools/examples.py build` invokes the same local
 build functions with the current checkout supplied explicitly. It publishes
 both the `.build/examples/` artifacts used by repository tools and the local
-`.build/` artifacts used by previews. Root `uv build` packages the current
-bindings; a copied project's `uv build` uses its pinned dependency.
+`.build/` artifacts used by previews. Individual plugin projects demonstrate wheel packaging with their own `uv build`;
+the root project manages bindings development dependencies.
 
 `uv run tests/standalone.py --all` checks every project after copying it outside
 the checkout: dependency downloads, host execution or preview frames, plugin
@@ -138,7 +137,7 @@ uv run tools/examples.py build invert dither
 ```
 
 The same native build support is used by preview, image generation, documentation,
-host execution, and `uv build --wheel`. Builds compile into temporary directories
+host execution, and individual examples' wheel builds. Builds compile into temporary directories
 before publishing the requested artifacts. If a compiler invocation fails, the
 command reports failure and leaves the previous binaries available.
 
@@ -151,7 +150,7 @@ evidence.
 
 The build command writes host executables and native plugins under
 `.build/examples`, using the build selector and the platform's file extension.
-Its default selection is the eight examples plus Dither Plus:
+Its default selection is the eight binding examples:
 
 | Host executables | Plugin demonstrations |
 | --- | --- |
@@ -159,19 +158,16 @@ Its default selection is the eight examples plus Dither Plus:
 | `properties` | `invert` |
 | `easy_host` | `dither` |
 | `host` | `haldlut` |
-| — | `dither_plus` — standalone plugin in `plugins/dither` |
 
 Preview one filter or several by name:
 
 ```console
 uv run --group preview tools/examples.py preview invert
 uv run --group preview tools/examples.py preview dither haldlut
-uv run --group preview tools/examples.py preview dither_plus
 ```
 
 The preview command builds its selected plugins before launching their checked-in
-`preview.vpy` files: `examples/<name>/preview.vpy` for the teaching examples and
-`plugins/dither/preview.vpy` for Dither Plus. To reuse binaries from a previous build:
+`preview.vpy` files under `examples/<name>/`. To reuse binaries from a previous build:
 
 ```console
 uv run --group preview tools/examples.py preview --no-build dither
@@ -230,16 +226,9 @@ only `0`, `85`, `170`, and `255` in each channel. The
 explains the exact mapping and the distinction between quantization levels and
 storage depth.
 
-The standalone [Dither Plus preview](../plugins/dither-plus.md#reproduce-the-illustrations)
-has its own output layout. Output `0` is the RGB16 scene; outputs `1`–`5` compare
-nearest, Bayer, blue noise, Floyd–Steinberg, and Sierra Lite at two bits. Outputs
-`6`–`7` compare independent and shared RGB thresholds on a neutral input.
-Outputs `8`–`11` demonstrate a fade and pan, including static and moving
-blue-noise masks. There are **36 output nodes** across the five demonstrations.
-
 The scripts name their outputs through VSView's user API when running inside
 the previewer. Headless evaluation uses ordinary VapourSynth output nodes and does
-not need the GUI package. Source paths are resolved relative to the repository,
+not need the GUI package. Source paths are resolved relative to each example project,
 including the platform-specific plugin filename.
 
 ## Keep the previewer optional
@@ -299,18 +288,13 @@ process, and exports the first frame of the outputs declared in that script's
 under `.build/showcase`. The scene construction, filter calls, and comparison
 display transforms all live in the example scripts and their shared helpers.
 Changing those examples changes both the viewer and the generated illustrations.
-The current mappings export **21 images**: two each for identity, invert, and
-Hald, eight for the focused dither tutorial, and seven for Dither Plus. The
-animated Dither Plus outputs are reserved for playback; its static method and
-RGB-correlation comparisons supply the documentation images.
-
 To regenerate the images in the site and validate the whole documentation:
 
 ```console
 uv run --group docs tools/docs.py build
 ```
 
-This builds the eight Odin examples and Dither Plus, evaluates all five visual demonstrations,
+This builds the eight Odin binding examples, evaluates all four visual demonstrations,
 exports their images into the ignored `docs/content/assets/generated` directory, runs a
 clean strict Zensical build, and checks local links and assets. Failure to compile,
 evaluate, or render stops the build; there is no fallback to checked-in screenshots.

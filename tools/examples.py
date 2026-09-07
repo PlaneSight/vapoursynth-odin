@@ -23,10 +23,8 @@ from tools.native_build import native_target
 
 ROOT = Path(__file__).resolve().parent.parent
 HOST_NAMES = ("core_info", "properties", "easy_host", "host")
-PLUGIN_NAMES = ("plugin", "invert", "dither", "haldlut", "dither_plus")
+PLUGIN_NAMES = ("plugin", "invert", "dither", "haldlut")
 EXAMPLES = {name: ROOT / "examples" / name for name in (*HOST_NAMES, *PLUGIN_NAMES)}
-EXAMPLES["dither_plus"] = ROOT / "plugins" / "dither"
-BUILD_TIMEOUT = 300
 CHECK_TIMEOUT = 120
 
 
@@ -142,7 +140,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     for command, description in (
-        ("build", "Compile the eight examples and DitherPlus, or only the selected names."),
+        ("build", "Compile the eight binding examples, or only the selected names."),
         ("check", "Build and render every output of the plugin demonstrations without a GUI."),
         ("preview", "Build and open the plugin demonstrations in VSView; pass its options after --."),
     ):

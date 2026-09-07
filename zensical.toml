@@ -1,6 +1,6 @@
 [project]
-site_name = "VapourSynth for Odin"
-site_description = "Complete VapourSynth API 4.2 bindings, an idiomatic Odin interface, and practical examples from first frame to parallel filter."
+site_name = "VapourSynth bindings for Odin"
+site_description = "Odin bindings for VapourSynth core API 4.2 and VSScript API 4.2: declarations, ownership, ABI compatibility, and usage examples."
 docs_dir = "docs/content"
 site_dir = ".venv/site"
 copyright = "LGPL-2.1-or-later · VapourSynth for Odin"
@@ -13,27 +13,12 @@ nav = [
     { "Choose an interface" = "getting-started/choosing-an-interface.md" },
   ] },
   { "Guides" = [
-    { "Build and preview examples" = "guides/previewing-examples.md" },
     { "Ownership and lifetime" = "guides/ownership.md" },
     { "Errors and diagnostics" = "guides/errors.md" },
     { "Maps and properties" = "guides/maps.md" },
     { "Frames and pixel layout" = "guides/frames.md" },
     { "Loading and linking" = "guides/loading-and-linking.md" },
-    { "Python environments and wheels" = "guides/python-packaging.md" },
-  ] },
-  { "Examples" = [
-    "examples/index.md",
-    { "1 · Core information" = "examples/core-info.md" },
-    { "2 · Typed properties" = "examples/properties.md" },
-    { "3 · Read a frame" = "examples/easy-host.md" },
-    { "4 · Use the raw API" = "examples/raw-host.md" },
-    { "5 · Identity plugin" = "examples/identity-plugin.md" },
-    { "6 · Invert filter" = "examples/invert-plugin.md" },
-    { "7 · SIMD blue-noise dither" = "examples/dither-plugin.md" },
-    { "8 · Hald CLUT color grading" = "examples/haldlut-plugin.md" },
-  ] },
-  { "Plugins" = [
-    { "Dither Plus" = "plugins/dither-plus.md" },
+    { "Python tooling and example packaging" = "guides/python-packaging.md" },
   ] },
   { "Reference" = [
     "reference/index.md",
@@ -42,9 +27,20 @@ nav = [
     { "Types and constants" = "reference/types-and-constants.md" },
     { "VSScript API" = "reference/vsscript.md" },
   ] },
+  { "Binding examples" = [
+    "examples/index.md",
+    { "Build and preview" = "guides/previewing-examples.md" },
+    { "1 · Core information" = "examples/core-info.md" },
+    { "2 · Typed properties" = "examples/properties.md" },
+    { "3 · Read a frame" = "examples/easy-host.md" },
+    { "4 · Use the raw API" = "examples/raw-host.md" },
+    { "5 · Identity plugin" = "examples/identity-plugin.md" },
+    { "6 · Frame callbacks" = "examples/invert-plugin.md" },
+    { "7 · Output formats" = "examples/dither-plugin.md" },
+    { "8 · Native library resources" = "examples/haldlut-plugin.md" },
+  ] },
   { "Project" = [
     { "Testing and verification" = "maintenance/testing.md" },
-    { "Dither performance" = "maintenance/dither-performance.md" },
     { "Compatibility and upgrades" = "maintenance/compatibility.md" },
     { "Build and publish these docs" = "maintenance/documentation.md" },
     { "Troubleshooting" = "troubleshooting.md" },

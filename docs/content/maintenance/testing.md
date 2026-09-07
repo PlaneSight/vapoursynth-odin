@@ -5,17 +5,6 @@ description: Reproduce ABI and ownership checks, introductory and advanced runti
 
 # Testing and verification
 
-The standalone acceptance check copies projects outside the checkout:
-
-```console
-uv run tests/standalone.py
-uv run tests/standalone.py --all
-```
-
-The default checks Invert. `--all` exercises all four hosts and five plugins,
-including dependency downloads, preview frames, source distributions, native
-wheels, and isolated wheel autoloading. It requires network access, uv, and Odin.
-
 The repository checks three different boundaries: whether Odin accepts the
 declarations, whether those declarations match the pinned C ABI, and whether
 the resulting programs behave correctly with a real VapourSynth runtime.
@@ -24,7 +13,7 @@ alone does not establish ABI compatibility or correct reference ownership.
 
 All commands below run from the repository root. Generated probes, executables,
 plugin libraries, and test fixtures belong in the ignored `.build` directory.
-Explicit distribution builds write their wheel and source archives to `dist`.
+Individual plugin examples write optional wheel and source archives to their own `dist` directories.
 
 ## Requirements by check
 
@@ -34,7 +23,7 @@ Explicit distribution builds write their wheel and source archives to `dist`.
 | C/Odin ABI verification | Python 3.10+, Odin, native C compiler | None; headers are checked in |
 | `easy` ownership and error suite | Odin, matching core shared library | Core API 4.2 |
 | Six introductory examples | Project Python environment, Odin, matching Python module and core | Core API 4.2 |
-| Dither and Hald correctness; dither benchmark | Project Python environment, Odin, and the Hald native build prerequisites below | Core API 4.2 |
+| Dither and Hald binding-usage correctness | Project Python environment, Odin, and the Hald native build prerequisites below | Core API 4.2 |
 | Native wheel build and installation check | Project Python environment, uv, Odin, and the Hald native build prerequisites below | Installed-wheel check uses a matching Python runtime |
 | Documentation | Project Python environment, Odin, and the `docs` dependency group | Core API 4.2, supplied by the docs group |
 
@@ -280,64 +269,19 @@ The `--runtime` directory must contain the intended VapourSynth Python module.
 The runner verifies its provenance and prints the imported module and version.
 It performs no package installation.
 
-## Check the standalone Dither Plus plugin
+## Check copied binding examples
 
 ```console
-uv run tests/dither_plus.py
-uv run tools/examples.py check --no-build dither_plus
+uv run tests/standalone.py
+uv run tests/standalone.py --all
 ```
 
-The first command compares all five methods with independent integer and
-diffusion references. It exercises widths around SIMD and tile boundaries,
-low-bit expansion, scaling, per-plane correlation, deterministic frame phases,
-and invalid parameters. The second requests the first and last frame of every
-preview output, including its animated fade and pan. This plugin has its own
-suite so adding algorithms does not turn the focused dither tutorial into a
-larger product interface.
-
-## Historical performance measurements
-
-The [FMTConv comparison](dither-performance.md) and
-[Dither Plus guide](../plugins/dither-plus.md#measured-throughput) retain dated
-results, workload descriptions, and raw timings. The development-only collectors
-and report generator are preserved at Git revision `f59ecbd`; they are not part
-of the maintained public test suite. Performance changes should be measured on
-the intended hardware and formats, with output caching disabled and the workload
-and variation recorded alongside the result.
-
-## Build and check native distributions
-
-```console
-uv run python -m unittest discover -s tests -p test_packaging.py
-uv build --wheel
-uv build --sdist
-```
-
-The packaging unit tests cover platform selection, baseline compiler arguments,
-missing sources, compiler failures, artifact validation, and output containment.
-They complement a real native build and installed-wheel check:
-
-```console
-uv run tools/packagecheck.py dist/vapoursynth_odin_examples-0.1.0-py3-none-win_amd64.whl
-```
-
-Use the actual filename produced by the native build on your platform. The
-checker audits the archive's five plugin binaries, native tags, metadata, and
-license notices. It then creates an isolated environment under `.build/packaging`,
-installs the wheel and the chosen VapourSynth version, starts a fresh process,
-and verifies automatic discovery and frame output from all five plugins. This
-step invokes uv to install dependencies; unlike the runtime correctness runners,
-it can require package downloads. `--runtime 76` selects R76 explicitly; the
-default uses the active environment's VapourSynth version.
-
-Native Windows x64 wheel builds and isolated installation checks passed. A
-source distribution was also extracted outside the Git checkout and successfully
-rebuilt into a wheel, demonstrating that its included sources are sufficient.
-For release validation, repeat that clean source-archive build and audit the
-resulting wheel. These results do not establish native Linux or macOS wheel
-compatibility; Hald's stb library must be built for each target. See the
-[packaging guide](../guides/python-packaging.md) for wheel layout and platform
-tag requirements.
+The default checks Invert; `--all` checks all eight examples. Each project is
+copied outside the checkout and built against its pinned bindings. Hosts execute;
+plugin previews render their output frames. Plugin source distributions are
+rebuilt into wheels and checked for autoloading in fresh environments. These
+checks maintain the examples as usable starting points. They require network
+access, uv, and Odin.
 
 ## Validate documentation changes
 
@@ -348,7 +292,7 @@ uv run --group docs tools/docs.py build
 uv run python -m unittest discover -s tests -p test_check_docs.py
 ```
 
-The build compiles the eight examples and Dither Plus and runs the five visual `.vpy` scripts in
+The build compiles the eight binding examples and runs the four visual `.vpy` scripts in
 fresh processes. Their designated first frames become the generated images in
 the site, so broken native code or script evaluation fails the documentation
 build. The `docs` group supplies VapourSynth and NumPy; Odin is required, while
@@ -370,8 +314,8 @@ describes previewing the rendered result and the GitHub Actions workflow.
 | C-facing field, constant, callback, or calling convention | Package checks, native ABI suite, relevant target checks |
 | Ownership, errors, maps, or row views in `easy` | Package checks, `tests/easy`, affected example runtime checks |
 | Identity/invert callbacks or pixel processing | Plugin check and `tests/examples.py` |
-| Dither/Hald callbacks, pixel kernels, or PNG loading | Plugin check and `tests/advanced.py`; measure kernel changes on the intended workload |
-| Native build hook, distribution contents, or autoloading | Packaging unit tests, native wheel and source-archive builds, isolated `tools/packagecheck.py` |
+| Dither/Hald callbacks, pixel kernels, or PNG loading | Plugin check and `tests/advanced.py` |
+| Native build hook, distribution contents, or autoloading | `tests/test_native_build.py`, `tests/test_example_commands.py`, and `tests/standalone.py` |
 | Runtime loading or linked declarations | Relevant host execution on the affected platform; linked consumer build when applicable |
 | Preview scripts, shared scene construction, or exported image selections | `tools/examples.py check`, render the outputs, inspect the affected VSView views and generated images |
 | Prose, navigation, CSS, or source includes | Strict documentation build, local link checker, visual preview |
