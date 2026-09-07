@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Generate a cinematic Hald LUT, then preview its native tetrahedral interpolation."""
 
 from pathlib import Path

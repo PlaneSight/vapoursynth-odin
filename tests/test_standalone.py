@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Check dependency trust boundaries before any downloaded helper can execute."""
 
 from contextlib import redirect_stdout

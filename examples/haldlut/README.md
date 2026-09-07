@@ -16,7 +16,7 @@ uv build
 ```
 
 You can copy this entire directory into a new location and run the same commands.
-It has its own Python pin, lockfile, license, sources, and build configuration.
+It has its own Python pin, lockfile, sources, and build configuration.
 The first build downloads the exact bindings commit and verifies the archive
 checksum declared in `pyproject.toml`; later builds reuse `.deps/`. Odin is an
 external prerequisite. Outputs go in `.build/`; distributions go in `dist/`.
@@ -250,11 +250,3 @@ The independent advanced tests exercise all tetrahedral orderings, PNG filters,
 8/16-bit RGB/RGBA tables, 8–16 bit sources, fractional strengths, cached-file
 lifetime, concurrent frames, properties, source immutability, and invalid input.
 Use the root testing instructions for runtime selection and the shared runner.
-
-## Third-party code
-
-The built plugin statically links Odin's bundled stb_image. Preserve the notice
-in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) when distributing this
-example's binary under the included MIT option. The plugin source remains
-LGPL-2.1-or-later, and the repository's root third-party notices cover the other
-bundled runtime components.

@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
 package haldlut
 
 // Decoded RGB16 triples are immutable and owned by stb_image until image_free.

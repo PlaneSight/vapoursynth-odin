@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Compare the bindings with pinned C headers, then exercise the C/Odin ABI.
 
 Requires Python 3.14+, Odin, and a native C compiler (MSVC, Clang, or GCC).

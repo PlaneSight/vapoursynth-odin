@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Compile examples, render their preview outputs, and build or serve Zensical."""
 
 import argparse

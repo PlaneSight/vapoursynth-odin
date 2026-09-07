@@ -36,7 +36,3 @@ uv run --group docs tools/docs.py serve
 
 The [examples](examples/README.md) demonstrate binding usage through small hosts
 and plugins. Their image-processing operations are exercises for API contracts.
-
-Licensed under [LGPL-2.1-or-later](LICENSE). See
-[license and provenance](https://planesight.github.io/vapoursynth-odin/license/)
-for upstream attribution.

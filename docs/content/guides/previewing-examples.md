@@ -55,7 +55,6 @@ Copy the entire example directory, including dotfiles. Each project contains:
 | `uv.lock`, `.python-version` | Reproducible Python environment |
 | `preview.vpy`, `preview_support.py` | Plugin graph, synthetic inputs, and named outputs |
 | `hatch_build.py` | Plugin wheel hook using the same native build |
-| `LICENSE`, `THIRD_PARTY_LICENSES.md` | Source and native dependency notices |
 | `.gitignore` | Excludes environments, dependency caches, binaries, and distributions |
 
 Hosts omit the preview and wheel hook. Dither includes its tile generator; Hald
@@ -66,7 +65,7 @@ omit existing `.venv`, `.deps`, `.build`, and `dist` directories when copying.
 The first build downloads a full-commit-pinned archive from
 [PlaneSight/vapoursynth-odin](https://github.com/PlaneSight/vapoursynth-odin),
 checks the manifest's SHA-256 checksum **before executing downloaded build
-support**, and extracts only the Odin sources, native helper, and license notices
+support**, and extracts only the Odin sources, native helper, and distribution metadata
 into `.deps/<commit>/`. Later builds reuse this cache. An incomplete cache
 produces an error: remove the indicated directory and retry. Python dependencies
 remain managed by uv, following its
@@ -80,8 +79,7 @@ access, and Odin and the platform's native development tools remain prerequisite
 To rename a scaffold, edit `[project]` and `[tool.odin]` in `pyproject.toml`, then
 run `uv lock`. For plugins, also change the identifier, namespace, and display
 name in `src/plugin.odin` and the corresponding names in `preview.vpy`. Renaming
-the Python distribution alone cannot rename the VapourSynth filter API. Retain
-the license notices with copies and distributions.
+the Python distribution alone cannot rename the VapourSynth filter API.
 
 ### Develop against the current bindings
 

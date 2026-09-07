@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Build and run the examples against an installed VapourSynth API 4.2 runtime.
 
 Requires Python 3.14+, Odin, and the VapourSynth Python module. Use --runtime

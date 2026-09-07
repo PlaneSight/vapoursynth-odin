@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Exercise example-command failures, artifact publication, and process isolation."""
 
 from contextlib import redirect_stderr, redirect_stdout

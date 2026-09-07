@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Run an Odin host example with the core library in the active Python environment."""
 
 import argparse

@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Exercise documentation export boundaries without compiling native plugins."""
 
 from contextlib import redirect_stderr, redirect_stdout

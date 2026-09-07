@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Check generated documentation links, assets, and fragment identifiers offline."""
 
 import argparse

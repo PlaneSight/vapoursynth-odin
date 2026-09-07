@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Check the dither and Hald CLUT plugins against independent pixel oracles.
 
 Uses Python's standard library, Odin, and an installed VapourSynth module.

@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Preview the native identity plugin; source and returned pixels should match."""
 
 from pathlib import Path

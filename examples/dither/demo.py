@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Create an integer ramp and verify the dither plugin's two implementations."""
 
 import argparse

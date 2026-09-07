@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Shared native targets and workspace-local dependencies for Odin builds."""
 
 from ctypes.util import find_library

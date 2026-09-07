@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Minimal source trees for exercising the real standalone build entry point."""
 
 from pathlib import Path

@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
 package vapoursynth_link
 
 import "core:c"

@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Build this Odin project; uv supplies Python dependencies, Odin supplies the compiler."""
 
 import argparse

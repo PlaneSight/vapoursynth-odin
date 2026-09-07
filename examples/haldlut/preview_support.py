@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Local synthetic scenes and output helpers for preview.vpy."""
 
 from pathlib import Path

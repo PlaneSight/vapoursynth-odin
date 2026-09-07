@@ -3,7 +3,6 @@ site_name = "VapourSynth bindings for Odin"
 site_description = "Odin bindings for VapourSynth core API 4.2 and VSScript API 4.2: declarations, ownership, ABI compatibility, and usage examples."
 docs_dir = "docs/content"
 site_dir = ".venv/site"
-copyright = "LGPL-2.1-or-later · VapourSynth for Odin"
 extra_css = ["assets/stylesheets/extra.css"]
 nav = [
   { "Home" = "index.md" },
@@ -44,7 +43,7 @@ nav = [
     { "Compatibility and upgrades" = "maintenance/compatibility.md" },
     { "Build and publish these docs" = "maintenance/documentation.md" },
     { "Troubleshooting" = "troubleshooting.md" },
-    { "License and provenance" = "license.md" },
+    { "Header provenance" = "license.md" },
   ] },
 ]
 

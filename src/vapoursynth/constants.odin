@@ -1,6 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
 // Translated from VapourSynth R76, commit aa7e83a0aaf87477b5e0fc13c5b97c5aa15a06b7.
-// Copyright (c) 2012-2026 Fredrik Mellbin. See LICENSE and tests/headers/.
 package vapoursynth
 
 import "core:c"

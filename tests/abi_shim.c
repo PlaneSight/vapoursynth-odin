@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
 #include "VapourSynth4.h"
 #include "VSScript4.h"
 

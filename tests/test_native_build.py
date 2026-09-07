@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Native target selection and isolated stb dependency preparation boundaries."""
 
 from pathlib import Path

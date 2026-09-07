@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Preview an actual frame-processing filter against its RGB8 source."""
 
 from pathlib import Path

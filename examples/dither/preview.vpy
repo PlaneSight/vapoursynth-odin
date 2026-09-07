@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Inspect eight-bit rounding noise and one-, two-, and four-bit color quantization."""
 
 from pathlib import Path

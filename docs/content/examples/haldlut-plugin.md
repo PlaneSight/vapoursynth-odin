@@ -83,10 +83,7 @@ The [build guide](../guides/previewing-examples.md#one-build-command-on-every-su
 explains target selection and platform prerequisites.
 
 The optional packaging lesson uses `uv build` inside `examples/haldlut`.
-See [Python environments and wheels](../guides/python-packaging.md) for native
-dependency notices and automatic discovery. The binary statically links stb_image;
-its bundled third-party notice accompanies redistribution, as described in
-[license and provenance](../license.md).
+See [example packaging](../guides/python-packaging.md) for wheel builds and automatic discovery.
 
 ## Import an Odin vendor library
 

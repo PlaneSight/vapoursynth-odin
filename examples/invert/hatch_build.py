@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Package only this project's native plugin, using its normal build entry point."""
 
 from pathlib import Path

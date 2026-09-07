@@ -24,7 +24,7 @@ uv build
 ```
 
 The local source distribution includes the example's sources, build files, and
-license notices. Its wheel hook calls the same `build.py` entry point and includes
+build configuration. Its wheel hook calls the same `build.py` entry point and includes
 one native library under `vapoursynth/plugins/<distribution_name>/`, following
 [VapourSynth's packaging convention](https://www.vapoursynth.com/doc/packaging.html).
 The wheel distributes that compiled example, not the Odin binding packages.
@@ -32,8 +32,7 @@ The wheel distributes that compiled example, not the Odin binding packages.
 The distribution name comes from `[project].name`; the library filename comes
 from `[tool.odin].name`. The hook gives the wheel a native platform tag and
 packages only the resulting library. Odin and the platform's native toolchain
-remain build prerequisites. Hald additionally uses Odin's bundled stb library;
-retain the corresponding third-party notices when distributing it.
+remain build prerequisites. Hald additionally uses Odin's bundled stb library.
 
 An installed wheel is discovered by a new VapourSynth core with autoloading
 enabled. Avoid installing the example wheel into the environment used for its

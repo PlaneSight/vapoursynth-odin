@@ -14,7 +14,7 @@ uv run build.py --run
 ```
 
 You can copy this entire directory into a new location and run the same commands.
-It has its own Python pin, lockfile, license, sources, and build configuration.
+It has its own Python pin, lockfile, sources, and build configuration.
 The first build downloads the exact bindings commit and verifies the archive
 checksum declared in `pyproject.toml`; later builds reuse `.deps/`. Odin is an
 external prerequisite. Outputs go in `.build/`.

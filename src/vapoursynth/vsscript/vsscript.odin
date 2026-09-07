@@ -1,6 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later
 // Bindings to VapourSynth R76 include/VSScript4.h, with VSSCRIPT_USE_API_42.
-// Upstream copyright (c) 2013-2020 Fredrik Mellbin.
 package vsscript
 
 import "core:c"

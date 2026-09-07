@@ -154,7 +154,7 @@ members, version constants, and runtime requirements may change.
 1. Select an upstream release and immutable commit. Read its public headers and
    release notes, including the preprocessor defaults and experimental sections.
 2. Replace the reference headers with unmodified copies from that commit. Update
-   `tests/headers/README.md` and [license provenance](../license.md) together.
+   `tests/headers/README.md` and [header provenance](../license.md) together.
 3. Compare the complete declarations: constants, enum values, callbacks, structs,
    table ordering, optional fields, and exported entry points. Preserve the
    distinction between core, script, and graph APIs.

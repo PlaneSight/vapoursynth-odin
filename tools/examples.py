@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: LGPL-2.1-or-later
 """Build the Odin examples, check their output frames, or open them in VSView."""
 
 import argparse
