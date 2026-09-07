@@ -112,8 +112,8 @@ A useful failure experiment is to pass a deliberately nonexistent filename. The 
 
 ## Complete source
 
-```odin title="examples/core_info/main.odin"
---8<-- "examples/core_info/main.odin"
+```odin title="examples/core_info/src/main.odin"
+--8<-- "examples/core_info/src/main.odin"
 ```
 
 Continue with [typed map properties](properties.md), which adds the first object owned within the core's lifetime.

@@ -119,8 +119,8 @@ If the binary output appears truncated in your adaptation, look for a conversion
 
 ## Complete source
 
-```odin title="examples/properties/main.odin"
---8<-- "examples/properties/main.odin"
+```odin title="examples/properties/src/main.odin"
+--8<-- "examples/properties/src/main.odin"
 ```
 
 Continue with [requesting and reading a frame](easy-host.md), where maps become the arguments and results of a plugin invocation.

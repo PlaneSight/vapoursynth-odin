@@ -18,6 +18,22 @@ module is needed merely to load a native filter.
 
 ## Provision the development environment
 
+To distribute a single plugin, use its own project:
+
+```console
+cd examples/invert
+uv build
+```
+
+Its `hatch_build.py` hook compiles through `build.py` and includes one library
+under `vapoursynth/plugins/<distribution_name>/`. The filename comes from
+`[tool.odin].name`; the distribution name comes from `[project].name`. The hook
+uses Hatch's [build data](https://hatch.pypa.io/1.16/plugins/build-hook/reference/)
+to mark the wheel as native and include only the selected library. The source
+distribution includes the local sources and build files. Read the
+[scaffolding guide](previewing-examples.md#copy-an-example-into-your-own-project)
+before renaming a project or changing its pinned bindings.
+
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and the
 [Odin toolchain](../getting-started/installation.md), then run from the repository
 root:

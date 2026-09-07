@@ -12,19 +12,19 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from tools import examples
+from tools import examples, native_build
+from project_fixture import create_project
 
 
 class ExampleCommands(unittest.TestCase):
     def setUp(self):
         self.workspace = tempfile.TemporaryDirectory(prefix="odin example commands ")
         self.addCleanup(self.workspace.cleanup)
-        self.root = Path(self.workspace.name)
+        self.root = Path(self.workspace.name).resolve()
         sources = {name: self.root / "examples" / name for name in ("plugin", "invert")}
         for source in sources.values():
-            source.mkdir(parents=True)
-            (source / "plugin.odin").write_text("package example\n", encoding="utf-8")
-            (source / "demo.vpy").write_text("# preview\n", encoding="utf-8")
+            create_project(self.root, source.relative_to(self.root).as_posix())
+            (source / "preview.vpy").write_text("# preview\n", encoding="utf-8")
         for name, value in (("ROOT", self.root), ("EXAMPLES", sources)):
             patcher = patch.object(examples, name, value)
             patcher.start()
@@ -113,7 +113,7 @@ class ExampleCommands(unittest.TestCase):
                 result = examples.main(["preview", "plugin", "--no-build", "--", *forwarded])
         self.assertEqual(result, 0)
         self.assertEqual(run.call_args.args[0], [
-            sys.executable, "-m", "vsview", str(self.root / "examples" / "plugin" / "demo.vpy"), *forwarded,
+            sys.executable, "-m", "vsview", str(self.root / "examples" / "plugin" / "preview.vpy"), *forwarded,
         ])
         self.assertNotIn("shell", run.call_args.kwargs)
 
@@ -122,7 +122,7 @@ class ExampleCommands(unittest.TestCase):
             examples.check_examples(["plugin", "invert"])
         self.assertEqual(run.call_count, 2)
         for name, call in zip(("plugin", "invert"), run.call_args_list, strict=True):
-            self.assertEqual(call.args[0][-2:], ["_check-script", str(self.root / "examples" / name / "demo.vpy")])
+            self.assertEqual(call.args[0][-2:], ["_check-script", str(self.root / "examples" / name / "preview.vpy")])
             self.assertEqual(call.kwargs["timeout"], examples.CHECK_TIMEOUT)
             self.assertTrue(call.kwargs["check"])
 
@@ -159,7 +159,7 @@ class ExampleCommands(unittest.TestCase):
     def test_stb_is_prepared_only_for_hald_and_not_published(self):
         self.add_hald_source()
         dependency_flags = ("-collection:stb=private stb",)
-        with self.compiler_environment(), patch.object(examples, "prepare_stb_image", return_value=dependency_flags) as prepare:
+        with self.compiler_environment(), patch.object(native_build, "prepare_stb_image", return_value=dependency_flags) as prepare:
             with patch.object(examples.subprocess, "run", side_effect=self.write_artifact) as run:
                 artifacts = examples.build_examples(["plugin", "haldlut"])
         prepare.assert_called_once()
@@ -176,7 +176,7 @@ class ExampleCommands(unittest.TestCase):
         outputs.mkdir(parents=True)
         for name in ("plugin", "haldlut"):
             (outputs / f"{name}.dll").write_bytes(b"previous build")
-        with self.compiler_environment(), patch.object(examples, "prepare_stb_image", side_effect=RuntimeError("missing cc")):
+        with self.compiler_environment(), patch.object(native_build, "prepare_stb_image", side_effect=RuntimeError("missing cc")):
             with patch.object(examples.subprocess, "run", side_effect=self.write_artifact):
                 with self.assertRaisesRegex(RuntimeError, "missing cc"):
                     examples.build_examples(["plugin", "haldlut"])
@@ -202,16 +202,17 @@ class ExampleCommands(unittest.TestCase):
         self.assertIn("output 2: 8 x 4 RGB24, 3 frames; first and last frames passed", self.output.getvalue())
 
     def compiler_environment(self):
-        return patch.multiple(
-            examples,
-            shutil=unittest.mock.Mock(which=unittest.mock.Mock(return_value="odin compiler.exe")),
-            sysconfig=unittest.mock.Mock(get_platform=unittest.mock.Mock(return_value="win-amd64")),
-        )
+        from contextlib import ExitStack
+
+        stack = ExitStack()
+        stack.enter_context(patch("shutil.which", return_value="odin compiler.exe"))
+        stack.enter_context(patch.object(examples.sysconfig, "get_platform", return_value="win-amd64"))
+        return stack
+
 
     def add_hald_source(self):
         source = self.root / "examples" / "haldlut"
-        source.mkdir(parents=True)
-        (source / "plugin.odin").write_text("package haldlut\n", encoding="utf-8")
+        create_project(self.root, "examples/haldlut")
         examples.EXAMPLES["haldlut"] = source
 
     @staticmethod

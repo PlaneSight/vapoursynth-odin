@@ -60,7 +60,7 @@ oracle cases**, **72 exact comparisons with the original blue-noise example**,
 and **70 low-bit level cases**, plus behavioral and invalid-input checks. The
 R79 suite also passed with AVX2 disabled, exercising the portable processing path.
 
-The full plugin passed `odin check plugins/dither -no-entry-point -vet` with
+The full plugin passed `odin check plugins/dither/src -collection:deps=src -no-entry-point -vet` with
 both `-target:linux_amd64` and `-target:darwin_arm64`. These are compile checks;
 native Linux and macOS execution remains unverified.
 

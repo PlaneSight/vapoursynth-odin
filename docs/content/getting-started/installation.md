@@ -117,19 +117,19 @@ For a first run, pass the actual core library path explicitly:
 === "Windows"
 
     ```powershell
-    odin run examples/core_info -- "C:/path/to/libvapoursynth.dll"
+    odin run examples/core_info/src -collection:deps=src -- "C:/path/to/libvapoursynth.dll"
     ```
 
 === "Linux"
 
     ```console
-    odin run examples/core_info -- /absolute/path/to/libvapoursynth.so
+    odin run examples/core_info/src -collection:deps=src -- /absolute/path/to/libvapoursynth.so
     ```
 
 === "macOS"
 
     ```console
-    odin run examples/core_info -- /absolute/path/to/libvapoursynth.dylib
+    odin run examples/core_info/src -collection:deps=src -- /absolute/path/to/libvapoursynth.dylib
     ```
 
 These commands run from this repository's root. Replace the example path with an existing library for your machine. Passing the full path removes ambiguity about which core you selected, but its dependent libraries must still be available to the operating system loader.
@@ -148,7 +148,7 @@ From the repository root, these checks require no VapourSynth runtime:
 odin check src/vapoursynth -no-entry-point -vet
 odin check src/vapoursynth/easy -no-entry-point -vet
 odin check src/vapoursynth/vsscript -no-entry-point -vet
-odin check examples/core_info -vet
+odin check examples/core_info/src -collection:deps=src -vet
 ```
 
 Use `-no-entry-point` for library packages because they do not define `main`. The example is an executable package, so it has an entry point.

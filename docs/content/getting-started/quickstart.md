@@ -26,7 +26,7 @@ The program prints the runtime's version string, numeric core version, reported 
 This is the source of the checked-in `core_info` example. Its relative imports work in the repository. For your own application, use the collection imports described in [installation](installation.md#add-the-packages-to-your-application).
 
 ```odin
---8<-- "examples/core_info/main.odin"
+--8<-- "examples/core_info/src/main.odin"
 ```
 
 There are four decisions in this small program that remain useful as an application grows.

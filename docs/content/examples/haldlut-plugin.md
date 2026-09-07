@@ -37,7 +37,7 @@ uv run tools/render_showcase.py
 ```
 
 The renderer builds the plugins and exports these nodes from the checked-in
-`examples/haldlut/demo.vpy` into `.build/showcase`, alongside the other plugin
+`examples/haldlut/preview.vpy` into `.build/showcase`, alongside the other plugin
 comparisons and a record of the run. Each documentation build regenerates the
 same images. To inspect the script interactively:
 
@@ -139,7 +139,7 @@ with graded.get_frame(0) as frame:
 ```
 
 When using an installed example wheel, omit `LoadPlugin` and let VapourSynth
-discover the native binary. The checked-in `demo.vpy` creates the shaded-sphere
+discover the native binary. The checked-in `preview.vpy` creates the shaded-sphere
 scene shown above, with named original, graded, and side-by-side output nodes.
 
 ```python
@@ -248,8 +248,8 @@ interpolation result.
 
 ??? info "Complete tetrahedral interpolation"
 
-    ```odin title="examples/haldlut/interpolation.odin"
-    --8<-- "examples/haldlut/interpolation.odin"
+    ```odin title="examples/haldlut/src/interpolation.odin"
+    --8<-- "examples/haldlut/src/interpolation.odin"
     ```
 
 ## Bound decoding before handing memory to stb_image
@@ -319,18 +319,18 @@ the LUT file. See [testing](../maintenance/testing.md) for the runtime options.
 
 ??? info "Complete loader and validation"
 
-    ```odin title="examples/haldlut/png.odin"
-    --8<-- "examples/haldlut/png.odin"
+    ```odin title="examples/haldlut/src/png.odin"
+    --8<-- "examples/haldlut/src/png.odin"
     ```
 
 ??? info "Complete plugin lifecycle and row processing"
 
-    ```odin title="examples/haldlut/plugin.odin"
-    --8<-- "examples/haldlut/plugin.odin"
+    ```odin title="examples/haldlut/src/plugin.odin"
+    --8<-- "examples/haldlut/src/plugin.odin"
     ```
 
 ??? info "Runnable gradient preview"
 
-    ```python title="examples/haldlut/demo.vpy"
-    --8<-- "examples/haldlut/demo.vpy"
+    ```python title="examples/haldlut/preview.vpy"
+    --8<-- "examples/haldlut/preview.vpy"
     ```

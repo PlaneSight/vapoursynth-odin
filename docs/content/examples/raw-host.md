@@ -115,8 +115,8 @@ If invocation fails after you modify arguments, print `mapGetError` before destr
 
 ## Complete source
 
-```odin title="examples/host/main.odin"
---8<-- "examples/host/main.odin"
+```odin title="examples/host/src/main.odin"
+--8<-- "examples/host/src/main.odin"
 ```
 
 Continue with [the identity plugin](identity-plugin.md), where VapourSynth supplies the API table to your code.

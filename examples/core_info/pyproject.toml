@@ -1,0 +1,22 @@
+[project]
+name = "vapoursynth-odin-core-info"
+version = "0.1.0"
+description = "Standalone Odin VapourSynth core info host"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "LGPL-2.1-or-later"
+license-files = ["LICENSE", "THIRD_PARTY_LICENSES.md"]
+dependencies = ["vapoursynth>=76,<80"]
+
+[tool.uv]
+package = false
+
+[tool.odin]
+name = "core_info"
+kind = "host"
+stb = false
+
+[tool.odin.bindings]
+repository = "PlaneSight/vapoursynth-odin"
+revision = "f292b7c6423a9c641c47a43237e23fe7ec73e9c9"
+sha256 = "bb13ea9ff7d4b4f6b12d8e3a46b1827d7e7e24094af284d9dcdb6e9104a15d23"

@@ -10,7 +10,7 @@ import struct
 import zlib
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parent
 
 
 def identity(red: float, green: float, blue: float) -> tuple[float, float, float]:

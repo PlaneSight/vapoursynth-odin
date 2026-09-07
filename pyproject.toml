@@ -30,6 +30,7 @@ include = [
   "/plugins/",
   "/tests/test_packaging.py",
   "/tests/test_native_build.py",
+  "/tests/project_fixture.py",
   "/tools/native_build.py",
   "/tools/packagecheck.py",
   "/tools/hatch_build.py",

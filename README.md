@@ -49,6 +49,20 @@ uv run tools/run_host.py easy_host
 
 ## Use the bindings
 
+Each example can also be copied into its own repository. From its directory:
+
+```console
+cd examples/invert
+uv run build.py --check
+uv run --group preview vsview preview.vpy
+uv build
+```
+
+The project includes its own lockfile, preview, packaging hook, and licenses.
+Its build downloads and verifies a pinned bindings archive; it does not require
+the original checkout. See the [scaffolding guide](docs/content/guides/previewing-examples.md#copy-an-example-into-your-own-project)
+for dependency overrides and the values to rename.
+
 Place this repository at `vendor/vapoursynth-odin` and point an Odin collection
 at its `src` directory:
 

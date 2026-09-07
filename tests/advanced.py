@@ -43,7 +43,7 @@ def build_plugin(odin: str, name: str) -> Path:
     with tempfile.TemporaryDirectory(prefix="compile-", dir=BUILD) as directory:
         dependencies = prepare_stb_image(compiler, target, Path(directory)) if name == "haldlut" else ()
         command = [
-            compiler, "build", str(ROOT / "examples" / name), "-vet", "-o:speed",
+            compiler, "build", str(ROOT / "examples" / name / "src"), f"-collection:deps={ROOT / 'src'}", "-vet", "-o:speed",
             "-build-mode:dll", *target.flags, *dependencies, f"-out:{output}",
         ]
         run(command)
@@ -92,7 +92,7 @@ def equal_pixels(actual, expected, label: str, tolerance: int = 0) -> None:
 
 
 def read_noise_tile() -> list[int]:
-    text = (ROOT / "examples" / "dither" / "blue_noise.odin").read_text(encoding="utf-8")
+    text = (ROOT / "examples" / "dither" / "src" / "blue_noise.odin").read_text(encoding="utf-8")
     declaration = re.search(r"BLUE_NOISE[^{}]*\{([^}]+)\}", text, re.DOTALL)
     require(declaration is not None, "Cannot locate the BLUE_NOISE rank array")
     body = re.sub(r"//[^\n]*", "", declaration.group(1))

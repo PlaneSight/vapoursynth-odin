@@ -48,7 +48,7 @@ def render_script(name: str, destination: Path) -> None:
     """Run one script in its own process and read its registered output nodes."""
     import vapoursynth as vs
 
-    script = EXAMPLES[name] / "demo.vpy"
+    script = EXAMPLES[name] / "preview.vpy"
     vs.clear_outputs()
     try:
         variables = runpy.run_path(str(script))

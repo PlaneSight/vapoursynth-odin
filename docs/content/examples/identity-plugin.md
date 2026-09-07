@@ -11,7 +11,7 @@ uv run --group preview tools/examples.py preview plugin
 ```
 
 This builds the plugin into `.build/examples` and opens the checked-in
-`examples/plugin/demo.vpy` in VSView. Output `0` compares source and result side
+`examples/plugin/preview.vpy` in VSView. Output `0` compares source and result side
 by side; outputs `1` and `2` show them separately. They should match exactly.
 The [preview guide](../guides/previewing-examples.md) explains the optional
 dependency group and headless checks.
@@ -161,14 +161,14 @@ The complete example suite additionally checks that Identity preserves every pix
 
 ## Complete source
 
-```odin title="examples/plugin/plugin.odin"
---8<-- "examples/plugin/plugin.odin"
+```odin title="examples/plugin/src/plugin.odin"
+--8<-- "examples/plugin/src/plugin.odin"
 ```
 
 ??? example "Preview and documentation script"
 
-    ```python title="examples/plugin/demo.vpy"
-    --8<-- "examples/plugin/demo.vpy"
+    ```python title="examples/plugin/preview.vpy"
+    --8<-- "examples/plugin/preview.vpy"
     ```
 
 Continue with [a complete invert filter](invert-plugin.md), which retains this registration pattern and adds scheduled pixel processing.

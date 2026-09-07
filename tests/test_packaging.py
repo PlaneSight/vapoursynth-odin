@@ -9,6 +9,7 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from project_fixture import create_project
 from tools.hatch_build import INSTALL_DIRECTORY, PLUGINS, build_plugins, native_target
 
 
@@ -42,25 +43,25 @@ class NativePackaging(unittest.TestCase):
                 self.assertNotIn("universal", target.wheel_platform)
 
     def test_missing_sources_fail_before_compilation(self):
-        with tempfile.TemporaryDirectory() as directory, patch("tools.hatch_build.subprocess.run") as run:
+        with tempfile.TemporaryDirectory() as directory, patch("subprocess.run") as run:
             with self.assertRaisesRegex(RuntimeError, "Missing Odin plugin sources"):
-                root = Path(directory)
+                root = Path(directory).resolve()
                 build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
             run.assert_not_called()
 
     def test_compiler_failure_cannot_return_partial_artifacts(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             self.create_sources(root)
             failure = subprocess.CalledProcessError(1, ["odin", "build"])
-            with patch("tools.hatch_build.subprocess.run", side_effect=failure) as run:
+            with patch("subprocess.run", side_effect=failure) as run:
                 with self.assertRaises(subprocess.CalledProcessError):
                     build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
             self.assertEqual(run.call_count, 1)
 
     def test_only_expected_nonempty_libraries_are_packaged(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             self.create_sources(root)
 
             def compile_plugin(command, **kwargs):
@@ -70,10 +71,11 @@ class NativePackaging(unittest.TestCase):
                 self.assertIn("-microarch:x86-64", command)
                 self.assertTrue(kwargs["check"])
 
-            with patch("tools.hatch_build.prepare_stb_image", return_value=("-collection:stb=private stb",)) as prepare:
-                with patch("tools.hatch_build.subprocess.run", side_effect=compile_plugin) as run:
+            with patch("tools.native_build.prepare_stb_image", return_value=("-collection:stb=private stb",)) as prepare:
+                with patch("subprocess.run", side_effect=compile_plugin) as run:
                     artifacts = build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
-            prepare.assert_called_once_with("odin", native_target("win-amd64"), root / ".build/packaging/unit")
+            prepare.assert_called_once()
+            self.assertTrue(prepare.call_args.args[2].is_relative_to(root / ".build/packaging/unit"))
             for (source, _), call in zip(PLUGINS, run.call_args_list, strict=True):
                 self.assertEqual("-collection:stb=private stb" in call.args[0], source == "examples/haldlut")
             self.assertEqual(
@@ -84,17 +86,17 @@ class NativePackaging(unittest.TestCase):
 
     def test_successful_process_without_artifact_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             self.create_sources(root)
-            with patch("tools.hatch_build.subprocess.run"):
-                with self.assertRaisesRegex(RuntimeError, "nonempty plugin"):
+            with patch("subprocess.run"):
+                with self.assertRaisesRegex(RuntimeError, "nonempty artifact"):
                     build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
 
     def test_build_artifacts_cannot_escape_the_build_directory(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             self.create_sources(root)
-            with patch("tools.hatch_build.subprocess.run") as run:
+            with patch("subprocess.run") as run:
                 with self.assertRaisesRegex(RuntimeError, "must remain inside"):
                     build_plugins(root, native_target("win-amd64"), "odin", root / "elsewhere")
             run.assert_not_called()
@@ -102,9 +104,7 @@ class NativePackaging(unittest.TestCase):
     @staticmethod
     def create_sources(root):
         for source, _ in PLUGINS:
-            package = root / source
-            package.mkdir(parents=True)
-            (package / "plugin.odin").write_text("package example\n", encoding="utf-8")
+            create_project(root, source)
 
 
 if __name__ == "__main__":

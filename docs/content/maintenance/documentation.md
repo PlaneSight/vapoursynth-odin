@@ -116,7 +116,7 @@ run the link checker after changing headings or moving a page.
 The tutorials and reference include repository files through
 `pymdownx.snippets`. Its base path is the repository root and missing paths are
 errors. For example, the first-program page includes the actual
-`examples/core_info/main.odin` inside an Odin code fence.
+`examples/core_info/src/main.odin` inside an Odin code fence.
 
 This gives the reader the program that is built and tested. Keep tutorial prose
 beside the inclusion to explain decisions, expected output, ownership, and
@@ -129,7 +129,7 @@ complete Python demonstrations when adding or changing them.
 
 ### Generate illustrations from the real scripts
 
-Identity, invert, dither, Hald CLUT, and Dither Plus each have a checked-in `demo.vpy` used by
+Identity, invert, dither, Hald CLUT, and Dither Plus each have a checked-in `preview.vpy` used by
 both VSView and the documentation renderer. Each script publishes named output
 nodes and a `DOCUMENTATION_OUTPUTS` mapping selecting the nodes and filenames to
 export. Shared input construction and display conversions live with the examples.

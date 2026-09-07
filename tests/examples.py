@@ -103,7 +103,7 @@ def build_examples(odin: str) -> dict[str, Path]:
         is_plugin = name in PLUGINS
         suffix = plugin_suffix if is_plugin else executable_suffix
         output = BUILD / f"{name}{suffix}"
-        command = [executable, "build", str(ROOT / "examples" / name), "-vet", f"-out:{output}"]
+        command = [executable, "build", str(ROOT / "examples" / name / "src"), f"-collection:deps={ROOT / 'src'}", "-vet", f"-out:{output}"]
         if is_plugin:
             command.append("-build-mode:dll")
         print(f"Building examples/{name}", flush=True)

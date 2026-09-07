@@ -32,7 +32,7 @@ rules. It is not a search through the repository. To remove ambiguity, pass an
 absolute path to the dynamic host example:
 
 ```console
-odin run examples/core_info -- /absolute/path/to/core-library
+odin run examples/core_info/src -collection:deps=src -- /absolute/path/to/core-library
 ```
 
 Use `libvapoursynth.dll`, `libvapoursynth.so`, or `libvapoursynth.dylib` as

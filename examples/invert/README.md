@@ -1,29 +1,64 @@
 # Invert filter plugin
 
+## Build this project
+
+Install [Odin](https://odin-lang.org/docs/install/) and
+[uv](https://docs.astral.sh/uv/getting-started/installation/), then run here:
+
+```console
+uv run build.py
+uv run build.py --check
+uv run --group preview vsview preview.vpy
+uv build
+```
+
+You can copy this entire directory into a new location and run the same commands.
+It has its own Python pin, lockfile, license, sources, and build configuration.
+The first build downloads the exact bindings commit and verifies the archive
+checksum declared in `pyproject.toml`; later builds reuse `.deps/`. Odin is an
+external prerequisite. Outputs go in `.build/`; distributions go in `dist/`.
+Both generated directories and the dependency cache are ignored by Git.
+
+`src/` contains the Odin implementation. `build.py` maps its `deps:vapoursynth`
+imports to the pinned bindings and reuses that dependency's cross-platform
+native build support. To test local bindings, pass
+`uv run build.py --bindings /absolute/path/to/vapoursynth-odin`.
+
+To turn this example into your own project, edit `[project]` and `[tool.odin]`
+in `pyproject.toml`, then run `uv lock`.
+Also change the plugin identifier, namespace, and display name in
+`src/plugin.odin`, and update the matching names in `preview.vpy`.
+The wheel hook reads the distribution name and native filename from the manifest.
+`preview_support.py` and any generators are local, editable parts of this example.
+Close the viewer before rebuilding a loaded library.
+
+## Walkthrough
+
 This example implements a complete video filter with the raw API: plugin
 registration, argument validation, instance ownership, dependency declarations,
 the frame activation protocol, and processing planar pixels with row strides.
 
-Build and preview from the repository root:
+Build and preview from this directory:
 
 ```console
-uv run --group preview tools/examples.py preview invert
+uv run build.py
+uv run --group preview vsview preview.vpy
 ```
 
-The command builds the plugin under `.build/examples` and opens [demo.vpy](demo.vpy)
+The build command builds the plugin under `.build` and opens [preview.vpy](preview.vpy)
 in VSView. The optional group installs the viewer and Qt and requires Python
 3.12–3.14. Output `0` compares the synthetic source and inversion side by side;
 outputs `1` and `2` expose them separately. The documentation renders the same
-nodes. See the [preview guide](../../docs/content/guides/previewing-examples.md) for
+nodes. See the [preview guide](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/guides/previewing-examples.md) for
 headless checks, multiple examples, and generated images.
 
 To build without opening a viewer:
 
 ```console
-uv run tools/examples.py build invert
+uv run build.py
 ```
 
-The command selects the native architecture and library extension automatically.
+The build command selects the native architecture and library extension automatically.
 The plugin requires VapourSynth core API 4.2 and links to the platform C runtime
 for `malloc`/`free`.
 
@@ -36,13 +71,13 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/examples/invert{suffix}").resolve()))
+vs.core.std.LoadPlugin(path=str(Path(f".build/invert{suffix}").resolve()))
 source = vs.core.std.BlankClip(width=640, height=360, format=vs.RGB24,
                              color=[32, 96, 160], length=24)
 vs.core.odin_invert.Invert(source).set_output()
 ```
 
-The checked-in `demo.vpy` uses `.build/examples/invert` and selects the platform
+The checked-in `preview.vpy` uses `.build/invert` and selects the platform
 extension automatically. Its source is a generated colorful scene rather than
 the constant clip above, so no input video file is required.
 

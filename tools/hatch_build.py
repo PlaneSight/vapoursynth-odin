@@ -3,7 +3,7 @@
 
 from pathlib import Path
 import shutil
-import subprocess
+import runpy
 import sys
 import sysconfig
 import tempfile
@@ -11,7 +11,7 @@ import tempfile
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from tools.native_build import NativeTarget, native_target, prepare_stb_image
+from tools.native_build import NativeTarget, native_target
 
 
 PLUGINS = (
@@ -28,7 +28,7 @@ def build_plugins(root: Path, target: NativeTarget, odin: str, build_directory: 
     """Return explicit artifact-to-wheel paths after every compiler call succeeds."""
     sources = [(root / source, name) for source, name in PLUGINS]
     for source, _ in sources:
-        if not source.is_dir() or not any(source.glob("*.odin")):
+        if not (source / "build.py").is_file() or not any((source / "src").glob("*.odin")):
             raise RuntimeError(f"Missing Odin plugin sources: {source}")
 
     if not build_directory.resolve().is_relative_to((root / ".build" / "packaging").resolve()):
@@ -36,14 +36,10 @@ def build_plugins(root: Path, target: NativeTarget, odin: str, build_directory: 
     build_directory.mkdir(parents=True, exist_ok=True)
     artifacts: dict[str, str] = {}
     for source, name in sources:
-        dependencies = prepare_stb_image(odin, target, build_directory) if source.name == "haldlut" else ()
         artifact = build_directory / f"{name}{target.extension}"
-        command = [
-            odin, "build", str(source), "-build-mode:dll", "-o:speed", "-vet",
-            *target.flags, *dependencies, f"-out:{artifact}",
-        ]
         print(f"Building {source.relative_to(root)} for {target.odin_target}", flush=True)
-        subprocess.run(command, cwd=root, check=True, timeout=300)
+        project = runpy.run_path(str(source / "build.py"))
+        project["build"](odin, bindings=root, output=artifact, target=target)
         if not artifact.is_file() or artifact.stat().st_size == 0:
             raise RuntimeError(f"Odin did not produce a nonempty plugin: {artifact}")
         artifacts[str(artifact)] = f"{INSTALL_DIRECTORY}/{artifact.name}"

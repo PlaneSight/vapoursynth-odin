@@ -1,19 +1,54 @@
 # Blue-noise bit-depth reduction
 
+## Build this project
+
+Install [Odin](https://odin-lang.org/docs/install/) and
+[uv](https://docs.astral.sh/uv/getting-started/installation/), then run here:
+
+```console
+uv run build.py
+uv run build.py --check
+uv run --group preview vsview preview.vpy
+uv build
+```
+
+You can copy this entire directory into a new location and run the same commands.
+It has its own Python pin, lockfile, license, sources, and build configuration.
+The first build downloads the exact bindings commit and verifies the archive
+checksum declared in `pyproject.toml`; later builds reuse `.deps/`. Odin is an
+external prerequisite. Outputs go in `.build/`; distributions go in `dist/`.
+Both generated directories and the dependency cache are ignored by Git.
+
+`src/` contains the Odin implementation. `build.py` maps its `deps:vapoursynth`
+imports to the pinned bindings and reuses that dependency's cross-platform
+native build support. To test local bindings, pass
+`uv run build.py --bindings /absolute/path/to/vapoursynth-odin`.
+
+To turn this example into your own project, edit `[project]` and `[tool.odin]`
+in `pyproject.toml`, then run `uv lock`.
+Also change the plugin identifier, namespace, and display name in
+`src/plugin.odin`, and update the matching names in `preview.vpy`.
+The wheel hook reads the distribution name and native filename from the manifest.
+`preview_support.py` and any generators are local, editable parts of this example.
+Close the viewer before rebuilding a loaded library.
+
+## Walkthrough
+
 `odin_dither.Dither` reduces constant-format 8–16-bit integer Gray, RGB, or YUV video to a selected effective depth from one bit through the input depth. Effective depths below eight use a normal eight-bit output format, with the quantized levels expanded across `0..255` for viewing. It uses a reproducible 64 × 64 void-and-cluster blue-noise rank tile, processes independent frames in parallel, and has an explicit sixteen-lane Odin SIMD implementation with matching scalar code and tails. An x64 binary automatically selects AVX2 when the CPU and operating system support it, with a portable fallback for other machines.
 
-This example builds on the [invert filter](../invert). It adds output-format negotiation, immutable per-instance lookup data, a selected row kernel, numerical contracts for quantization, vector memory access, and independent scalar/SIMD verification. It needs no external native library beyond VapourSynth and the platform C runtime.
+This example builds on the [invert filter](https://github.com/PlaneSight/vapoursynth-odin/blob/main/examples/invert). It adds output-format negotiation, immutable per-instance lookup data, a selected row kernel, numerical contracts for quantization, vector memory access, and independent scalar/SIMD verification. It needs no external native library beyond VapourSynth and the platform C runtime.
 
 ## Build and load
 
-For the interactive demonstration, run from the repository root:
+For the interactive demonstration, run from this directory:
 
 ```console
-uv run --group preview tools/examples.py preview dither
+uv run build.py
+uv run --group preview vsview preview.vpy
 ```
 
-The command builds `.build/examples/dither` with the platform's shared-library
-extension and launches [demo.vpy](demo.vpy) in VSView. The optional group requires
+The build command builds `.build/dither` with the platform's shared-library
+extension and launches [preview.vpy](preview.vpy) in VSView. The optional group requires
 Python 3.12–3.14 and adds VSView and Qt only when selected. The script compares
 nearest rounding with native dither using the same **20× display contrast gain**
 on both sides: output `0` is the comparison, `1` rounding, and `2` dither.
@@ -31,20 +66,20 @@ These views use `scale=1` to preserve black and white. One-bit RGB has two level
 per channel and therefore eight possible RGB combinations; it is not a
 two-color palette. Each plane uses a different phase of the dither tile.
 Documentation images are exported from these same nodes during each site build.
-See the [preview guide](../../docs/content/guides/previewing-examples.md) for headless checks
+See the [preview guide](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/guides/previewing-examples.md) for headless checks
 and image generation.
 
 To build the same optimized library without opening a viewer:
 
 ```console
-uv run tools/examples.py build dither
+uv run build.py
 ```
 
 This command selects the native target, output extension, and CPU baseline on
 every supported platform. On x64, the baseline is x86-64. Separate AVX2 row
 functions are selected only after checking runtime support, so loading the
 plugin does not require an AVX2-capable CPU. See the
-[build guide](../../docs/content/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+[build guide](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 for prerequisites.
 
 In a Python environment with VapourSynth installed:
@@ -56,7 +91,7 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/examples/dither{suffix}").resolve()))
+vs.core.std.LoadPlugin(path=str(Path(f".build/dither{suffix}").resolve()))
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.YUV420P16,
     color=[4096, 32768, 32768], length=24,
@@ -67,9 +102,9 @@ output.set_output()
 
 This uses conventional power-of-two scaling: limited-range black 4096 becomes 16, and neutral chroma 32768 becomes 128. The source's subsampling, dimensions, frame rate, frame count, and frame properties are preserved; only the integer sample depth and storage width may change.
 
-`uv run examples/dither/demo.py` creates a ramp and verifies scalar/SIMD parity.
+`uv run demo.py` creates a ramp and verifies scalar/SIMD parity.
 The script accepts `--plugin` for a nondefault plugin file. The checked-in
-`demo.vpy` uses the canonical `.build/examples` path through the preview command
+`preview.vpy` uses the canonical `.build` path through the preview command
 above. Both select the platform's shared-library extension automatically.
 
 ## Interface
@@ -165,10 +200,10 @@ The filter works in the stored integer code domain. It performs no transfer-func
 
 [generate_tile.py](generate_tile.py) is an original implementation of Robert Ulichney's [void-and-cluster method](https://cv.ulichney.com/papers/1993-void-cluster.pdf). It uses a toroidal Gaussian with sigma 1.5, a fixed seed, 410 initially occupied cells, and the full ranking sequence below and above 50% occupancy. The generator docstring describes the algorithm and numerical choices in detail.
 
-Rank generation uses SHA-256 ordering, a Decimal-generated kernel rounded to 40 fractional bits, and exact `int64` energy updates. It does not depend on a particular NumPy random generator or on floating-point FFT accumulation. NumPy is only needed for regeneration and spectral measurements; plugin builds use the checked-in [blue_noise.odin](blue_noise.odin).
+Rank generation uses SHA-256 ordering, a Decimal-generated kernel rounded to 40 fractional bits, and exact `int64` energy updates. It does not depend on a particular NumPy random generator or on floating-point FFT accumulation. NumPy is used by the preview, regeneration, and spectral measurements; plugin builds use the checked-in [blue_noise.odin](src/blue_noise.odin).
 
 ```console
-uv run examples/dither/generate_tile.py --check --metrics
+uv run generate_tile.py --check --metrics
 ```
 
 The rank SHA-256 over row-major little-endian `u16` values is:
@@ -191,7 +226,7 @@ Coordinates are local to each plane. Chroma planes use their actual subsampled d
 
 ## SIMD and memory layout
 
-[kernels.odin](kernels.odin) explicitly loads sixteen `u8` or `u16` samples and sixteen thresholds, clamps in `simd.u16x16`, and performs packed integer arithmetic. Effective depths below eight expand their quantized levels before the output is narrowed to sixteen `u8` or `u16` samples. Unaligned loads and stores avoid requiring vector alignment at a row or tile phase. A vector block runs only when sixteen active samples remain; the scalar tail handles the remaining zero to fifteen samples.
+[kernels.odin](src/kernels.odin) explicitly loads sixteen `u8` or `u16` samples and sixteen thresholds, clamps in `simd.u16x16`, and performs packed integer arithmetic. Effective depths below eight expand their quantized levels before the output is narrowed to sixteen `u8` or `u16` samples. Unaligned loads and stores avoid requiring vector alignment at a row or tile phase. A vector block runs only when sixteen active samples remain; the scalar tail handles the remaining zero to fifteen samples.
 
 Eight-bit input uses `u8` loads when reduced to a lower effective depth; higher input depths use `u16` loads. Frames at the same depth took the earlier identity path. Each plane uses independent input and output strides; only active samples are read and written. No padding contributes to the result.
 
@@ -220,7 +255,7 @@ feature. The constructor then selects one row function for the instance. Older
 x64 CPUs and other targets use the sixteen-lane portable implementation; a
 target without hardware SIMD selects scalar processing.
 
-[kernels_amd64.odin](kernels_amd64.odin) contains the x64-only selection code and
+[kernels_amd64.odin](src/kernels_amd64.odin) contains the x64-only selection code and
 `@(enable_target_feature="avx2")` entry points. The portable and AVX2 functions
 share one forced-inline row implementation, including tails and low-bit
 expansion. The default build remains `-microarch:x86-64`, and CPU detection does
@@ -253,7 +288,7 @@ uv run tests/advanced.py
 
 Use the runner's `--runtime` option when selecting an existing local Python runtime package directory. See the repository's testing documentation for the configured environment.
 
-The [performance comparison](../../docs/content/maintenance/dither-performance.md) records
+The [performance comparison](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/maintenance/dither-performance.md) records
 single-thread measurements against FMTConv's void-and-cluster mode across
 resolutions through 3840 × 2160 and several integer formats. Both filters use
 `core.num_threads = 1`. The report gives the exact parameters, build, runtime,

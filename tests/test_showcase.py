@@ -41,7 +41,7 @@ class RegisteredDocumentationOutputs(TemporaryProject):
         super().setUp()
         vs.clear_outputs()
         self.addCleanup(vs.clear_outputs)
-        self.script = self.root / "examples" / "fixture" / "demo.vpy"
+        self.script = self.root / "examples" / "fixture" / "preview.vpy"
         self.script.parent.mkdir(parents=True)
         self.enterContext(patch.object(render_showcase, "EXAMPLES", {"fixture": self.script.parent}))
 

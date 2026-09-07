@@ -26,9 +26,9 @@ peak; no additional spatial cutoff is applied. SHA-256 orders pixels from a
 fixed seed, avoiding dependence on a random library's permutation algorithm.
 Neither generation nor ranking uses FFT or floating-point accumulation.
 
-Usage from the repository root:
-    python examples/dither/generate_tile.py
-    python examples/dither/generate_tile.py --check --metrics
+Usage from this project directory:
+    uv run generate_tile.py
+    uv run generate_tile.py --check --metrics
 
 The spectral metric is the mean non-DC power below 1/8 cycle per pixel divided
 by mean power over all non-DC bins. A white permutation has expected value 1;
@@ -231,7 +231,7 @@ def print_metrics(ranks: np.ndarray) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--output", type=Path, default=Path(__file__).with_name("blue_noise.odin"))
+    parser.add_argument("--output", type=Path, default=Path(__file__).parent / "src" / "blue_noise.odin")
     parser.add_argument("--check", action="store_true", help="Regenerate and verify the existing file without writing.")
     parser.add_argument("--metrics", action="store_true", help="Report spectral measurements against white noise.")
     args = parser.parse_args()

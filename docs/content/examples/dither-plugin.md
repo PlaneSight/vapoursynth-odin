@@ -367,7 +367,7 @@ To exercise the portable fallback on an AVX2-capable machine, build a separate
 library with `-define:DITHER_ENABLE_AVX2=false`, keeping the normal baseline flag:
 
 ```console
-odin build examples/dither -build-mode:dll -o:speed -vet -microarch:x86-64 -define:DITHER_ENABLE_AVX2=false -out:.build/dither-portable.dll
+odin build examples/dither/src -collection:deps=src -build-mode:dll -o:speed -vet -microarch:x86-64 -define:DITHER_ENABLE_AVX2=false -out:.build/dither-portable.dll
 ```
 
 This Windows command assumes `.build` exists; use `.so` on Linux x64. Load that
@@ -413,18 +413,18 @@ establish equivalent noise patterns or a performance guarantee for other clips.
 
 ??? info "Complete row kernels"
 
-    ```odin title="examples/dither/kernels.odin"
-    --8<-- "examples/dither/kernels.odin"
+    ```odin title="examples/dither/src/kernels.odin"
+    --8<-- "examples/dither/src/kernels.odin"
     ```
 
 ??? info "Complete plugin lifecycle"
 
-    ```odin title="examples/dither/plugin.odin"
-    --8<-- "examples/dither/plugin.odin"
+    ```odin title="examples/dither/src/plugin.odin"
+    --8<-- "examples/dither/src/plugin.odin"
     ```
 
 ??? info "Complete x64 AVX2 selection and entry points"
 
-    ```odin title="examples/dither/kernels_amd64.odin"
-    --8<-- "examples/dither/kernels_amd64.odin"
+    ```odin title="examples/dither/src/kernels_amd64.odin"
+    --8<-- "examples/dither/src/kernels_amd64.odin"
     ```

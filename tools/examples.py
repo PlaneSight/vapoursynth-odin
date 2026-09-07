@@ -18,7 +18,7 @@ from collections.abc import Iterable, Sequence
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from tools.native_build import native_target, prepare_stb_image
+from tools.native_build import native_target
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,7 +48,7 @@ def build_examples(names: Iterable[str], odin: str = "odin") -> dict[str, Path]:
     target = native_target(sysconfig.get_platform())
     for name in selected:
         source = EXAMPLES[name]
-        if not source.is_dir() or not any(source.glob("*.odin")):
+        if not (source / "build.py").is_file() or not any((source / "src").glob("*.odin")):
             raise RuntimeError(f"Missing Odin example sources: {source}")
 
     build_directory = ROOT / ".build" / "examples"
@@ -61,13 +61,9 @@ def build_examples(names: Iterable[str], odin: str = "odin") -> dict[str, Path]:
         staging = Path(directory)
         for name, artifact in artifacts.items():
             output = staging / artifact.name
-            dependencies = prepare_stb_image(compiler, target, staging) if name == "haldlut" else ()
-            command = [compiler, "build", str(EXAMPLES[name]), "-vet", "-o:speed", *target.flags, *dependencies]
-            if name in PLUGIN_NAMES:
-                command.append("-build-mode:dll")
-            command.append(f"-out:{output}")
             print(f"Building {name}", flush=True)
-            subprocess.run(command, cwd=ROOT, check=True, timeout=BUILD_TIMEOUT)
+            project = runpy.run_path(str(EXAMPLES[name] / "build.py"))
+            project["build"](compiler, bindings=ROOT, output=output, target=target)
             if not output.is_file() or output.stat().st_size == 0:
                 raise RuntimeError(f"Odin did not produce a nonempty artifact: {output}")
         for name, artifact in artifacts.items():
@@ -78,11 +74,14 @@ def build_examples(names: Iterable[str], odin: str = "odin") -> dict[str, Path]:
                     f"Cannot replace {artifact}. Close any preview or process using this example, then rebuild."
                 ) from error
             print(f"Built {name}: {artifact}", flush=True)
+            local = EXAMPLES[name] / ".build" / artifact.name
+            local.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(artifact, local)
     return artifacts
 
 
 def example_scripts(names: Iterable[str]) -> list[Path]:
-    scripts = [EXAMPLES[name] / "demo.vpy" for name in selected_examples(names, plugins_only=True)]
+    scripts = [EXAMPLES[name] / "preview.vpy" for name in selected_examples(names, plugins_only=True)]
     for script in scripts:
         if not script.is_file():
             raise RuntimeError(f"Missing preview script: {script}")

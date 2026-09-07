@@ -39,7 +39,7 @@ extension, architecture, and optimized compiler flags automatically. The
 covers platform prerequisites. The inline Python program below and the preview
 script load this same artifact.
 
-A compile-only check is `odin check examples/invert -no-entry-point -vet`. The plugin requires core API 4.2 and the platform C runtime used by its instance allocation. VapourSynth API calls use the table supplied by the host.
+A compile-only check is `odin check examples/invert/src -collection:deps=src -no-entry-point -vet`. The plugin requires core API 4.2 and the platform C runtime used by its instance allocation. VapourSynth API calls use the table supplied by the host.
 
 Save the following as `invert_demo.py` in the repository root and run `uv run invert_demo.py`:
 
@@ -73,7 +73,7 @@ Expected output:
 RGB samples: [32, 96, 160] -> [223, 159, 95]
 ```
 
-The checked-in `examples/invert/demo.vpy` constructs the colorful synthetic scene
+The checked-in `examples/invert/preview.vpy` constructs the colorful synthetic scene
 shown above. It publishes the comparison at output `0`, source at `1`, and filtered
 result at `2`, selecting the platform extension under `.build/examples`
 automatically. The complete source of the script appears below.
@@ -240,10 +240,10 @@ A meaningful extension is to add an optional plane selection argument while leav
 
 ## Complete source
 
-```odin title="examples/invert/plugin.odin"
---8<-- "examples/invert/plugin.odin"
+```odin title="examples/invert/src/plugin.odin"
+--8<-- "examples/invert/src/plugin.odin"
 ```
 
-```python title="examples/invert/demo.vpy"
---8<-- "examples/invert/demo.vpy"
+```python title="examples/invert/preview.vpy"
+--8<-- "examples/invert/preview.vpy"
 ```

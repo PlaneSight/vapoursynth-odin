@@ -1,0 +1,41 @@
+[project]
+name = "vapoursynth-odin-dither-plus"
+version = "0.1.0"
+description = "Standalone Odin VapourSynth dither plus plugin"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "LGPL-2.1-or-later"
+license-files = ["LICENSE", "THIRD_PARTY_LICENSES.md"]
+dependencies = ["vapoursynth>=76,<80", "numpy>=2.5,<3"]
+
+[tool.uv]
+package = false
+
+[tool.odin]
+name = "dither_plus"
+kind = "plugin"
+stb = false
+
+[tool.odin.bindings]
+repository = "PlaneSight/vapoursynth-odin"
+revision = "f292b7c6423a9c641c47a43237e23fe7ec73e9c9"
+sha256 = "bb13ea9ff7d4b4f6b12d8e3a46b1827d7e7e24094af284d9dcdb6e9104a15d23"
+
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+preview = ["vsview==0.11.0"]
+
+[tool.uv.dependency-groups]
+preview = { requires-python = ">=3.12,<3.15" }
+
+[tool.hatch.build.targets.sdist]
+include = ["/src/", "/*.py", "/preview.vpy", "/pyproject.toml", "/uv.lock", "/.python-version", "/.gitignore", "/README.md", "/LICENSE", "/THIRD_PARTY_LICENSES.md"]
+
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
+
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "hatch_build.py"

@@ -1,4 +1,5 @@
 .build/
+.deps/
 *.exe
 *.pdb
 *.obj
@@ -14,5 +15,5 @@ __pycache__/
 /site/
 /.cache/
 /.zensical-pages.toml
-/dist/
+dist/
 /docs/content/assets/generated/

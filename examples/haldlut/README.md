@@ -1,5 +1,39 @@
 # Hald CLUT color-grading plugin
 
+## Build this project
+
+Install [Odin](https://odin-lang.org/docs/install/) and
+[uv](https://docs.astral.sh/uv/getting-started/installation/), then run here:
+
+```console
+uv run build.py
+uv run build.py --check
+uv run --group preview vsview preview.vpy
+uv build
+```
+
+You can copy this entire directory into a new location and run the same commands.
+It has its own Python pin, lockfile, license, sources, and build configuration.
+The first build downloads the exact bindings commit and verifies the archive
+checksum declared in `pyproject.toml`; later builds reuse `.deps/`. Odin is an
+external prerequisite. Outputs go in `.build/`; distributions go in `dist/`.
+Both generated directories and the dependency cache are ignored by Git.
+
+`src/` contains the Odin implementation. `build.py` maps its `deps:vapoursynth`
+imports to the pinned bindings and reuses that dependency's cross-platform
+native build support. To test local bindings, pass
+`uv run build.py --bindings /absolute/path/to/vapoursynth-odin`.
+
+To turn this example into your own project, edit `[project]` and `[tool.odin]`
+in `pyproject.toml`, then run `uv lock`.
+Also change the plugin identifier, namespace, and display name in
+`src/plugin.odin`, and update the matching names in `preview.vpy`.
+The wheel hook reads the distribution name and native filename from the manifest.
+`preview_support.py` and any generators are local, editable parts of this example.
+Close the viewer before rebuilding a loaded library.
+
+## Walkthrough
+
 This advanced example implements `core.odin_hald.HaldCLUT(clip, path,
 strength=1.0)`: an RGB color transform described by a Hald color lookup image.
 It demonstrates loading external data through Odin's bundled stb image binding,
@@ -8,27 +42,28 @@ tetrahedral interpolation, and processing three planar channels together.
 
 ## Build and generate a look
 
-For the complete visual demonstration, run from the repository root:
+For the complete visual demonstration, run from this directory:
 
 ```console
-uv run --group preview tools/examples.py preview haldlut
+uv run build.py
+uv run --group preview vsview preview.vpy
 ```
 
-This builds `.build/examples/haldlut` with the platform extension and opens
-[demo.vpy](demo.vpy) in VSView. The optional group requires Python 3.12–3.14 and
+This builds `.build/haldlut` with the platform extension and opens
+[preview.vpy](preview.vpy) in VSView. The optional group requires Python 3.12–3.14 and
 supplies VSView and Qt. The script creates a shaded-sphere scene and generates
 its level-4 RGB16 cinematic table under `.build/example-assets` automatically.
 Named outputs show the comparison (`0`), original (`1`), and graded result (`2`).
 The documentation uses images exported from those same output nodes; see the
-[preview guide](../../docs/content/guides/previewing-examples.md) for headless checks and
+[preview guide](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/guides/previewing-examples.md) for headless checks and
 rendering. No external video or PNG download is required.
 
 To build the native plugin and generate LUTs for the minimal Python program
 below, run the same commands on every supported platform:
 
 ```console
-uv run tools/examples.py build haldlut
-uv run examples/haldlut/generate.py
+uv run build.py
+uv run generate.py
 ```
 
 The build selects the native target and shared-library extension automatically.
@@ -41,13 +76,13 @@ missing, it compiles the bundled C sources into a private directory under
 `.build` with `cc` and `ar`. That fallback requires a native C compiler and
 archiver on Linux, or Xcode command line tools on macOS. Windows uses the
 libraries shipped with Odin. The compiler installation is left intact; see the
-[build guide](../../docs/content/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+[build guide](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 for platform prerequisites.
 
 The source imports `stb:image`. The build helper supplies the `stb` collection,
 mapping it to Odin's `vendor/stb` directory or a private copy with prepared
 libraries. This keeps the compiler installation intact while using its original
-bindings and C sources. The [walkthrough](../../docs/content/examples/haldlut-plugin.md#import-an-odin-vendor-library)
+bindings and C sources. The [walkthrough](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/examples/haldlut-plugin.md#import-an-odin-vendor-library)
 explains how to provide the collection in another build system.
 
 Runtime verification for this example was performed on Windows x64. The core
@@ -63,7 +98,7 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/examples/haldlut{suffix}").resolve()))
+vs.core.std.LoadPlugin(path=str(Path(f".build/haldlut{suffix}").resolve()))
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.RGB24, color=[32, 96, 160], length=24
 )
@@ -76,8 +111,8 @@ graded.set_output()
 ```
 
 The default generated cinematic table maps this input to `[32, 91, 158]`.
-The identity table returns `[32, 96, 160]`. The checked-in `demo.vpy` uses the
-canonical `.build/examples` plugin path and a 768 × 320 shaded-sphere scene;
+The identity table returns `[32, 96, 160]`. The checked-in `preview.vpy` uses the
+canonical `.build` plugin path and a 768 × 320 shaded-sphere scene;
 its comparison is 1536 × 320, with the original on the left. It converts source
 and graded RGB16 to RGB8 identically for display. The Python scene construction
 is demonstration input generation and is outside the native filter's performance
@@ -195,7 +230,7 @@ assumption that a VapourSynth worker thread has an Odin implicit context.
 ## Make your own reproducible look
 
 ```console
-python examples/haldlut/generate.py --level 8 --bits 16 --look cinematic --output .build/haldlut-custom
+uv run generate.py --level 8 --bits 16 --look cinematic --output .build/haldlut-custom
 ```
 
 The generator's `cinematic` function applies a modest contrast curve, lowers

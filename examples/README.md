@@ -21,6 +21,13 @@ learning sequence, while sharing the repository's build and preview commands.
 
 ## Build, check, and see the results
 
+To work on one example, enter its directory and run `uv run build.py`.
+Plugins support `uv run build.py --check`,
+`uv run --group preview vsview preview.vpy`, and `uv build`.
+Hosts support `uv run build.py --run`. These commands also work after copying
+the directory out of this checkout. See the
+[scaffolding guide](../docs/content/guides/previewing-examples.md#copy-an-example-into-your-own-project).
+
 With uv and Odin installed, run from the repository root:
 
 ```console

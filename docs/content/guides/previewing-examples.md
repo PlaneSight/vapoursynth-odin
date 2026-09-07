@@ -30,6 +30,82 @@ uv run tools/examples.py check --no-build
 
 ## One build command on every supported platform
 
+Each example is also a standalone project. To build just Invert:
+
+```console
+cd examples/invert
+uv run build.py
+uv run build.py --check
+uv run --group preview vsview preview.vpy
+uv build
+```
+
+These commands compile the plugin, request every preview output's first and last
+frames, open the named outputs, and build a source distribution and native wheel.
+Hosts use `uv run build.py --run` to execute their program. The same convention
+applies to the separate `plugins/dither` project.
+
+### Copy an example into your own project
+
+Copy the entire example directory, including dotfiles. Each project contains:
+
+| File or directory | Responsibility |
+| --- | --- |
+| `src/` | Editable Odin host or plugin implementation |
+| `build.py` | Native build, dependency provisioning, and headless execution |
+| `pyproject.toml` | Python dependencies, artifact name, and pinned bindings source |
+| `uv.lock`, `.python-version` | Reproducible Python environment |
+| `preview.vpy`, `preview_support.py` | Plugin graph, synthetic inputs, and named outputs |
+| `hatch_build.py` | Plugin wheel hook using the same native build |
+| `LICENSE`, `THIRD_PARTY_LICENSES.md` | Source and native dependency notices |
+| `.gitignore` | Excludes environments, dependency caches, binaries, and distributions |
+
+Hosts omit the preview and wheel hook. Dither includes its tile generator; Hald
+includes its LUT generator. These are local, editable parts of each project.
+There is no nested Git repository or dependency on sibling examples. You can
+omit existing `.venv`, `.deps`, `.build`, and `dist` directories when copying.
+
+The first build downloads a full-commit-pinned archive from
+[PlaneSight/vapoursynth-odin](https://github.com/PlaneSight/vapoursynth-odin),
+checks the manifest's SHA-256 checksum **before executing downloaded build
+support**, and extracts only the Odin sources, native helper, and license notices
+into `.deps/<commit>/`. Later builds reuse this cache. An incomplete cache
+produces an error: remove the indicated directory and retry. Python dependencies
+remain managed by uv, following its
+[project and lockfile conventions](https://docs.astral.sh/uv/guides/projects/).
+
+The artifact is `.build/<name>` with the native extension; plugin distributions
+go in `dist/`. Building a wheel from its source distribution may download the
+bindings again into the isolated build directory. The first build needs network
+access, and Odin and the platform's native development tools remain prerequisites.
+
+To rename a scaffold, edit `[project]` and `[tool.odin]` in `pyproject.toml`, then
+run `uv lock`. For plugins, also change the identifier, namespace, and display
+name in `src/plugin.odin` and the corresponding names in `preview.vpy`. Renaming
+the Python distribution alone cannot rename the VapourSynth filter API. Retain
+the license notices with copies and distributions.
+
+### Develop against the current bindings
+
+Local builds use the pinned dependency even inside this repository. To test
+another bindings checkout, explicitly select it:
+
+```console
+uv run build.py --bindings /absolute/path/to/vapoursynth-odin
+```
+
+The repository command `uv run tools/examples.py build` invokes the same local
+build functions with the current checkout supplied explicitly. It publishes
+both the `.build/examples/` artifacts used by repository tools and the local
+`.build/` artifacts used by previews. Root `uv build` packages the current
+bindings; a copied project's `uv build` uses its pinned dependency.
+
+`uv run tests/standalone.py --all` checks every project after copying it outside
+the checkout: dependency downloads, host execution or preview frames, plugin
+source distributions, wheels, and isolated wheel autoloading.
+
+### Native toolchain requirements
+
 Use the same `uv run tools/examples.py build` command on Windows x64, Linux
 x64 or ARM64, and macOS x64 or ARM64. It creates the output directory, selects
 the Odin target and library extension, enables optimized builds, and uses a
@@ -94,8 +170,8 @@ uv run --group preview tools/examples.py preview dither_plus
 ```
 
 The preview command builds its selected plugins before launching their checked-in
-`demo.vpy` files: `examples/<name>/demo.vpy` for the teaching examples and
-`plugins/dither/demo.vpy` for Dither Plus. To reuse binaries from a previous build:
+`preview.vpy` files: `examples/<name>/preview.vpy` for the teaching examples and
+`plugins/dither/preview.vpy` for Dither Plus. To reuse binaries from a previous build:
 
 ```console
 uv run --group preview tools/examples.py preview --no-build dither

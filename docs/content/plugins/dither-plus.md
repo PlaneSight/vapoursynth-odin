@@ -300,7 +300,7 @@ uv run tools/render_showcase.py
 uv run --group docs tools/docs.py build
 ```
 
-Both routes compile the actual plugin and execute `plugins/dither/demo.vpy`.
+Both routes compile the actual plugin and execute `plugins/dither/preview.vpy`.
 Its `DOCUMENTATION_OUTPUTS` mapping exports seven RGB8 outputs. They contain
 the five two-bit method comparisons and the two neutral RGB comparisons above.
 Generated PNGs are ignored by Git and recreated for each documentation build.
@@ -318,6 +318,6 @@ source script and output hashes; it fails if a graph cannot produce its frames.
 
 ??? example "Preview script used for these comparisons"
 
-    ```python title="plugins/dither/demo.vpy" linenums="1"
-    --8<-- "plugins/dither/demo.vpy"
+    ```python title="plugins/dither/preview.vpy" linenums="1"
+    --8<-- "plugins/dither/preview.vpy"
     ```

@@ -130,8 +130,8 @@ A focused extension is to use Gray16 with a nontrivial value such as 1000, switc
 
 ## Complete source
 
-```odin title="examples/easy_host/main.odin"
---8<-- "examples/easy_host/main.odin"
+```odin title="examples/easy_host/src/main.odin"
+--8<-- "examples/easy_host/src/main.odin"
 ```
 
 Continue with [the raw host](raw-host.md) to see the C-level operations that implement this workflow.

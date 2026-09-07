@@ -53,7 +53,7 @@ class NativeTargets(unittest.TestCase):
 class StbImagePreparation(unittest.TestCase):
     def setUp(self):
         directory = self.enterContext(tempfile.TemporaryDirectory(prefix="odin native build "))
-        self.root = Path(directory)
+        self.root = Path(directory).resolve()
         self.installed = self.root / "Odin installation"
         self.stb = self.installed / "vendor" / "stb"
         self.workspace = self.root / "private build"

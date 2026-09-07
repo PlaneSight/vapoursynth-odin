@@ -5,6 +5,17 @@ description: Reproduce ABI and ownership checks, introductory and advanced runti
 
 # Testing and verification
 
+The standalone acceptance check copies projects outside the checkout:
+
+```console
+uv run tests/standalone.py
+uv run tests/standalone.py --all
+```
+
+The default checks Invert. `--all` exercises all four hosts and five plugins,
+including dependency downloads, preview frames, source distributions, native
+wheels, and isolated wheel autoloading. It requires network access, uv, and Odin.
+
 The repository checks three different boundaries: whether Odin accepts the
 declarations, whether those declarations match the pinned C ABI, and whether
 the resulting programs behave correctly with a real VapourSynth runtime.
@@ -61,13 +72,13 @@ These checks do not load the core library:
 odin check src/vapoursynth -no-entry-point -vet
 odin check src/vapoursynth/easy -no-entry-point -vet
 odin check src/vapoursynth/vsscript -no-entry-point -vet
-odin check examples/core_info -vet
-odin check examples/properties -vet
-odin check examples/easy_host -vet
-odin check examples/host -vet
-odin check examples/plugin -no-entry-point -vet
-odin check examples/invert -no-entry-point -vet
-odin check examples/dither -no-entry-point -vet
+odin check examples/core_info/src -collection:deps=src -vet
+odin check examples/properties/src -collection:deps=src -vet
+odin check examples/easy_host/src -collection:deps=src -vet
+odin check examples/host/src -collection:deps=src -vet
+odin check examples/plugin/src -collection:deps=src -no-entry-point -vet
+odin check examples/invert/src -collection:deps=src -no-entry-point -vet
+odin check examples/dither/src -collection:deps=src -no-entry-point -vet
 ```
 
 The library packages and plugins have no application `main`; this is why those
@@ -93,8 +104,8 @@ To type-check another target, add Odin's `-target` option. For example:
 ```console
 odin check src/vapoursynth -no-entry-point -vet -target:windows_i386
 odin check src/vapoursynth/easy -no-entry-point -vet -target:linux_amd64
-odin check examples/invert -no-entry-point -vet -target:darwin_arm64
-odin check examples/dither -no-entry-point -vet -target:linux_amd64
+odin check examples/invert/src -collection:deps=src -no-entry-point -vet -target:darwin_arm64
+odin check examples/dither/src -collection:deps=src -no-entry-point -vet -target:linux_amd64
 ```
 
 These commands check the selected target's declarations and conditional code.
