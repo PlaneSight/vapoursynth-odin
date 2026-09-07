@@ -1,6 +1,6 @@
 ---
 title: Testing and verification
-description: Reproduce ABI and ownership checks, introductory and advanced runtime suites, dither benchmarks, and native wheel verification.
+description: Reproduce ABI and ownership checks, introductory and advanced runtime suites, and native wheel verification.
 ---
 
 # Testing and verification
@@ -284,52 +284,15 @@ preview output, including its animated fade and pan. This plugin has its own
 suite so adding algorithms does not turn the focused dither tutorial into a
 larger product interface.
 
-For a bounded single-thread comparison against the original example:
+## Historical performance measurements
 
-```console
-uv run tests/benchmark_dither_plus.py --no-build --json
-```
-
-The default workload is Gray16 and RGB48 to eight bits at 720p, 1080p, and 4K,
-using one VapourSynth worker and four queued requests. It records five runs of
-eight measured frames after two warmup frames, with method order rotated between
-runs. These short defaults are for a first comparison; increase `--frames` and
-`--runs` when assessing small differences. See the
-[plugin guide](../plugins/dither-plus.md) for algorithm contracts and the preview
-comparisons. Keep its measurements separate from the recorded FMTConv study,
-which covers the original blue-noise example.
-
-## Measure dither throughput
-
-The [FMTConv comparison](dither-performance.md) measures Odin's blue-noise filter
-against FMTConv's `dmode=8` void-and-cluster mode with `core.num_threads = 1`,
-across several integer formats and resolutions through 3840 × 2160. Follow its
-setup and reproduction commands to select the exact plugin binaries and matching
-code-range semantics. `tests/benchmark_fmtconv.py` records per-run samples and
-the environment alongside aggregate timings; a benchmark result should retain
-that machine-readable report.
-
-For a focused comparison between this plugin's scalar and SIMD implementations:
-
-```console
-uv run tests/benchmark_dither.py
-```
-
-The benchmark first requires exact scalar/SIMD pixel parity, then builds its
-timing around unique output frame indices with output caching disabled. It uses
-a reusable in-memory source, warms both modes, alternates their order between
-runs, and reports median elapsed time and throughput. The default workload is
-1920 × 1080 Gray16 to Gray8, four worker threads and outstanding requests,
-16 warmup frames, and five measured runs of 256 frames per mode.
-
-The optimized x64 build uses the same `x86-64` baseline as the wheel. Results
-include frame allocation, scheduling, Python request delivery, and release;
-they measure end-to-end frame throughput rather than an isolated arithmetic
-kernel. The runner bounds runtime and imposes no speedup threshold. Use
-`--help` to adjust the workload and record the compiler, runtime, CPU, and
-request concurrency with each result. See the
-[performance comparison](dither-performance.md) for the recorded measurements
-and their environment.
+The [FMTConv comparison](dither-performance.md) and
+[Dither Plus guide](../plugins/dither-plus.md#measured-throughput) retain dated
+results, workload descriptions, and raw timings. The development-only collectors
+and report generator are preserved at Git revision `f59ecbd`; they are not part
+of the maintained public test suite. Performance changes should be measured on
+the intended hardware and formats, with output caching disabled and the workload
+and variation recorded alongside the result.
 
 ## Build and check native distributions
 
@@ -396,7 +359,7 @@ describes previewing the rendered result and the GitHub Actions workflow.
 | C-facing field, constant, callback, or calling convention | Package checks, native ABI suite, relevant target checks |
 | Ownership, errors, maps, or row views in `easy` | Package checks, `tests/easy`, affected example runtime checks |
 | Identity/invert callbacks or pixel processing | Plugin check and `tests/examples.py` |
-| Dither/Hald callbacks, pixel kernels, or PNG loading | Plugin check and `tests/advanced.py`; measure kernel changes with the dither benchmark when relevant |
+| Dither/Hald callbacks, pixel kernels, or PNG loading | Plugin check and `tests/advanced.py`; measure kernel changes on the intended workload |
 | Native build hook, distribution contents, or autoloading | Packaging unit tests, native wheel and source-archive builds, isolated `tools/packagecheck.py` |
 | Runtime loading or linked declarations | Relevant host execution on the affected platform; linked consumer build when applicable |
 | Preview scripts, shared scene construction, or exported image selections | `tools/examples.py check`, render the outputs, inspect the affected VSView views and generated images |

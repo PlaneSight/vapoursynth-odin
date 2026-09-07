@@ -165,36 +165,16 @@ bounds the mean error to 0.01 of a quantization step. Raw data are available as
 The [interactive examples](../examples/dither-plugin.md#see-what-one-two-and-four-bits-look-like)
 show what these levels look like, using the same native implementation.
 
-## Reproduce the measurements
+## Measurement provenance
 
-Compile the current plugin, obtain the matching native FMTConv binary from its
-official release, and run from the repository root:
+These are historical measurements, not a benchmark run during documentation
+builds. The development collectors and chart generator are preserved at Git
+revision `f59ecbd`, also named `codex/pre-public-cleanup`. That revision contains
+the measured implementation, the original runner options, and the report code.
+A separate checkout of that revision is needed to repeat the original study;
+results will still depend on its documented hardware and runtime conditions.
 
-```console
-uv run tools/examples.py build dither
-uv run tests/benchmark_fmtconv.py --odin-plugin .build/examples/dither.dll --fmtconv-plugin .build/fmtconv/r31/win64/fmtconv.dll --frames 128 --runs 9 --warmup-frames 16 --cpu-affinity 0 1 2 3 --output .build/fmtconv/final.json
-uv run tests/benchmark_fmtconv.py --low-bits --odin-plugin .build/examples/dither.dll --resolutions 1080p 2160p --frames 128 --runs 9 --warmup-frames 16 --cpu-affinity 0 1 2 3 --output .build/fmtconv/low-bits-final.json
-```
-
-The paths above are for Windows. Use the appropriate native library extension
-and FMTConv distribution on other systems. Omit `--cpu-affinity` to let the
-operating system schedule the process, or choose valid CPU indices for your
-machine. Affinity is supported by this runner on Windows and Linux.
-
-The default comparison covers all sixteen conversions at all four resolutions.
-`--cases` and `--resolutions` select subsets. `--baseline-plugin` adds an
-interleaved previous Odin binary; `--build-description` and
-`--baseline-build-description` record how the binaries were compiled. The
-runner requires existing binaries and never downloads or builds them implicitly.
-An incomplete run is marked `complete: false` in its JSON.
-
-To regenerate the charts, tables, CSV, and publishable JSON from completed runs:
-
-```console
-uv run tools/report_dither_benchmark.py .build/fmtconv/final.json .build/fmtconv/low-bits-final.json
-```
-
-The report tool declares its plotting dependency in its script metadata. Ordinary
-documentation builds consume these dated benchmark artifacts without rerunning
-the performance experiment. Example **images**, by contrast, are regenerated
-from the actual preview scripts during every documentation build.
+The JSON and CSV above retain timing samples, options, and binary hashes.
+The charts and tables remain checked in so this dated study stays readable.
+Current documentation builds regenerate the example **images** from the preview
+scripts; they do not rerun this performance experiment.

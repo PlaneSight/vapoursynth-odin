@@ -384,19 +384,16 @@ format, and copies properties by passing the source as the property source to
 `newVideoFrame`. The callback releases the source and transfers the output
 reference to VapourSynth. The free callback releases the node and instance.
 
-Run the independent pixel checks and then measure on the intended machine:
+Run the independent pixel checks:
 
 ```console
 uv run tests/advanced.py --only dither
-uv run tests/benchmark_dither.py
 ```
 
 The correctness suite covers scalar/SIMD parity, both scaling modes, bit depths,
 widths around vector and tile boundaries, seed extremes, subsampled planes,
 concurrent requests, preserved properties, and unchanged retained source frames.
-The benchmark measures end-to-end frame throughput with warmups, repeated runs,
-and output caching disabled. Its timings include allocation and scheduling;
-they are not isolated arithmetic-kernel timings. See
+See
 [testing and verification](../maintenance/testing.md) for runtime selection.
 
 ## Measured throughput
@@ -407,12 +404,8 @@ this filter against FMTConv's void-and-cluster mode at resolutions through
 It records the exact build, runtime, input and output formats, range mapping,
 dither settings, workload, and measurement procedure alongside the results.
 
-Use the comparison's reproduction commands when changing a hot path. The
-scalar/SIMD runner remains useful for focused implementation comparisons:
-
-```console
-uv run tests/benchmark_dither.py
-```
+The report retains the archived study's provenance and raw timings. Measure
+changes to a hot path on the intended machine and workload.
 
 End-to-end frame timings include allocation, scheduling, Python request delivery,
 and release. Their ratios describe the recorded workloads and host; they do not

@@ -2,7 +2,7 @@
 site_name = "VapourSynth for Odin"
 site_description = "Complete VapourSynth API 4.2 bindings, an idiomatic Odin interface, and practical examples from first frame to parallel filter."
 docs_dir = "docs"
-site_dir = "site"
+site_dir = ".venv/site"
 copyright = "LGPL-2.1-or-later · VapourSynth for Odin"
 extra_css = ["assets/stylesheets/extra.css"]
 nav = [

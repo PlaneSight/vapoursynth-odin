@@ -8,17 +8,16 @@
     "python": "3.14.6",
     "python_implementation": "CPython",
     "vapoursynth": "R79",
-    "vapoursynth_api": "R4.2",
-    "vapoursynth_module": "C:\\Users\\morgan\\Documents\\ChatGPT\\vapoursynth-odin\\.venv\\Lib\\site-packages\\vapoursynth\\__init__.py"
+    "vapoursynth_api": "R4.2"
   },
   "plugins": {
     "dither": {
-      "path": "C:\\Users\\morgan\\Documents\\ChatGPT\\vapoursynth-odin\\.build\\examples\\dither.dll",
+      "path": ".build/examples/dither.dll",
       "bytes": 152576,
       "sha256": "8faae2d8a5375087bac8f8f5d15681951c2bf4638da26c3a6867b05ac8b2c8df"
     },
     "dither_plus": {
-      "path": "C:\\Users\\morgan\\Documents\\ChatGPT\\vapoursynth-odin\\.build\\examples\\dither_plus.dll",
+      "path": ".build/examples/dither_plus.dll",
       "bytes": 166400,
       "sha256": "04b8225ddd85d9d4c9966e3fd41ddc18929fcc2083cda22c4472db7b8257afc3"
     }

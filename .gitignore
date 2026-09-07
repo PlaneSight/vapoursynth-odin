@@ -7,6 +7,8 @@
 *.so
 *.dylib
 *.lib
+*.exp
+*.py[cod]
 __pycache__/
 .venv/
 /site/

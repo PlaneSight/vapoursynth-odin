@@ -71,7 +71,7 @@ def check_site(directory: Path, base_path: str = "/") -> tuple[int, int, list[st
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--site-dir", type=Path, default=ROOT / "site")
+    parser.add_argument("--site-dir", type=Path, default=ROOT / ".venv" / "site")
     parser.add_argument("--base-path", default="/", help="Root URL path, e.g. /vapoursynth-odin/")
     args = parser.parse_args()
     page_count, link_count, errors = check_site(args.site_dir, args.base_path)

@@ -87,20 +87,17 @@ and VapourSynth R78 or newer; the development lock selects R79. Ordinary sync
 does not install this GUI stack. See the
 [preview guide](previewing-examples.md) for selecting filters and their named outputs.
 
-The independent numerical suites and benchmark remain available:
+The independent numerical suites remain available:
 
 ```console
 uv run tests/examples.py
 uv run tests/advanced.py
 uv run tests/dither_plus.py
-uv run tests/benchmark_dither.py --help
 ```
 
 The first runner covers the six introductory examples. The advanced runner
 checks dither and Hald CLUT separately, with numerical reference calculations and
-failure cases. Dither Plus has its own independent numerical suite. The benchmark
-measures the original dither's scalar and SIMD execution; its result is
-specific to the machine, compiler flags, and frame configuration printed by it.
+failure cases. Dither Plus has its own independent numerical suite.
 
 Documentation dependencies are in a separate group:
 
@@ -115,10 +112,8 @@ scripts used in VSView. The documentation command compiles the eight examples an
 generates fresh PNGs, then serves or strictly builds the site. Odin is required;
 VSView and Qt are not. Restart the server command after changing native code or
 demonstration scripts to regenerate the images.
-The generated `requirements-docs.txt` also supports the existing pip-based
-documentation workflow. Treat the groups in `pyproject.toml` and `uv.lock` as the
-source of dependency choices; regenerate the requirements export after changing
-them.
+Local and Pages builds use the same `.python-version` and `uv.lock`. Generated
+HTML lives in `.venv/site`; documentation source remains in `docs`.
 
 ## Build a native wheel explicitly
 

@@ -249,16 +249,15 @@ The advanced suite covers both scaling modes, all input depths, multiple output 
 
 ```console
 uv run tests/advanced.py
-uv run tests/benchmark_dither.py
 ```
 
-Use each runner's `--runtime` option when selecting an existing local Python runtime package directory. See the repository's testing documentation for the configured environment.
+Use the runner's `--runtime` option when selecting an existing local Python runtime package directory. See the repository's testing documentation for the configured environment.
 
 The [performance comparison](../../docs/maintenance/dither-performance.md) records
 single-thread measurements against FMTConv's void-and-cluster mode across
 resolutions through 3840 × 2160 and several integer formats. Both filters use
 `core.num_threads = 1`. The report gives the exact parameters, build, runtime,
-input preparation, warmups, timing method, and reproduction commands.
+input preparation, warmups, timing method, and archived runner provenance.
 
 These are end-to-end frame timings, including scheduling, output allocation,
 Python request delivery, and release. The benchmarks use reusable in-memory

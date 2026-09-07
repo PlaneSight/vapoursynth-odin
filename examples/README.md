@@ -125,12 +125,10 @@ Use `--library` to specify a core library path and `--odin` to select the compil
 The runner does not install or download dependencies.
 
 The advanced suite builds dither and Hald CLUT with optimization and tests them
-against independent numerical oracles. The dither benchmark measures scalar and
-SIMD throughput after checking output parity:
+against independent numerical oracles:
 
 ```console
 uv run tests/advanced.py
-uv run tests/benchmark_dither.py
 ```
 
 ## Generate the documentation images

@@ -140,12 +140,9 @@ as algorithmic advantages.
 
 The [complete measurement JSON](../assets/benchmarks/dither-plus.json) includes
 720p, 1080p, and 4K Gray16/RGB48 cases, every timing sample, dispersion,
-configuration, and binary hashes. Reproduce this run with:
-
-```console
-uv run tools/examples.py build dither dither_plus
-uv run tests/benchmark_dither_plus.py --no-build --frames 1024 --diffusion-frames 8 --runs 7 --timeout 600 --json
-```
+configuration, and binary hashes. The collector is preserved in the development
+snapshot at Git revision `f59ecbd` (`codex/pre-public-cleanup`); it is not part of
+the maintained public tooling. These results remain a dated performance record.
 
 ## Control colored noise in neutral areas
 
@@ -288,20 +285,15 @@ diffusion history, so VapourSynth can process separate frames in parallel.
 
 ## Reproduce the illustrations
 
-The independent numerical suite and single-thread performance runner are:
+Run the independent numerical suite before updating the illustrations:
 
 ```console
 uv run tests/dither_plus.py
-uv run tests/benchmark_dither_plus.py --no-build --json
 ```
 
-The benchmark uses `core.num_threads = 1` and four queued requests. Its default
-matrix covers 720p, 1080p, and 4K Gray16 and RGB48 input, with all five methods
-and the original blue-noise plugin as a reference. Results describe the machine
-and workload recorded with them; they do not establish a universal speed order.
-The numerical suite checks independent quantization and diffusion references,
-format boundaries, and invalid arguments. Visual comparisons complement those
-checks by making spatial and temporal artifacts visible.
+It checks independent quantization and diffusion references, format boundaries,
+and invalid arguments. Visual comparisons complement those checks by making
+spatial and temporal artifacts visible.
 
 ```console
 uv run tools/render_showcase.py
