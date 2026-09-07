@@ -1,21 +1,6 @@
 name: Documentation
 
 on:
-  push:
-    paths:
-      - 'docs/**'
-      - 'zensical.toml'
-      - '.python-version'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - 'THIRD_PARTY_LICENSES.md'
-      - 'tools/**'
-      - 'src/**'
-      - 'examples/**'
-      - 'plugins/**'
-      - 'tests/**'
-      - 'LICENSE'
-      - '.github/workflows/docs.yml'
   pull_request:
   workflow_dispatch:
 
