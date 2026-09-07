@@ -19,13 +19,11 @@ The first three examples use the optional `easy` package to make resource owners
 
 For a host application, start at step 1 and work through step 4. For a filter plugin, skim the [ownership guide](../guides/ownership.md), then work through steps 5 and 6. The identity function establishes the registration and reference-transfer contract before the invert filter introduces frame scheduling.
 
-## What you need
+## Before you start
 
-Run all commands from the repository root. Follow the [quickstart](../getting-started/quickstart.md) to make the Odin compiler and an API 4.2 runtime available. Each example has a local build command and a pinned bindings dependency, so its directory can also be copied into a separate project.
-
-The four host executables accept an optional path to the VapourSynth **core** library. They use `std.BlankClip` where a clip is needed; no video file, source plugin, or Python interpreter is involved in those hosts. Plugin autoloading is disabled when their cores are created, while the built-in `std` plugin remains available.
-
-The four plugin demonstrations need a VapourSynth host to load them. Their tutorials use Python with the VapourSynth module installed. Match the plugin architecture to that host and its core library. See [loading and linking](../guides/loading-and-linking.md) for library selection and deployment details. The [Python packaging guide](../guides/python-packaging.md) explains how to provision the runtime with uv and demonstrate native wheel packaging in an individual example.
+Follow [installation](../getting-started/installation.md), then run these commands
+from the repository root. Each example can also be copied into its own project;
+see [build and preview](../guides/previewing-examples.md).
 
 ## Build and inspect the examples
 
@@ -43,7 +41,6 @@ For an optional headless check after compiling, run
 `uv run tools/examples.py check --no-build`. It executes the four plugin `.vpy`
 scripts and requests their output frames without opening a window.
 
-The optional `preview` group supplies VSView and Qt and requires Python 3.14.
 The [preview guide](../guides/previewing-examples.md) covers selection, output
 interpretation, and headless rendering. The screenshots in these tutorials are
 generated from the same scripts during each documentation build.
@@ -53,7 +50,6 @@ generated from the same scripts during each documentation build.
 The core-information example is the shortest environment check:
 
 ```console
-uv sync --locked
 uv run tools/run_host.py core_info
 ```
 

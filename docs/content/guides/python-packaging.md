@@ -9,36 +9,9 @@ The bindings are distributed as Odin source under `src/vapoursynth`. The root
 UV project provisions a runtime for tests, example hosts, previews, and
 documentation. It does not build or distribute a filter collection.
 
-## Provision the development environment
-
-Install Odin and uv, then run from the repository root:
-
-```console
-uv sync --locked
-uv run tools/run_host.py core_info
-```
-
-The helper builds the host example and supplies the core library installed beside
-the VapourSynth Python module. This is a convenience for exercising the bindings;
-an application may instead load its own native runtime explicitly. See
-[loading and linking](loading-and-linking.md).
-
-The lockfile selects the tested Python dependencies. The R76 headers still define
-the bindings' API 4.2 contract when tests run against R79. See
-[compatibility](../maintenance/compatibility.md) for version negotiation and the
-limits of the verification record.
-
-## Optional preview and documentation tools
-
-```console
-uv run --group preview tools/examples.py preview invert
-uv run --group docs tools/docs.py build
-```
-
-VSView and Qt are optional preview dependencies. Documentation rendering requests
-frames headlessly and does not require the GUI. The
-[build guide](previewing-examples.md) explains the supported native toolchains
-and how to use a copied example.
+For Python, VapourSynth, and optional tool setup, use the
+[installation guide](../getting-started/installation.md). This page covers
+distributing a compiled example as a Python wheel.
 
 ## Package an example plugin
 
@@ -81,11 +54,3 @@ projects outside the checkout, downloads their pinned bindings, executes hosts
 or requests preview frames, and builds plugin wheels from their source
 distributions. It then checks autoloading in isolated environments. This verifies
 the packaging lesson without making packaging part of the bindings themselves.
-
-## Python version files
-
-Every project requires Python 3.14 or newer. `.python-version` selects the exact
-tested interpreter, **3.14.7**, for uv and CI; `requires-python` declares the
-supported range, and `uv.lock` fixes dependency resolution. The pin therefore
-is not redundant. Each example keeps its own pin so copying the directory also
-preserves its development environment. See [uv's Python version selection](https://docs.astral.sh/uv/concepts/python-versions/).

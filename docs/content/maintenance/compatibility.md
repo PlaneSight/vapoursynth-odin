@@ -32,19 +32,11 @@ request `VAPOURSYNTH_API_VERSION` through the script table's `getVSAPI` and chec
 the result. The [loading guide](../guides/loading-and-linking.md) explains both
 entry points.
 
-### Python tooling and preview requirements
+### Python tooling
 
-The uv project requires Python 3.14 or newer and currently locks VapourSynth R79.
-The optional `preview` group pins VSView 0.11.0 and narrows its interpreter range
-to Python 3.14 for the current PySide6 dependency. VSView also requires
-VapourSynth R78 or newer. These are preview-tool requirements; they do not change
-the raw bindings' core API 4.2 contract or the recorded R76 filter tests.
-
-The `docs` group includes VapourSynth and NumPy to render the checked-in preview
-scripts without importing VSView or Qt. Full documentation builds require Odin
-because they compile the examples before generating their images. The
-[preview guide](../guides/previewing-examples.md) and
-[documentation guide](documentation.md) give the supported commands.
+See [installation](../getting-started/installation.md) for the Python runtime,
+dependency groups, and native toolchain requirements. These tooling choices do
+not change the raw bindings' API 4.2 contract.
 
 The four preview scripts passed headless checks of the first and last frames of
 all **24 output nodes**, including the expanded low-bit views, on Windows x64

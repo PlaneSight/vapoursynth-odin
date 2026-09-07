@@ -10,8 +10,7 @@ The demonstrations generate their own
 input scenes and lookup tables, so they need no downloaded video, source plugin,
 or separate VapourSynth installation.
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and
-[Odin](../getting-started/installation.md), then run from the repository root:
+After [installation](../getting-started/installation.md), run from the repository root:
 
 ```console
 uv run tools/examples.py build
@@ -103,26 +102,13 @@ the root project manages bindings development dependencies.
 the checkout: dependency downloads, host execution or preview frames, plugin
 source distributions, wheels, and isolated wheel autoloading.
 
-### Native toolchain requirements
+### Native build behavior
 
-Use the same `uv run tools/examples.py build` command on Windows x64, Linux
-x64 or ARM64, and macOS x64 or ARM64. It creates the output directory, selects
-the Odin target and library extension, enables optimized builds, and uses a
-baseline CPU instruction set. macOS builds target macOS 13 or newer.
-
-The build follows the architecture of the Python process that will load the
-plugins. A universal2 Python installation on macOS produces a single-architecture
-plugin for its running process, including x64 when Python runs under Rosetta.
-It does not create a universal binary. Odin and the platform's native development
-tools must be installed; uv supplies the Python environment and VapourSynth.
-
-Hald CLUT imports Odin's bundled stb image package. The build reuses the image
-libraries supplied by your Odin installation. When Unix archives are missing,
-it compiles the bundled C sources into a private build directory under `.build`,
-using `cc` and `ar`. This requires a native C compiler and archiver on Linux, or
-the Xcode command line tools on macOS. The build does not modify your Odin
-installation. On Windows, use an Odin distribution that includes its native
-vendor libraries.
+The [installation guide](../getting-started/installation.md#requirements) lists
+the supported platforms and native tools. Builds follow the running Python
+process's architecture; a universal2 interpreter produces a single-architecture
+plugin. The Hald example reuses Odin's stb archives or builds missing archives
+privately under `.build`, without modifying the compiler installation.
 
 The helper supplies the plugin's `stb:image` import through a custom collection,
 pointing it at Odin's package or the privately prepared copy. See the
@@ -231,29 +217,11 @@ the previewer. Headless evaluation uses ordinary VapourSynth output nodes and do
 not need the GUI package. Source paths are resolved relative to each example project,
 including the platform-specific plugin filename.
 
-## Keep the previewer optional
+## Optional tools
 
-The `preview` dependency group pins **VSView 0.11.0** and supports
-**Python 3.14**. VSView requires
-**VapourSynth R78 or newer**; the current PySide6 dependency supplies the upper
-Python bound. The development lock selects R79. The base project still accepts
-Python 3.14 or newer; requesting the preview group adds its narrower interpreter
-constraint. See the
-[VSView release metadata](https://pypi.org/project/vsview/0.11.0/) for its declared
-dependencies.
-
-Ordinary `uv sync` provisions the development environment without VSView or Qt.
-Only commands selecting `--group preview` install the viewer. An explicit setup
-can use:
-
-```console
-uv sync --locked --group preview --python 3.14
-uv run --group preview tools/examples.py preview
-```
-
-Keep `--group preview` on later uv preview commands: uv synchronizes the selected
-groups for each run. The `docs` group supports headless image generation and site
-building without a GUI. A desktop session is needed to launch VSView itself.
+See [installation](../getting-started/installation.md#run-this-repository) for
+the preview and documentation dependency groups. The commands on this page
+select the required group directly.
 
 ## Check the scripts without opening a window
 

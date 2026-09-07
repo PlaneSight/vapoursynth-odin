@@ -15,44 +15,13 @@ All commands below run from the repository root. Generated probes, executables,
 plugin libraries, and test fixtures belong in the ignored `.build` directory.
 Individual plugin examples write optional wheel and source archives to their own `dist` directories.
 
-## Requirements by check
+## Before running checks
 
-| Check | Required tools | VapourSynth installation |
-| --- | --- | --- |
-| Package and example type checking | Odin; Hald also needs Odin's native stb library | None |
-| C/Odin ABI verification | Python 3.14+, Odin, native C compiler | None; headers are checked in |
-| `easy` ownership and error suite | Odin, matching core shared library | Core API 4.2 |
-| Six introductory examples | Project Python environment, Odin, matching Python module and core | Core API 4.2 |
-| Dither and Hald binding-usage correctness | Project Python environment, Odin, and the Hald native build prerequisites below | Core API 4.2 |
-| Native wheel build and installation check | Project Python environment, uv, Odin, and the Hald native build prerequisites below | Installed-wheel check uses a matching Python runtime |
-| Documentation | Project Python environment, Odin, and the `docs` dependency group | Core API 4.2, supplied by the docs group |
-
-See [installation](../getting-started/installation.md) for the compiler and runtime
-setup, and [compatibility](compatibility.md) for the exact environment previously
-verified. Do not infer runtime support on a target from another target's results.
-The root project and every standalone example require **Python 3.14 or newer**.
-Their `.python-version` files select the tested **3.14.7** interpreter; `uv.lock`
-records dependencies. CI uses the same pin on Ubuntu and Windows and checks
-native builds, ABI compatibility, preview outputs, and a copied example project.
-
-## Select the development environment
-
-```console
-uv sync --locked
-uv run tools/run_host.py core_info
-```
-
-`uv sync --locked` creates the project environment from `uv.lock`. The root
-project is not installed as an editable package, so synchronizing dependencies
-does not build or autoload this repository's plugins. `run_host.py` passes the
-core library from the active VapourSynth Python package to the selected Odin
-host. The recorded uv environment used CPython 3.14.6 and VapourSynth R79, which
-provides core API 4.2. R76 remains the unchanged header baseline.
-
-Use `uv run` for the Python commands below. An existing environment can also run
-the scripts directly with its own `python`. The
-[Python environment and wheel guide](../guides/python-packaging.md) explains
-dependency selection, plugin discovery, and platform requirements.
+Follow [installation](../getting-started/installation.md) once, then use `uv run`
+for the Python commands below. uv supplies the runtime and test dependencies.
+The ABI comparison also uses the native C compiler listed in that guide.
+CI runs native builds, ABI checks, previews, and copied-project packaging on
+Ubuntu and Windows. See [compatibility](compatibility.md) for recorded results.
 
 ## Check the Odin packages
 

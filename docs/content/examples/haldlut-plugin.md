@@ -53,11 +53,10 @@ is the comparison, `1` the source, and `2` the result. See the
 
 ## Build the plugin and generate a look
 
-Provision the [uv environment](../guides/python-packaging.md), then create two
+After [installation](../getting-started/installation.md), create two
 example LUTs with the standard-library-only generator:
 
 ```console
-uv sync --locked
 uv run examples/haldlut/generate.py
 ```
 

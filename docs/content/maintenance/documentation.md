@@ -12,28 +12,16 @@ directory is ignored by Git. The repository includes a GitHub
 Actions workflow that validates pull requests and deploys the default branch
 to GitHub Pages once Pages is enabled for the repository.
 
-## Set up a local environment
+## Preview locally
 
-Use the pinned **Python 3.14.7** environment, [uv](https://docs.astral.sh/uv/), and the
-[Odin toolchain](../getting-started/installation.md). The repository's
-Python project declares its documentation dependencies in the `docs` dependency
-group in `pyproject.toml`; `uv.lock` records the resolved versions and hashes.
-The `.python-version` file selects the interpreter for local and CI builds.
-Run these commands from the repository root:
+Follow [installation](../getting-started/installation.md), then run from the repository root:
 
 ```console
-uv sync --locked --group docs
-uv run --group docs tools/docs.py serve
+uv run --locked --group docs tools/docs.py serve
 ```
 
-The first command creates or updates `.venv` from the committed lockfile. The
-project sets `tool.uv.package = false`, so synchronization provisions the Python
-environment without compiling or installing the native Odin examples. The
-documentation command then compiles the eight binding examples, evaluates the five
-plugin preview scripts, renders their designated output frames, and starts
-Zensical. Odin and the VapourSynth runtime are required because the illustrations
-are actual native filter output. VSView and Qt are optional and are not installed
-by the docs group.
+The command builds all eight examples, runs the four preview scripts, generates
+their images, and starts Zensical. uv supplies the documentation dependencies.
 
 Open the local address printed by Zensical, normally `http://127.0.0.1:8000`.
 The development server reloads Markdown changes. After changing Odin code or a
@@ -250,7 +238,7 @@ Do not commit a generated overlay containing temporary test URLs.
 
 | Symptom | Check |
 | --- | --- |
-| Python version or dependency resolution fails | Select Python 3.14 or newer, matching the project's declared minimum |
+| Python version or dependency resolution fails | Follow [installation](../getting-started/installation.md); uv selects the pinned interpreter |
 | `uv sync --locked` reports an outdated lockfile | Update `uv.lock` after changing `pyproject.toml` |
 | Image generation fails | Read the first compiler or script error; run `uv run tools/examples.py check` to exercise the graphs without the site |
 | PNGs are missing after a direct Zensical build | Run `uv run --group docs tools/docs.py build` to generate the ignored assets from current code |
@@ -269,7 +257,6 @@ in the `docs` dependency group, resolve the lockfile, and sync:
 
 ```console
 uv lock
-uv sync --locked --group docs
 uv run --locked --group docs tools/docs.py build
 ```
 

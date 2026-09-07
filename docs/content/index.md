@@ -14,6 +14,9 @@ The examples are runnable demonstrations of binding usage. Hosts exercise
 loading and invocation; plugins exercise callbacks and frame ownership.
 Image-processing operations give these API contracts observable results.
 
+**Start with [Installation](getting-started/installation.md)** for the uv setup,
+native tool requirements, and first working command.
+
 ## Import the packages
 
 Place the repository at `vendor/vapoursynth-odin`:

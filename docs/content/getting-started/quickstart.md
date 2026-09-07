@@ -6,7 +6,7 @@ The examples are deliberately separate executables. You can build each one while
 
 ## Run the smallest example
 
-With the repository's [uv environment](../guides/python-packaging.md) synchronized:
+After [installation](installation.md):
 
 ```console
 uv run tools/run_host.py core_info
@@ -23,7 +23,7 @@ The program prints the runtime's version string, numeric core version, reported 
 
 ## Read the complete program
 
-This is the source of the checked-in `core_info` example. Its relative imports work in the repository. For your own application, use the collection imports described in [installation](installation.md#add-the-packages-to-your-application).
+This is the source of the checked-in `core_info` example. Its collection imports resolve through the example build command. For your own application, use the collection imports described in [installation](installation.md#add-the-packages-to-your-application).
 
 ```odin
 --8<-- "examples/core_info/src/main.odin"

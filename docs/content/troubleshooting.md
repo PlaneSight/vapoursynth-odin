@@ -14,6 +14,7 @@ handle or an error result map.
 
 | Symptom | Start here |
 | --- | --- |
+| Python, VapourSynth, or a build tool is missing | [Installation](getting-started/installation.md#troubleshooting) |
 | Core library cannot be loaded | [Library paths and dependencies](#library-paths-and-dependencies) |
 | Library loads but the API is unavailable | [API version negotiation](#api-version-negotiation) |
 | Linker cannot find `vapoursynth` | [Linking and architecture](#linking-and-architecture) |
@@ -26,6 +27,10 @@ handle or an error result map.
 | Documentation build or deployment fails | [Build and publish these docs](maintenance/documentation.md#diagnose-a-documentation-failure) |
 
 ## Library paths and dependencies
+
+The [installation commands](getting-started/installation.md#run-this-repository)
+select the uv-provided runtime automatically. The checks below apply when
+integrating a separately supplied native library or diagnosing a loader failure.
 
 A library filename is resolved according to the operating system's loader
 rules. It is not a search through the repository. To remove ambiguity, pass an
@@ -223,10 +228,9 @@ transformation you need, then implement that operation explicitly.
 
 ## Python environments and packaged plugins
 
-`uv sync` provisions the Python dependencies. The root project's
-`tool.uv.package = false` setting means it does not compile the example plugins.
-Use `uv run tools/examples.py build` to compile the binding examples.
-For the optional wheel-packaging lesson, run `uv build` inside a plugin example. Odin must be available on `PATH` for either build.
+For environment setup, use [installation](getting-started/installation.md).
+For compilation and wheel commands, see [build and preview](guides/previewing-examples.md)
+and [example packaging](guides/python-packaging.md).
 
 Test wheel installation in a separate environment: an exact `uv sync` can remove
 a manually installed wheel that is not declared by the development project.
@@ -234,23 +238,13 @@ Start a fresh Python process after installation and inspect
 `vapoursynth.get_plugin_dir()`. The example's native library belongs beneath that directory. A core created with `ccfDisableAutoLoading` will not discover them.
 The [packaging guide](guides/python-packaging.md) describes the copied-project and isolated-wheel checks.
 
-If Hald CLUT fails while preparing `stb`, check the reported native tool or
-source file. The common build command reuses Odin's supplied image libraries;
-on Unix it compiles missing archives privately under `.build` using `cc` and
-`ar`. Install a native C compiler and archiver on Linux, or the Xcode command
-line tools on macOS, then rerun the command. A missing Windows vendor library
-indicates an incomplete Odin installation. The build never writes libraries
-into the compiler installation. See the
-[build guide](guides/previewing-examples.md#one-build-command-on-every-supported-platform)
-for supported targets and native requirements.
+If Hald fails while preparing `stb`, check the reported missing tool or source
+against the [native requirements](getting-started/installation.md#requirements).
 
 ## Preview and generated documentation images
 
-Run `uv run --group preview tools/examples.py preview` to select the optional
-VSView dependency group. Plain `uv sync` excludes VSView and Qt. The preview group
-requires Python 3.14; select a compatible interpreter with
-`uv sync --locked --group preview --python 3.14` if the current environment uses
-a newer Python version. Keep `--group preview` on later viewer commands.
+If VSView or a documentation dependency is missing, use the corresponding
+command from [installation](getting-started/installation.md#run-this-repository).
 
 Close the viewer before rebuilding a loaded plugin. A live core retains its
 original machine code, and Windows may keep its DLL locked. `--no-build` is

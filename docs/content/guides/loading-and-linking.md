@@ -61,7 +61,7 @@ The repository's optional development helper does perform Python-package discove
 uv run tools/run_host.py core_info
 ```
 
-It selects the library beside the installed VapourSynth module and passes its absolute path to the Odin host. Official Unix wheels use versioned names, `libvapoursynth.so.4` on Linux and `libvapoursynth.4.dylib` on macOS; those differ from the bare defaults above. See [Python environments and plugin wheels](python-packaging.md) for uv setup and native plugin discovery.
+It selects the library beside the installed VapourSynth module and passes its absolute path to the Odin host. Official Unix wheels use versioned names, `libvapoursynth.so.4` on Linux and `libvapoursynth.4.dylib` on macOS; those differ from the bare defaults above. See [installation](../getting-started/installation.md) for uv setup and [example packaging](python-packaging.md) for native plugin discovery.
 
 Loading the main file can still fail because one of its dependencies is missing or has the wrong architecture. Preserve the loader diagnostic and verify the selected library's dependencies when the file visibly exists but cannot be loaded. Consult the [official VapourSynth installation guide](https://www.vapoursynth.com/doc/installation.html) for current platform installation and configuration procedures.
 
