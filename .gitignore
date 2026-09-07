@@ -8,3 +8,7 @@
 *.dylib
 *.lib
 __pycache__/
+.venv/
+/site/
+/.cache/
+/.zensical-pages.toml

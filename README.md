@@ -6,7 +6,7 @@ and a separate companion package for **VSScript API 4.2**. The raw declarations 
 and the exact reference headers are checked into `tests/headers`.
 
 The root package includes all 117 stable `VSAPI` entries, `VSPLUGINAPI`, all
-callback types, concrete structs, opaque handles, 45 preset video formats,
+callback types, concrete structs, opaque handles, 45 preset-format constants,
 audio channels, and the frame property constants from `VSConstants4.h`.
 The experimental graph table is exposed separately as `VSGraphAPI`.
 `VSHelper4.h` contains C inline convenience functions and is outside the scope
@@ -17,6 +17,28 @@ resource ownership, plugin invocation, synchronous frame requests, durable error
 diagnostics, and stride-aware row views. Start with the
 [six examples](examples/README.md), which progress from core information and map
 properties to a complete parallel invert filter.
+
+## Documentation
+
+The [documentation site](docs/index.md) includes installation and first-program
+guides, ownership and error handling, maps and frame layout, all six example
+walkthroughs, complete API references, and testing and compatibility guidance.
+It is built with [Zensical](https://zensical.org/) and includes the actual Odin
+sources directly in tutorials and reference pages.
+
+To preview it with Python 3.11 or newer, create and activate a virtual environment,
+then run these commands from the repository root:
+
+```console
+python -m pip install -r requirements-docs.txt
+python -m zensical serve
+```
+
+For validation, run `python -m zensical build --clean --strict` followed by
+`python tools/check_docs.py`. The [publishing guide](docs/maintenance/documentation.md)
+explains the included GitHub Pages workflow, which validates pull requests and
+deploys the repository's default branch once **Settings → Pages → GitHub Actions**
+is enabled. The deployment derives its repository and site URLs from GitHub.
 
 | Package | Purpose |
 | --- | --- |

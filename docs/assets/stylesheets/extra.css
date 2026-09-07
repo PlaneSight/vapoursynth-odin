@@ -1,0 +1,57 @@
+:root {
+  --md-text-font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --md-code-font: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --md-primary-fg-color: #143e49;
+  --md-primary-fg-color--light: #236b78;
+  --md-primary-fg-color--dark: #102f3a;
+  --md-accent-fg-color: #087d68;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 210;
+  --md-default-bg-color: #10191f;
+  --md-primary-fg-color: #143e49;
+  --md-accent-fg-color: #62ddc2;
+  --md-typeset-a-color: #62ddc2;
+}
+
+.md-grid { max-width: 76rem; }
+.md-typeset { line-height: 1.7; }
+.md-typeset h1 { font-weight: 750; letter-spacing: -.035em; }
+.md-typeset h2 { font-weight: 650; letter-spacing: -.02em; margin-top: 2.2em; }
+.md-typeset h3 { font-weight: 650; }
+.md-typeset code { font-size: .84em; }
+.md-typeset pre > code { line-height: 1.65; }
+.md-typeset table:not([class]) { font-size: .76rem; }
+.md-typeset table:not([class]) th { background: var(--md-code-bg-color); }
+.md-typeset table code { white-space: nowrap; word-break: normal; overflow-wrap: normal; }
+.diagram-scroll { overflow-x: auto; margin: 1rem 0; }
+.diagram-scroll .mermaid { min-width: 36rem; }
+.diagram-scroll:focus-visible { outline: 2px solid var(--md-accent-fg-color); outline-offset: 2px; }
+.md-typeset .admonition, .md-typeset details { font-size: .76rem; }
+.md-typeset .grid.cards > ul > li { border-radius: .45rem; padding: 1.1rem; }
+.md-typeset .grid.cards > ul > li:hover { border-color: var(--md-accent-fg-color); box-shadow: none; }
+.md-header__button.md-logo img { height: 1.6rem; width: 1.6rem; }
+
+.hero {
+  margin: .4rem 0 2rem;
+  padding: 2rem 0 1.4rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+.hero .eyebrow {
+  color: var(--md-accent-fg-color);
+  font-size: .67rem;
+  font-weight: 750;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.hero h1 { margin: .45rem 0 .7rem; font-size: clamp(2rem, 4.5vw, 3.35rem); line-height: 1.12; }
+.hero .lead { max-width: 42rem; font-size: 1.05rem; color: var(--md-default-fg-color--light); line-height: 1.65; }
+.hero .md-button { margin: .4rem .35rem .25rem 0; border-radius: .3rem; }
+.capabilities { display: flex; flex-wrap: wrap; gap: .45rem 1.4rem; margin-top: 1.1rem; font-size: .69rem; color: var(--md-default-fg-color--light); }
+.capabilities strong { color: var(--md-default-fg-color); }
+
+@media (max-width: 45em) {
+  .hero { padding-top: .8rem; }
+  .md-typeset table:not([class]) { font-size: .7rem; }
+}

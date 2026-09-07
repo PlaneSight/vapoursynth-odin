@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <h1 id="__skip" tabindex="-1">Page not found</h1>
+  <p>This address does not match a documentation page. Use search to find an API name,
+    or return to one of the starting points below.</p>
+  <ul>
+    <li><a href="{{ 'index.html' | url }}">Documentation home</a></li>
+    <li><a href="{{ 'examples/' | url }}">Example walkthroughs</a></li>
+    <li><a href="{{ 'reference/' | url }}">API reference</a></li>
+  </ul>
+{% endblock %}
