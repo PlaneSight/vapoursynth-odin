@@ -8,16 +8,31 @@ tetrahedral interpolation, and processing three planar channels together.
 
 ## Build and generate a look
 
-Run from the repository root:
+For the complete visual demonstration, run from the repository root:
+
+```console
+uv run --group preview tools/examples.py preview haldlut
+```
+
+This builds `.build/examples/haldlut` with the platform extension and opens
+[demo.vpy](demo.vpy) in VSView. The optional group requires Python 3.12–3.14 and
+supplies VSView and Qt. The script creates a shaded-sphere scene and generates
+its level-4 RGB16 cinematic table under `.build/example-assets` automatically.
+Named outputs show the comparison (`0`), original (`1`), and graded result (`2`).
+The documentation uses images exported from those same output nodes; see the
+[preview guide](../../docs/guides/previewing-examples.md) for headless checks and
+rendering. No external video or PNG download is required.
+
+For the manual build and minimal Python program below, run:
 
 ```powershell
-New-Item -ItemType Directory -Force .build | Out-Null
+New-Item -ItemType Directory -Force .build/examples | Out-Null
 odin check examples/haldlut -no-entry-point -vet
-odin build examples/haldlut -build-mode:dll -o:speed -out:.build/odin_hald.dll
+odin build examples/haldlut -build-mode:dll -o:speed -out:.build/examples/haldlut.dll
 python examples/haldlut/generate.py
 ```
 
-On Linux or macOS, create the output directory with `mkdir -p .build` and use
+On Linux or macOS, create the output directory with `mkdir -p .build/examples` and use
 `.so` or `.dylib` for the plugin extension. The Odin build mode remains `dll`.
 The generator requires only Python's standard library and writes
 `.build/haldlut-luts/identity.png` and `.build/haldlut-luts/cinematic.png`.
@@ -46,7 +61,7 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/odin_hald{suffix}").resolve()))
+vs.core.std.LoadPlugin(path=str(Path(f".build/examples/haldlut{suffix}").resolve()))
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.RGB24, color=[32, 96, 160], length=24
 )
@@ -59,11 +74,12 @@ graded.set_output()
 ```
 
 The default generated cinematic table maps this input to `[32, 91, 158]`.
-The identity table returns `[32, 96, 160]`. The included `demo.vpy` generates a
-spatial RGB gradient and publishes the source and graded result side by side.
-Its output is 1280 × 360; the left half is the original gradient. The Python
-gradient is demonstration input construction, not part of the native filter's
-performance path.
+The identity table returns `[32, 96, 160]`. The checked-in `demo.vpy` uses the
+canonical `.build/examples` plugin path and a 768 × 320 shaded-sphere scene;
+its comparison is 1536 × 320, with the original on the left. It converts source
+and graded RGB16 to RGB8 identically for display. The Python scene construction
+is demonstration input generation and is outside the native filter's performance
+path.
 
 ## Input and file contract
 

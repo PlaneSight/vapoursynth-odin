@@ -13,6 +13,7 @@ nav = [
     { "Choose an interface" = "getting-started/choosing-an-interface.md" },
   ] },
   { "Guides" = [
+    { "Build and preview examples" = "guides/previewing-examples.md" },
     { "Ownership and lifetime" = "guides/ownership.md" },
     { "Errors and diagnostics" = "guides/errors.md" },
     { "Maps and properties" = "guides/maps.md" },
@@ -40,6 +41,7 @@ nav = [
   ] },
   { "Project" = [
     { "Testing and verification" = "maintenance/testing.md" },
+    { "Dither performance" = "maintenance/dither-performance.md" },
     { "Compatibility and upgrades" = "maintenance/compatibility.md" },
     { "Build and publish these docs" = "maintenance/documentation.md" },
     { "Troubleshooting" = "troubleshooting.md" },

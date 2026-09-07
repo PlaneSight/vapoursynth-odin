@@ -13,7 +13,7 @@ import vapoursynth as vs
 
 def default_plugin() -> Path:
     suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-    return Path(__file__).resolve().parents[2] / ".build" / f"odin_dither{suffix}"
+    return Path(__file__).resolve().parents[2] / ".build" / "examples" / f"dither{suffix}"
 
 
 def main() -> None:

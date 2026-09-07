@@ -92,7 +92,16 @@ Use uv to provision VapourSynth and run an Odin host with the selected core libr
 ```console
 uv sync --locked
 uv run tools/run_host.py easy_host
+uv run tools/examples.py build
+uv run --group preview tools/examples.py preview --no-build
 ```
+
+The optional preview group adds VSView and Qt. The command reuses the build and opens the
+four visual plugin demonstrations with named comparison, source, and result
+outputs. Use `uv run tools/examples.py check --no-build` for a headless frame check. See
+[Build and preview the examples](guides/previewing-examples.md) for setup and
+selection. The tutorial images are rendered from these same scripts during
+the documentation build.
 
 An explicit `uv build` packages the four native plugins into a Python wheel that
 VapourSynth can discover automatically. The Odin packages remain ordinary source

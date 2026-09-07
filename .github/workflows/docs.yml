@@ -28,19 +28,43 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
-      - name: Install documentation dependencies
-        run: python -m pip install -r requirements-docs.txt
-      - name: Build and validate documentation
+          python-version: '3.14.6'
+      - name: Install uv
+        run: python -m pip install uv==0.12.0
+      - name: Install locked documentation environment
+        run: uv sync --locked --group docs
+      - name: Install the verified Odin toolchain
+        shell: pwsh
         run: |
-          python -m zensical build --clean --strict
-          python tools/check_docs.py
-          python -m unittest discover -s tests -p test_check_docs.py
+          $archive = Join-Path $env:RUNNER_TEMP 'odin.zip'
+          $destination = Join-Path $env:RUNNER_TEMP 'odin'
+          Invoke-WebRequest -Uri 'https://github.com/odin-lang/Odin/releases/download/dev-2026-09/odin-windows-amd64-dev-2026-09.zip' -OutFile $archive
+          $expected = '8ed8abd95b82e0af1eb7e86cb75f380fd8bde104947721817b35929f5fc19388'
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
+            throw 'Odin archive checksum mismatch'
+          }
+          Expand-Archive -LiteralPath $archive -DestinationPath $destination
+          $executables = @(Get-ChildItem -LiteralPath $destination -Recurse -File -Filter odin.exe)
+          if ($executables.Count -ne 1) { throw 'Expected one Odin compiler in the archive' }
+          $executables[0].DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Compile examples, render documentation images, and build the site
+        run: uv run --locked --group docs tools/docs.py build
+      - name: Verify command and rendering failure boundaries
+        run: |
+          uv run --locked --group docs python -m unittest discover -s tests -p 'test_*.py'
+      - name: Check every preview output
+        run: uv run --locked tools/examples.py check --no-build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: example-images
+          path: docs/assets/generated
+          if-no-files-found: error
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: documentation-preview
@@ -70,6 +94,10 @@ jobs:
         id: pages
       - name: Install documentation dependencies
         run: python -m pip install -r requirements-docs.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: example-images
+          path: docs/assets/generated
       - name: Configure the repository and Pages URLs
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}

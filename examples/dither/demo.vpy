@@ -1,41 +1,53 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
+"""Inspect eight-bit rounding noise and one-, two-, and four-bit color quantization."""
+
 from pathlib import Path
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from preview_support import (
+    clip_from_rgb, color_scene, dither_ramp, load_plugin, quantization_display,
+    set_output,
+)
+
+import numpy as np
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-plugin = Path(__file__).resolve().parents[2] / ".build" / f"odin_dither{suffix}"
-vs.core.std.LoadPlugin(path=str(plugin))
 
-blank = vs.core.std.BlankClip(width=512, height=256, format=vs.GRAY16, length=1)
+load_plugin("dither", "odin_dither")
+pixels = dither_ramp()
+source = clip_from_rgb(pixels)
+dithered = vs.core.odin_dither.Dither(source, bits=8, scale=0, seed=0, simd=1)
+rounded = clip_from_rgb(((pixels.astype(np.uint32) + 128) >> 8).astype(np.uint8))
 
-
-def ramp(n, f):
-    output = f.copy()
-    pixels = output[0]
-    for y in range(output.height):
-        for x in range(output.width):
-            pixels[y, x] = 65535 * x // (output.width - 1)
-    output.props["_Range"] = 1
-    return output
-
-
-source = vs.core.std.ModifyFrame(blank, clips=blank, selector=ramp)
-dithered = vs.core.odin_dither.Dither(source, bits=8, scale=1)
+# Identical 20x display gain exposes banding. Raw, unamplified clips remain available.
+baseline = quantization_display(rounded)
+processed = quantization_display(dithered)
+set_output(vs.core.std.StackHorizontal([baseline, processed]), 0, "20x gain: rounding | dither")
+set_output(baseline, 1, "Nearest rounding (20x display gain)")
+set_output(processed, 2, "Blue-noise dither (20x display gain)")
+set_output(source, 3, "Original RGB16 ramp (no display gain)")
+set_output(dithered, 4, "Dithered RGB8 ramp (no display gain)")
+DOCUMENTATION_OUTPUTS = {1: "dither-rounding", 2: "dither-blue-noise"}
 
 
-def nearest(n, f):
-    output = f.copy()
-    pixels = output[0]
-    for y in range(output.height):
-        for x in range(output.width):
-            sample = 65535 * x // (output.width - 1)
-            pixels[y, x] = (sample * 255 + 32767) // 65535
-    output.props["_Range"] = 1
-    return output
-
-
-undithered_blank = vs.core.std.BlankClip(width=512, height=256, format=vs.GRAY8, length=1)
-undithered = vs.core.std.ModifyFrame(undithered_blank, clips=undithered_blank, selector=nearest)
-vs.core.std.StackHorizontal([undithered, dithered]).set_output()
+scene = color_scene()
+scene_source = clip_from_rgb(scene)
+set_output(scene_source, 5, "Original RGB16 color scene")
+for index, bits in enumerate((1, 2, 4)):
+    maximum = (1 << bits) - 1
+    quantized = (scene.astype(np.uint32) * maximum + 32767) // 65535
+    expanded = ((quantized * 255 + maximum // 2) // maximum).astype(np.uint8)
+    nearest = clip_from_rgb(expanded)
+    blue_noise = vs.core.odin_dither.Dither(
+        scene_source, bits=bits, scale=1, seed=0, simd=1,
+    )
+    first = 6 + 3 * index
+    set_output(nearest, first, f"{bits}-bit nearest rounding in RGB8")
+    set_output(blue_noise, first + 1, f"{bits}-bit blue-noise dither in RGB8")
+    set_output(
+        vs.core.std.StackHorizontal([nearest, blue_noise]), first + 2,
+        f"{bits}-bit RGB8: rounding | dither",
+    )
+    DOCUMENTATION_OUTPUTS[first] = f"dither-{bits}bit-rounding"
+    DOCUMENTATION_OUTPUTS[first + 1] = f"dither-{bits}bit-blue-noise"

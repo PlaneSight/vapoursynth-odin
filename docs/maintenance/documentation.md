@@ -13,38 +13,54 @@ to GitHub Pages once Pages is enabled for the repository.
 
 ## Set up a local environment
 
-Use **Python 3.12 or newer** and [uv](https://docs.astral.sh/uv/). The repository's
+Use **Python 3.12 or newer**, [uv](https://docs.astral.sh/uv/), and the
+[Odin toolchain](../getting-started/installation.md). The repository's
 Python project declares its documentation dependencies in the `docs` dependency
 group in `pyproject.toml`; `uv.lock` records the resolved versions and hashes.
 Run these commands from the repository root:
 
 ```console
 uv sync --locked --group docs
-uv run zensical serve
+uv run --group docs tools/docs.py serve
 ```
 
 The first command creates or updates `.venv` from the committed lockfile. The
 project sets `tool.uv.package = false`, so synchronization provisions the Python
-environment without compiling or installing the native Odin examples. Odin is
-not required to preview the documentation.
+environment without compiling or installing the native Odin examples. The
+documentation command then compiles all eight examples, evaluates the four
+plugin preview scripts, renders their designated output frames, and starts
+Zensical. Odin and the VapourSynth runtime are required because the illustrations
+are actual native filter output. VSView and Qt are optional and are not installed
+by the docs group.
 
 Open the local address printed by Zensical, normally `http://127.0.0.1:8000`.
-The development server rebuilds when files change. Stop it with `Ctrl+C` when
-finished. It does not publish the site or alter the GitHub repository.
+The development server reloads Markdown changes. After changing Odin code or a
+demonstration script, stop it with `Ctrl+C` and rerun the command to rebuild the
+plugins and regenerate their images. It does not publish the site or alter the
+GitHub repository.
+
+If another process is using port 8000, choose a free local address:
+
+```console
+uv run --group docs tools/docs.py serve --dev-addr 127.0.0.1:8001
+```
+
+The address is passed to Zensical after the examples and images are prepared.
 
 ### Use pip for a documentation-only environment
 
 The checked-in `requirements-docs.txt` is a generated export containing only the
 documentation group and its transitive dependencies. The GitHub Pages workflow
-installs this export with pip. You can use the same route locally without
-installing the VapourSynth runtime or the development group:
+installs this export with pip. It includes NumPy and VapourSynth for headless
+image generation. You can use the same route locally without the development or
+preview groups; the Odin compiler is still required:
 
 === "Windows PowerShell"
 
     ```powershell
     python -m venv .build/docs-venv
     .build/docs-venv/Scripts/python.exe -m pip install -r requirements-docs.txt
-    .build/docs-venv/Scripts/python.exe -m zensical serve
+    .build/docs-venv/Scripts/python.exe tools/docs.py serve
     ```
 
 === "Linux / macOS"
@@ -52,28 +68,35 @@ installing the VapourSynth runtime or the development group:
     ```sh
     python3 -m venv .build/docs-venv
     .build/docs-venv/bin/python -m pip install -r requirements-docs.txt
-    .build/docs-venv/bin/python -m zensical serve
+    .build/docs-venv/bin/python tools/docs.py serve
     ```
 
-The local validation commands below use uv. With the pip environment, invoke its
-Python executable instead: replace `uv run --locked --group docs python` with
+The local validation commands below use uv. With the pip environment, invoke
+scripts using that environment's Python executable, as shown above. For Python
+module commands, replace `uv run --locked --group docs python` with
 `.build/docs-venv/Scripts/python.exe` on Windows or `.build/docs-venv/bin/python`
 on Unix.
 
 ## Build a release candidate
 
 ```console
-uv run --locked --group docs python -m zensical build --clean --strict
-uv run --locked --group docs python tools/check_docs.py
+uv run --locked --group docs tools/docs.py build
 uv run --locked --group docs python -m unittest discover -s tests -p test_check_docs.py
 ```
 
-`--clean` replaces the generated site, and `--strict` makes reported warnings fail
-the build. The checked-in configuration treats missing navigation entries,
+The build command compiles all eight Odin packages, executes every plugin
+demonstration in a fresh process, and exports the selected first frames into
+`docs/assets/generated`. It then runs Zensical with `--clean --strict` and checks
+the generated links. A failed compilation, script, or frame request fails the
+build before publication. Generated PNGs are ignored by Git; there is no
+checked-in screenshot fallback.
+
+Zensical's `--clean` replaces the generated site, and `--strict` makes reported
+warnings fail the build. The checked-in configuration treats missing navigation entries,
 unlisted pages, unresolved links, and missing anchors as warnings, so they must
 be addressed before the build can pass.
 
-The second command independently checks the generated HTML. It resolves local
+The wrapper's final step independently checks the generated HTML. It resolves local
 links, images, stylesheets, scripts, and heading fragments across the built site.
 External URLs are skipped: a local validation pass does not certify a remote
 website's uptime. The unit tests exercise the link checker's failure boundaries.
@@ -94,11 +117,13 @@ code, not a visible include directive.
 | `docs/examples/` | Progressive explanations of the eight host and plugin examples |
 | `docs/reference/` | Public declarations, procedure behavior, types, and constants |
 | `docs/maintenance/` | Verification, compatibility, and publishing |
-| `docs/assets/` | Local logo, CSS, and images rendered by the dither and Hald CLUT filters |
+| `docs/assets/` | Local logo and CSS; ignored `generated/` contains current filter outputs |
 | `overrides/404.html` | Accessible not-found page and recovery links |
 | `zensical.toml` | Navigation, theme, extensions, and validation |
 | `pyproject.toml` and `uv.lock` | Authoritative dependency declarations and resolved versions |
 | `requirements-docs.txt` | Generated documentation dependency export for pip and Pages |
+| `tools/docs.py` | Compile examples, render current images, then serve or validate the site |
+| `tools/render_showcase.py` | Export the documentation outputs declared by the preview scripts |
 | `tools/check_docs.py` | Offline check of generated links and fragments |
 | `tools/pages_config.py` | Deployment URL overlay derived from GitHub metadata |
 | `.github/workflows/docs.yml` | Pull request validation and Pages deployment |
@@ -127,6 +152,41 @@ Use short original fragments when isolating a concept helps. Identify the
 necessary imports, values in scope, and enclosing return type; distinguish a
 fragment from a complete program. Compile complete Odin snippets and execute
 complete Python demonstrations when adding or changing them.
+
+### Generate illustrations from the real scripts
+
+Identity, invert, dither, and Hald CLUT each have a checked-in `demo.vpy` used by
+both VSView and the documentation renderer. Each script publishes named output
+nodes and a `DOCUMENTATION_OUTPUTS` mapping selecting the nodes and filenames to
+export. Shared input construction and display conversions live with the examples.
+The renderer reads output frames from those graphs; it does not duplicate their
+filter calls or rebuild an approximation in a separate image tool.
+
+To inspect the generated files without building the website:
+
+```console
+uv run tools/render_showcase.py
+```
+
+This builds the plugins and exports the images with a record of the run under
+`.build/showcase`. The documentation wrapper directs the same rendering process
+to `docs/assets/generated`. PNGs embedded in Markdown therefore reflect the code
+that was compiled for that build. A frame at index zero is exported for each
+selected output; these examples use static scenes. The mappings currently export
+14 images: two each for identity, invert, and Hald, and eight for dither.
+
+Keep image captions precise. The shallow-ramp dither illustration applies the
+same 20× contrast gain to its rounding and dither views; the caption must disclose
+that gain. The one-, two-, and four-bit RGB scene comparisons have no contrast
+gain and use eight-bit storage for their reduced set of levels. Hald's source
+and result use the same integer conversion to RGB8. Image
+generation verifies that graphs can produce their displayed frames; the
+[numerical suites](testing.md) separately validate values and error behavior.
+
+Direct `zensical build` or `zensical serve` commands only process the existing
+Markdown and assets. Use `tools/docs.py` for local builds from a clean checkout.
+The deployed site is static: visitors read ordinary HTML and PNGs, with no native
+compilation or VapourSynth execution in their browser.
 
 The theme enables code copying, linked platform tabs, expandable details,
 admonitions, Mermaid diagrams, and search. Use those features to reduce reading
@@ -161,20 +221,27 @@ describes the required Pages permissions and artifact/deployment sequence.
 
 ### What the workflow does
 
-The **build** job runs for pull requests, matching pushes, and manual dispatches.
-It uses Python 3.12 and installs the generated `requirements-docs.txt` with pip,
-performs a clean strict build, checks
-local links, and stores a `documentation-preview` artifact for seven days. This
-job has read access to repository contents.
+The **build** job runs for pull requests, matching pushes, and manual dispatches
+on Windows 2025. It installs the pinned Odin development toolchain after verifying
+the archive's checksum, provisions Python 3.14.6 with the locked uv documentation
+group, and executes the full documentation command. That command
+builds all eight examples, runs the four visual scripts, generates fresh PNGs,
+performs a clean strict site build, and checks local links. The job stores the
+site preview and generated images as artifacts and has read access to repository
+contents. Windows is the native platform used for the verified plugin builds.
 
 The **deploy** job runs after a successful build only for a non-pull-request
 event on the repository's actual default branch. It has the Pages and identity
-token permissions needed by GitHub's deployment actions. It configures Pages,
+token permissions needed by GitHub's deployment actions. On Linux it installs
+the generated `requirements-docs.txt` export with Python 3.12, downloads the
+generated images from the successful native build, configures Pages,
 builds with the resulting URL metadata, validates the generated site, uploads a
 Pages artifact, and deploys it. Deployments share a concurrency group to serialize
 updates to the site.
 
-The workflow deliberately performs a second build for deployment. Pull request
+The workflow performs a second static-site build for deployment, using the exact
+image artifact generated by the native build. It does not require a Linux Odin
+toolchain or independently rerender the filters there. Pull request
 validation remains independent of Pages setup, while the deployed HTML receives
 the URL assigned by GitHub, including a repository subpath or configured domain.
 
@@ -201,8 +268,9 @@ python -m zensical build --clean --strict --config-file .zensical-pages.toml
 python tools/check_docs.py --base-path "$PAGES_BASE_PATH"
 ```
 
-Those commands use the Linux workflow's shell syntax and assume the required
-environment values have been supplied by GitHub Actions. The prefix is needed
+Those commands use the Linux workflow's shell syntax and assume the generated
+image artifact has been restored and the required environment values have been
+supplied by GitHub Actions. The prefix is needed
 for the not-found page's root-absolute links; normal content pages use relative
 links. For ordinary local editing, build with `zensical.toml` instead.
 Do not commit a generated overlay containing temporary test URLs.
@@ -213,6 +281,9 @@ Do not commit a generated overlay containing temporary test URLs.
 | --- | --- |
 | Python version or dependency resolution fails | Select Python 3.12 or newer, matching the project's declared minimum |
 | `uv sync --locked` reports an outdated lockfile | Update `uv.lock` after changing `pyproject.toml`, then regenerate the documentation export |
+| Image generation fails | Read the first compiler or script error; run `uv run tools/examples.py check` to exercise the graphs without the site |
+| PNGs are missing after a direct Zensical build | Run `uv run --group docs tools/docs.py build` to generate the ignored assets from current code |
+| Preview images do not reflect a native edit | Stop and restart `tools/docs.py serve`; Markdown live reload does not recompile plugins |
 | Source inclusion fails | Run from the repository root; confirm the included path exists and the file is tracked |
 | Strict build fails after adding a page | Add it to navigation and resolve all warnings in the build log |
 | Local link checker reports a fragment | Inspect the generated heading ID; update the source link or retain a stable anchor |

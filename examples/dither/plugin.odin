@@ -58,7 +58,7 @@ create_dither :: proc "system"(
 	}
 	bits, seed, vectorized, scale: i64
 	options := [?]struct {key: cstring, fallback, minimum, maximum: i64, target: ^i64, message: cstring}{
-		{"bits", 8, 8, i64(format.bitsPerSample), &bits, "Dither: bits must be between 8 and the input bit depth."},
+		{"bits", 8, 1, i64(format.bitsPerSample), &bits, "Dither: bits must be between 1 and the input bit depth; zero is not a supported bit depth."},
 		{"seed", 0, 0, TILE_AREA-1, &seed, "Dither: seed must be between 0 and 4095."},
 		{"simd", 1, 0, 1, &vectorized, "Dither: simd must be 0 (scalar) or 1 (portable SIMD)."},
 		{"scale", 0, 0, 1, &scale, "Dither: scale must be 0 (power of two) or 1 (full code range)."},
@@ -87,7 +87,7 @@ create_dither :: proc "system"(
 	}
 	output_info := info^
 	if api.queryVideoFormat(
-		&output_info.format, format.colorFamily, vs.stInteger, c.int(bits),
+		&output_info.format, format.colorFamily, vs.stInteger, c.int(max(8, bits)),
 		format.subSamplingW, format.subSamplingH, core,
 	) == 0 {
 		api.freeNode(source)
@@ -111,6 +111,11 @@ create_dither :: proc "system"(
 		},
 		kernel = select_kernel(int(bits), Scale(scale), vectorized != 0),
 		seed = int(seed),
+	}
+	if bits < 8 {
+		// The 24-bit reciprocal exactly rounds all 2^bits output levels to 0..255.
+		maximum := instance.parameters.output_max
+		instance.parameters.expansion_multiplier = ((1 << 24) + maximum - 1) / maximum
 	}
 	threshold_range := u32(1) << instance.parameters.shift
 	if Scale(scale) == .Full_Range {
@@ -182,7 +187,7 @@ get_frame :: proc "system"(
 		for y in 0..<height {
 			thresholds := raw_data(instance.thresholds[(y+phase_y)&(TILE_SIZE-1)][:])
 			instance.kernel(
-				cast([^]u16)&input_data[y*input_stride], &output_data[y*output_stride],
+				&input_data[y*input_stride], &output_data[y*output_stride],
 				width, thresholds, phase_x, &instance.parameters,
 			)
 		}

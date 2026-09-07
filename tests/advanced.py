@@ -117,6 +117,8 @@ def dither_oracle(planes, ranks: list[int], source_bits: int, bits: int, seed: i
                 else:
                     threshold = ((2 * rank + 1) * source_max) // 8192
                     value = (sample * maximum + threshold) // source_max
+                if bits < 8:
+                    value = (value * 255 + maximum // 2) // maximum
                 output_row.append(value)
             output_rows.append(output_row)
         result.append(output_rows)
@@ -135,9 +137,13 @@ def check_dither_case(core, vs, ranks, source_bits, bits, width, height, family,
         return (197 * x + 313 * y + 997 * plane) & maximum
 
     source = fixture_clip(core, format_id, width, height, pattern)
+    source = core.std.SetFrameProps(source, _Transfer=13, _Primaries=1, _Range=1)
     scalar = core.odin_dither.Dither(source, bits=bits, seed=seed, simd=0, scale=scale)
     vector = core.odin_dither.Dither(source, bits=bits, seed=seed, simd=1, scale=scale)
     label = f"Dither {source_bits}->{bits}, {width}x{height}, {family}, scale={scale}, seed={seed}"
+    for node in (scalar, vector):
+        require(node.num_frames == source.num_frames, f"{label}: frame count changed")
+        require(node.fps == source.fps, f"{label}: frame rate changed")
     with ExitStack() as frames:
         originals = [frames.enter_context(source.get_frame(n)) for n in range(source.num_frames)]
         before = [snapshot(frame) for frame in originals]
@@ -145,13 +151,16 @@ def check_dither_case(core, vs, ranks, source_bits, bits, width, height, family,
         requests = [(n, node.get_frame_async(n)) for n in range(source.num_frames) for node in (scalar, vector)]
         for n, future in requests:
             with future.result(timeout=30) as frame:
-                require(frame.format.bits_per_sample == bits, f"{label}: wrong output depth")
+                require(frame.format.bits_per_sample == max(8, bits), f"{label}: wrong output container depth")
+                require(frame.format.bytes_per_sample == (1 if bits <= 8 else 2), f"{label}: wrong sample storage")
                 require(frame.format.color_family == family, f"{label}: wrong output family")
                 require(
                     (frame.format.subsampling_w, frame.format.subsampling_h) == subsampling,
                     f"{label}: subsampling changed",
                 )
                 require(frame.props["OdinAdvanced"] == 100 + n, f"{label}: frame properties lost")
+                for key in ("_Transfer", "_Primaries", "_Range"):
+                    require(frame.props[key] == originals[n].props[key], f"{label}: {key} changed")
                 equal_pixels(snapshot(frame), expected, label)
         for n, original in enumerate(originals):
             equal_pixels(snapshot(original), before[n], f"{label}: source mutated")
@@ -159,8 +168,9 @@ def check_dither_case(core, vs, ranks, source_bits, bits, width, height, family,
 
 def test_dither(core, vs) -> None:
     ranks = read_noise_tile()
+    tail_widths = (1, 7, 8, 9, 15, 16, 17, 31, 32, 63, 64, 65)
     cases = [(bits, 8, 33, 5, vs.GRAY, (0, 0)) for bits in range(8, 17)]
-    cases.extend((16, 8, width, 5, vs.GRAY, (0, 0)) for width in (1, 7, 8, 9, 15, 16, 17, 31, 32, 63, 64, 65))
+    cases.extend((16, 8, width, 5, vs.GRAY, (0, 0)) for width in tail_widths)
     cases.extend((16, bits, 33, 5, vs.GRAY, (0, 0)) for bits in (9, 10, 12, 14, 16))
     cases.extend((
         (16, 8, 64, 64, vs.GRAY, (0, 0)),
@@ -168,17 +178,41 @@ def test_dither(core, vs) -> None:
         (16, 12, 17, 9, vs.RGB, (0, 0)),
         (12, 8, 66, 18, vs.YUV, (1, 1)),
     ))
+    cases.extend(
+        (source_bits, bits, 67, 5, vs.GRAY, (0, 0))
+        for source_bits in range(8, 17) for bits in range(1, 8)
+    )
+    cases.extend(
+        (source_bits, bits, width, 3, vs.GRAY, (0, 0))
+        for source_bits in (8, 16) for bits in (1, 3, 7) for width in tail_widths
+    )
+    cases.extend(
+        (source_bits, bits, width, height, family, subsampling)
+        for source_bits in (8, 16) for bits in (1, 4, 7)
+        for width, height, family, subsampling in (
+            (65, 65, vs.RGB, (0, 0)),
+            (66, 66, vs.YUV, (1, 1)),
+            (130, 5, vs.YUV, (1, 0)),
+            (65, 5, vs.YUV, (0, 0)),
+        )
+    )
+    oracle_cases = 0
     for case in cases:
         for scale in (0, 1):
             check_dither_case(core, vs, ranks, *case, scale)
+            oracle_cases += 1
     for seed in (0, 63, 64, 4095):
-        for scale in (0, 1):
-            check_dither_case(core, vs, ranks, 12, 8, 65, 65, vs.RGB, (0, 0), scale, seed)
+        for bits in (1, 3, 7, 8):
+            for scale in (0, 1):
+                check_dither_case(core, vs, ranks, 12, bits, 65, 65, vs.RGB, (0, 0), scale, seed)
+                oracle_cases += 1
     print(
-        f"PASS dither: {len(cases) * 2 + 8} oracle cases; depths, SIMD tails, subsampling, "
+        f"PASS dither: {oracle_cases} oracle cases; effective depths 1-16, SIMD tails, subsampling, "
         "parallel requests, temporal stability, properties and retained source frames",
         flush=True,
     )
+
+    check_low_bit_levels(core, vs)
 
     source = fixture_clip(core, vs.GRAY16, 64, 16, lambda p, x, y: (x + 64 * y) << 6, length=1)
     for seed in (0, 1, 63, 64, 4095):
@@ -193,14 +227,15 @@ def test_dither(core, vs) -> None:
     malformed = fixture_clip(core, vs.GRAY10, 17, 3, lambda p, x, y: 65535, length=1)
     for scale in (0, 1):
         for simd in (0, 1):
-            for bits, wanted in ((8, 255), (10, 65535)):
+            for bits, wanted in ((1, 255), (3, 255), (7, 255), (8, 255), (10, 65535)):
                 output = core.odin_dither.Dither(malformed, bits=bits, scale=scale, simd=simd)
                 with output.get_frame(0) as frame:
                     equal_pixels(snapshot(frame), [[[wanted] * 17 for _ in range(3)]], "Malformed source sample policy")
 
     gray = core.std.BlankClip(format=vs.GRAY10, width=16, height=16, length=1)
     for arguments in (
-        {"bits": 7}, {"bits": 11}, {"bits": 17}, {"bits": "bad"},
+        {"bits": 0}, {"bits": -1}, {"bits": -(1 << 40)},
+        {"bits": 11}, {"bits": 17}, {"bits": 1 << 40}, {"bits": "bad"},
         {"seed": -1}, {"seed": 4096}, {"seed": 1 << 40}, {"seed": "bad"},
         {"simd": -1}, {"simd": 2}, {"scale": -1}, {"scale": 2},
     ):
@@ -214,6 +249,34 @@ def test_dither(core, vs) -> None:
     for n in (-1, output.num_frames):
         expect_error(vs, lambda n=n: output.get_frame(n), f"Dither frame index {n}")
     print("PASS dither: exact nominal codes, seed phase, clamping, pass-through and rejection boundaries", flush=True)
+
+
+def check_low_bit_levels(core, vs) -> None:
+    cases = 0
+    for bits in range(1, 8):
+        maximum = (1 << bits) - 1
+        levels = [(code * 255 + maximum // 2) // maximum for code in range(maximum + 1)]
+        require(len(set(levels)) == 1 << bits, "Low-bit reference levels must be distinct")
+        source_bits = ((8 + bits - 1) // bits) * bits
+        source_max = (1 << source_bits) - 1
+        format_id = core.query_video_format(vs.GRAY, vs.INTEGER, source_bits).id
+        for scale in (0, 1):
+            # A source depth divisible by the effective depth represents every
+            # full-range nominal code exactly, regardless of the noise threshold.
+            step = (1 << (source_bits - bits)) if scale == 0 else source_max // maximum
+            source = fixture_clip(core, format_id, maximum + 1, 65, lambda p, x, y: x * step, length=1)
+            expected = [[levels for _ in range(65)]]
+            for simd in (0, 1):
+                output = core.odin_dither.Dither(source, bits=bits, seed=4095, simd=simd, scale=scale)
+                label = f"{bits}-bit nominal levels, scale={scale}, simd={simd}"
+                with output.get_frame(0) as frame:
+                    actual = snapshot(frame)
+                    equal_pixels(actual, expected, label)
+                    require(set(actual[0][0]) == set(levels), f"{label}: missing nominal levels")
+                    require(actual[0][0][0] == 0 and actual[0][0][-1] == 255, f"{label}: endpoints lost")
+                    require(frame.format.id == vs.GRAY8, f"{label}: expected an 8-bit container")
+                cases += 1
+    print(f"PASS dither: {cases} exact low-bit level checks; all 2^bits levels span 0-255 in an 8-bit container", flush=True)
 
 
 def png_chunk(kind: bytes, data: bytes) -> bytes:

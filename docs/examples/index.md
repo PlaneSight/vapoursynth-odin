@@ -14,7 +14,7 @@ The first three examples use the optional `easy` package to make resource owners
 | 4 | [Host through the raw API](raw-host.md) | `examples/host` | Resolve the entry point, use C return codes, inspect result-map errors, and manage raw references. |
 | 5 | [Register an identity plugin](identity-plugin.md) | `examples/plugin` | Export the plugin entry point, declare a function signature, and transfer an owned node reference. |
 | 6 | [Implement an invert filter](invert-plugin.md) | `examples/invert` | Declare dependencies, respond to activation reasons, process planar samples, and manage a parallel filter's lifetime. |
-| 7 | [Dither with SIMD](dither-plugin.md) | `examples/dither` | Reduce integer bit depth with a reproducible blue-noise tile, explicit range scaling, eight-lane SIMD, and a scalar reference. |
+| 7 | [Dither with SIMD](dither-plugin.md) | `examples/dither` | Reduce effective depth down to one bit with a reproducible blue-noise tile, explicit range scaling, sixteen-lane SIMD, automatic AVX2 selection, and a scalar reference. |
 | 8 | [Apply a Hald CLUT](haldlut-plugin.md) | `examples/haldlut` | Decode a PNG through Odin's bundled `stb` library, validate bounded input, and apply an immutable 3D lookup table with tetrahedral interpolation. |
 
 For a host application, start at step 1 and work through step 4. For a filter plugin, skim the [ownership guide](../guides/ownership.md), then work through steps 5 and 6. The identity function establishes the registration and reference-transfer contract before the invert filter introduces frame scheduling.
@@ -28,6 +28,27 @@ Run all commands from the repository root. Follow the [quickstart](../getting-st
 The four host executables accept an optional path to the VapourSynth **core** library. They use `std.BlankClip` where a clip is needed; no video file, source plugin, or Python interpreter is involved in those hosts. Plugin autoloading is disabled when their cores are created, while the built-in `std` plugin remains available.
 
 The four plugin demonstrations need a VapourSynth host to load them. Their tutorials use Python with the VapourSynth module installed. Match the plugin architecture to that host and its core library. See [loading and linking](../guides/loading-and-linking.md) for library selection and deployment details. The [Python packaging guide](../guides/python-packaging.md) explains how to provision the runtime with uv and build all four plugins into a native wheel.
+
+## Build and inspect the examples
+
+```console
+uv run tools/examples.py build
+uv run --group preview tools/examples.py preview --no-build
+```
+
+The first command compiles all eight packages. The second reuses those binaries
+and opens all four plugin demonstrations in VSView. Select individual
+filters with `preview invert dither`; every script supplies named comparison,
+source or baseline, and filtered outputs.
+
+For an optional headless check after compiling, run
+`uv run tools/examples.py check --no-build`. It executes the four plugin `.vpy`
+scripts and requests their output frames without opening a window.
+
+The optional `preview` group supplies VSView and Qt and requires Python 3.12–3.14.
+The [preview guide](../guides/previewing-examples.md) covers selection, output
+interpretation, and headless rendering. The screenshots in these tutorials are
+generated from the same scripts during each documentation build.
 
 ## Run a single host
 

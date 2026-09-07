@@ -1,19 +1,49 @@
 # Blue-noise bit-depth reduction
 
-`odin_dither.Dither` reduces constant-format 8–16-bit integer Gray, RGB, or YUV video to a selected integer bit depth. It uses a reproducible 64 × 64 void-and-cluster blue-noise rank tile, processes independent frames in parallel, and has an explicit eight-lane Odin SIMD implementation with matching scalar code and tails.
+`odin_dither.Dither` reduces constant-format 8–16-bit integer Gray, RGB, or YUV video to a selected effective depth from one bit through the input depth. Effective depths below eight use a normal eight-bit output format, with the quantized levels expanded across `0..255` for viewing. It uses a reproducible 64 × 64 void-and-cluster blue-noise rank tile, processes independent frames in parallel, and has an explicit sixteen-lane Odin SIMD implementation with matching scalar code and tails. An x64 binary automatically selects AVX2 when the CPU and operating system support it, with a portable fallback for other machines.
 
 This example builds on the [invert filter](../invert). It adds output-format negotiation, immutable per-instance lookup data, a selected row kernel, numerical contracts for quantization, vector memory access, and independent scalar/SIMD verification. It needs no external native library beyond VapourSynth and the platform C runtime.
 
 ## Build and load
 
+For the interactive demonstration, run from the repository root:
+
+```console
+uv run --group preview tools/examples.py preview dither
+```
+
+The command builds `.build/examples/dither` with the platform's shared-library
+extension and launches [demo.vpy](demo.vpy) in VSView. The optional group requires
+Python 3.12–3.14 and adds VSView and Qt only when selected. The script compares
+nearest rounding with native dither using the same **20× display contrast gain**
+on both sides: output `0` is the comparison, `1` rounding, and `2` dither.
+Outputs `3` and `4` expose the unamplified RGB16 source and RGB8 result.
+Output `5` is the original RGB16 color scene. The remaining outputs show the
+scene quantized to low effective depths in RGB8, without display gain:
+
+| Effective depth | Nearest rounding | Blue-noise dither | Side by side |
+| ---: | ---: | ---: | ---: |
+| 1 bit | 6 | 7 | 8 |
+| 2 bits | 9 | 10 | 11 |
+| 4 bits | 12 | 13 | 14 |
+
+These views use `scale=1` to preserve black and white. One-bit RGB has two levels
+per channel and therefore eight possible RGB combinations; it is not a
+two-color palette. Each plane uses a different phase of the dither tile.
+Documentation images are exported from these same nodes during each site build.
+See the [preview guide](../../docs/guides/previewing-examples.md) for headless checks
+and image generation.
+
+The same library can be built and loaded directly:
+
 Run `uv sync --locked` from the repository root to provision the configured Python environment and runtime. Build an optimized Windows x64 plugin for the baseline x86-64 instruction set:
 
 ```powershell
-New-Item -ItemType Directory -Force .build | Out-Null
-odin build examples/dither -build-mode:dll -out:.build/odin_dither.dll -vet -o:speed -microarch:x86-64
+New-Item -ItemType Directory -Force .build/examples | Out-Null
+odin build examples/dither -build-mode:dll -out:.build/examples/dither.dll -vet -o:speed -microarch:x86-64
 ```
 
-On Linux x64, use `.so` for the output extension with the same flags. On macOS ARM64, use `.dylib` and omit `-microarch:x86-64`. Odin's shared-library build mode is named `dll` on all these platforms. The explicit x64 baseline avoids inheriting the compiler's newer default microarchitecture; there is no AVX2 requirement and no runtime CPU dispatch to a higher instruction set.
+On Linux x64, use `.so` for the output extension with the same flags. On macOS ARM64, use `.dylib` and omit `-microarch:x86-64`. Odin's shared-library build mode is named `dll` on all these platforms. The explicit x64 baseline avoids inheriting the compiler's newer default microarchitecture. Separate AVX2 row functions are selected only after checking runtime support, so loading the plugin does not require an AVX2-capable CPU.
 
 In a Python environment with VapourSynth installed:
 
@@ -21,7 +51,7 @@ In a Python environment with VapourSynth installed:
 from pathlib import Path
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path=str(Path(".build/odin_dither.dll").resolve()))
+vs.core.std.LoadPlugin(path=str(Path(".build/examples/dither.dll").resolve()))
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.YUV420P16,
     color=[4096, 32768, 32768], length=24,
@@ -32,7 +62,10 @@ output.set_output()
 
 This uses conventional power-of-two scaling: limited-range black 4096 becomes 16, and neutral chroma 32768 becomes 128. The source's subsampling, dimensions, frame rate, frame count, and frame properties are preserved; only the integer sample depth and storage width may change.
 
-`uv run examples/dither/demo.py` creates a ramp and verifies scalar/SIMD parity. The script accepts `--plugin` for a nondefault plugin file. [demo.vpy](demo.vpy) creates an undithered/dithered comparison for a VapourSynth preview application. Both select the platform's shared-library extension automatically. An already configured Python environment can invoke the same scripts with `python` directly.
+`uv run examples/dither/demo.py` creates a ramp and verifies scalar/SIMD parity.
+The script accepts `--plugin` for a nondefault plugin file. The checked-in
+`demo.vpy` uses the canonical `.build/examples` path through the preview command
+above. Both select the platform's shared-library extension automatically.
 
 ## Interface
 
@@ -43,18 +76,49 @@ odin_dither.Dither(clip, bits=8, seed=0, simd=1, scale=0) -> video node
 | Argument | Contract |
 | --- | --- |
 | `clip` | Constant format and dimensions; integer Gray, RGB, or YUV; 8–16 bits per sample. |
-| `bits` | Output depth from 8 through the input depth. Increasing bit depth is rejected. |
+| `bits` | Effective depth from 1 through the input depth. Depths 1–7 use eight-bit output storage. Zero, negative values, and increasing depth are rejected. |
 | `seed` | Integer 0–4095 selecting the tile's spatial phase. It does not regenerate the tile. |
-| `simd` | `1` selects explicit portable SIMD on targets with hardware SIMD; `0` selects the scalar source implementation. Other values are rejected. |
+| `simd` | `1` selects AVX2 on supported x64 systems, otherwise portable SIMD or scalar according to the target; `0` selects the scalar source implementation. Other values are rejected. |
 | `scale` | `0` preserves power-of-two code points; `1` normalizes the full input code range to the full output code range. |
 
 If `bits` equals the input depth, the function returns the original node after validating every argument. It does not allocate a new filter or touch the pixels. On a reducing path, malformed integer samples above the input format's maximum are clamped before quantization.
 
 Missing optional arguments use the defaults above. Invalid values, floating-point input, variable format, and variable dimensions produce an invocation error. A failed upstream frame request or output allocation produces a frame-request error. This is a synchronous pixel kernel inside the normal asynchronous VapourSynth filter scheduling contract: the callback requests source frame `n` during `arInitial` and processes it during `arAllFramesReady`.
 
+## Low effective depths in an eight-bit container
+
+```python
+source = vs.core.std.BlankClip(format=vs.RGB24, color=[75, 125, 175])
+two_bit = vs.core.odin_dither.Dither(source, bits=2, scale=1)
+assert two_bit.format.bits_per_sample == 8
+```
+
+This clip uses only four values in each channel: `0`, `85`, `170`, and `255`.
+The requested depth determines `2^bits` quantization levels. The registered
+output format uses `max(8, bits)` bits per sample, so existing filters and
+previewers can read the output normally. Pixels are not packed into sub-byte
+storage.
+
+After quantization, an effective depth below eight expands each level `q` to
+the nearest representable eight-bit value:
+
+```text
+m = 2^bits - 1
+stored = (q*255 + floor(m/2)) / m
+```
+
+Integer division rounds down. One bit gives `0, 255`; two bits gives
+`0, 85, 170, 255`; four bits gives multiples of 17. Depths whose intervals do not
+divide 255 evenly use rounded spacing: three bits gives
+`0, 36, 73, 109, 146, 182, 219, 255`.
+
+Zero bits would give one level and could not preserve both black and white.
+It is deliberately rejected. Eight-bit sources can reduce to any of the
+supported effective depths below eight, using one-byte input and output storage.
+
 ## Quantization and range semantics
 
-Let `B` be the input bit depth, `b` the output bit depth, `M = 2^B - 1`, `m = 2^b - 1`, `r` the blue-noise rank from 0 through 4095, and `s = min(input, M)`. All arithmetic below is integer arithmetic; `/` rounds down.
+Let `B` be the input bit depth, `b` the requested effective bit depth, `M = 2^B - 1`, `m = 2^b - 1`, `r` the blue-noise rank from 0 through 4095, and `s = min(input, M)`. All arithmetic below is integer arithmetic; `/` rounds down.
 
 For the default `scale=0`:
 
@@ -62,10 +126,10 @@ For the default `scale=0`:
 shift = B - b
 step = 2^shift
 threshold = ((2*r + 1) * step) / 8192
-output = min(m, (s + threshold) >> shift)
+q = min(m, (s + threshold) >> shift)
 ```
 
-The tile includes every threshold rank exactly once. Because the supported reduction step is at most 256, each integer threshold from zero through `step-1` occurs equally often over a full tile. A fractional code value is distributed between its two neighboring output values using a spatial blue-noise pattern. Values already on the output grid remain exact. The top endpoint is clamped to the output maximum.
+The tile includes every threshold rank exactly once. For reduction steps up to 4096, each integer threshold from zero through `step-1` occurs equally often over a full tile. Larger steps can reach 32768, so the tile samples 4096 midpoint positions rather than every integer threshold. Its rounding probability has a resolution of one sample per tile. A fractional code value is distributed between its two neighboring output values using a spatial blue-noise pattern. Values already on the output grid remain exact. The top endpoint is clamped to the output maximum.
 
 This convention preserves common video code points: for 16-to-8-bit limited-range YUV, black 4096 becomes 16, luma white 60160 becomes 235, and chroma center 32768 becomes 128. Headroom and footroom are retained within the destination's representable code range. The filter does not expand limited-range input to full range or reinterpret `_Range`.
 
@@ -73,12 +137,22 @@ For `scale=1`:
 
 ```text
 threshold = ((2*r + 1) * M) / 8192
-output = (s*m + threshold) / M
+q = (s*m + threshold) / M
 ```
 
 This maps the full code interval `[0, M]` to `[0, m]`, keeping both endpoints exact. The ranked thresholds approximate uniform ordered rounding; the finite 4096-rank tile limits threshold resolution. This is useful when full-range endpoint normalization is the intended operation.
 
+For either mode, `q` is stored directly at eight bits and above. Below eight,
+the expansion formula in the preceding section maps `q` into the eight-bit
+container. The low-bit RGB preview uses `scale=1`, keeping its black-to-white
+interval consistent across the different effective depths.
+
 Full-range normalization differs from preserving YUV code points. For example, 16-bit neutral chroma 32768 becomes a spatial mixture of 127 and 128 at eight bits because `32768*255/65535` is slightly above 127.5. Use the default `scale=0` when retaining conventional chroma center and limited-range code points matters. Both modes preserve metadata rather than changing it to describe an unrequested range conversion.
+
+Low-bit YUV is supported as code-value quantization. Its sparse grid cannot
+retain all nominal limited-range endpoints and neutral chroma at very low
+depths, so color casts can be expected. The plugin does not reinterpret those
+codes or rewrite their range metadata to compensate.
 
 The filter works in the stored integer code domain. It performs no transfer-function conversion, gamma correction, color conversion, chroma resampling, or error diffusion. A single tile phase remains fixed across frames, so stationary pixels produce stationary dither instead of introducing temporal noise.
 
@@ -112,11 +186,18 @@ Coordinates are local to each plane. Chroma planes use their actual subsampled d
 
 ## SIMD and memory layout
 
-[kernels.odin](kernels.odin) explicitly loads eight `u16` samples and eight thresholds, widens to `simd.u32x8`, and performs packed integer arithmetic. The output is narrowed to eight `u8` or `u16` samples. Unaligned loads and stores avoid requiring vector alignment at a row or tile phase. A vector block runs only when eight active samples remain; the scalar tail handles every other width.
+[kernels.odin](kernels.odin) explicitly loads sixteen `u8` or `u16` samples and sixteen thresholds, clamps in `simd.u16x16`, and performs packed integer arithmetic. Effective depths below eight expand their quantized levels before the output is narrowed to sixteen `u8` or `u16` samples. Unaligned loads and stores avoid requiring vector alignment at a row or tile phase. A vector block runs only when sixteen active samples remain; the scalar tail handles the remaining zero to fifteen samples.
 
-On a reducing path the input depth is necessarily greater than eight, so reading `u16` storage is valid. Frames at the same depth took the earlier identity path. Each plane uses independent input and output strides; only active samples are read and written. No padding contributes to the result.
+Eight-bit input uses `u8` loads when reduced to a lower effective depth; higher input depths use `u16` loads. Frames at the same depth took the earlier identity path. Each plane uses independent input and output strides; only active samples are read and written. No padding contributes to the result.
 
-The constructor precomputes the thresholds once and duplicates each 64-entry row. A vector load crossing the tile's horizontal seam can then read up to eight consecutive values without a gather or an out-of-bounds access. The per-instance table uses 16 KiB, and all instance state is immutable during processing. There is no RNG, scratch allocation, or mutable shared state in the row loop.
+The constructor precomputes the thresholds once and duplicates each 64-entry row. A vector load crossing the tile's horizontal seam can then read up to sixteen consecutive values without a gather or an out-of-bounds access. The per-instance table uses 16 KiB, and all instance state is immutable during processing. There is no RNG, scratch allocation, or mutable shared state in the row loop.
+
+The power-of-two vector path uses unsigned saturating `u16` addition, a shift,
+and an output clamp. Saturation changes only sums whose output would be clamped
+anyway, so it preserves scalar parity while avoiding `u32` arithmetic. The
+full-range path widens clamped samples to `u32` and replaces multiplication by
+`2^b-1` with `(sample << b) - sample`. Construction bounds the reduction shift to
+`1..15`; the vector expression exposes that bound explicitly for code generation.
 
 Full-range mode avoids division in the hot loop. For its bounded numerator `n`, division by the Mersenne number `2^B-1` is exactly:
 
@@ -126,7 +207,36 @@ q = (n + 1 + (n >> B)) >> B
 
 Reduction guarantees `b < B`; even the 16-to-15-bit case keeps the numerator and corrected numerator below `2^31`. The scalar and SIMD paths use this same identity and produce bit-identical results. The test oracle independently uses ordinary integer division.
 
-The scalar option describes the source implementation; an optimizing compiler may still auto-vectorize parts of it. `simd=1` explicitly expresses vector operations in Odin. Baseline x64 assembly was inspected and contains packed XMM loads, additions, shifts, and multiplication, without AVX or wider-register instructions. Other targets use Odin's portable lowering; a target without hardware SIMD selects the scalar kernel.
+The scalar option describes the source implementation; an optimizing compiler
+may still auto-vectorize parts of it. With `simd=1`, x64 builds ask Odin's
+`core:sys/info.cpu_features()` whether AVX2 is available. Odin checks CPU support
+and operating-system support for saving XMM and YMM state before reporting that
+feature. The constructor then selects one row function for the instance. Older
+x64 CPUs and other targets use the sixteen-lane portable implementation; a
+target without hardware SIMD selects scalar processing.
+
+[kernels_amd64.odin](kernels_amd64.odin) contains the x64-only selection code and
+`@(enable_target_feature="avx2")` entry points. The portable and AVX2 functions
+share one forced-inline row implementation, including tails and low-bit
+expansion. The default build remains `-microarch:x86-64`, and CPU detection does
+not run in the pixel loop.
+
+Add `-define:DITHER_ENABLE_AVX2=false` to a baseline x64 build to exercise the
+portable fallback even on a newer CPU. Write that build to a separate output
+filename and load it in a fresh process when comparing paths. This definition
+changes implementation selection, not numerical semantics. `simd=0` always
+selects the scalar source implementation.
+
+Low-bit expansion uses a precomputed reciprocal `R = ceil(2^24 / m)`:
+
+```text
+stored = ((q*255 + floor(m/2)) * R) >> 24
+```
+
+For the supported depths and quantized levels this equals the ordinary integer
+division formula exactly, with bounded `u32` intermediates. The level tests
+check all 254 nominal values across depths 1–7. No per-pixel division or extra
+frame allocation is needed, and output depths eight and above skip expansion.
 
 ## Validation and measured performance
 
@@ -139,13 +249,17 @@ uv run tests/benchmark_dither.py
 
 Use each runner's `--runtime` option when selecting an existing local Python runtime package directory. See the repository's testing documentation for the configured environment.
 
-One measured Windows AMD64 run used VapourSynth R79 API 4.2, Odin `dev-2026-09-nightly:a2fb372`, and `-vet -o:speed -microarch:x86-64`. On an AMD Family 25 Model 97 Stepping 2 CPU, the 1920 × 1080 Gray16-to-Gray8 benchmark used four worker threads and four outstanding requests, 16 warmup frames, and five measured runs of 256 frames per implementation:
+The [performance comparison](../../docs/maintenance/dither-performance.md) records
+single-thread measurements against FMTConv's void-and-cluster mode across
+resolutions through 3840 × 2160 and several integer formats. Both filters use
+`core.num_threads = 1`. The report gives the exact parameters, build, runtime,
+input preparation, warmups, timing method, and reproduction commands.
 
-| Implementation | Median elapsed time | Frame throughput |
-| --- | ---: | ---: |
-| Scalar source | 0.136815 s | 1871.14 frames/s |
-| Explicit SIMD | 0.048459 s | 5282.83 frames/s |
-
-The measured median time ratio was **2.823×**. These are end-to-end frame timings, including scheduling, output allocation, Python request delivery, and release. The benchmark uses a reusable in-memory source, requests unique output frames, and disables output caching. It verifies exact scalar/SIMD parity before measuring. Results depend on the machine, runtime, compiler, format, size, and request concurrency; they are not a performance guarantee.
+These are end-to-end frame timings, including scheduling, output allocation,
+Python request delivery, and release. The benchmarks use reusable in-memory
+sources, request unique output frames, and disable output caching. Results depend
+on the machine, runtime, compiler, format, size, and request concurrency; they
+are not a performance guarantee or evidence that different dither patterns are
+pixel-identical.
 
 Runtime tests here covered Windows x64 with R76 and R79. Compile checks also covered Windows x86, Linux x64, and macOS ARM64. The algorithm, tile, and integer outputs are designed to remain deterministic across those targets; cross-target compilation alone does not replace runtime testing on them.

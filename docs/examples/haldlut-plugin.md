@@ -24,21 +24,32 @@ sixteen-bit samples to RGB8 for display, so their differences come from the LUT.
 
 === "Original scene"
 
-    ![Original synthetic scene with red, green, and blue shaded spheres above a neutral grayscale ramp](../assets/examples/hald-source.png){ width="768" height="320" }
+    ![Original synthetic scene with red, green, and blue shaded spheres above a neutral grayscale ramp](../assets/generated/hald-source.png){ width="768" height="320" }
 
 === "Cinematic LUT"
 
-    ![The same scene after native Hald CLUT processing, showing the cinematic table's contrast and color changes](../assets/examples/hald-cinematic.png){ width="768" height="320" }
+    ![The same scene after native Hald CLUT processing, showing the cinematic table's contrast and color changes](../assets/generated/hald-cinematic.png){ width="768" height="320" }
 
 Reproduce the scene, LUT, and filter-output images with:
 
 ```console
-uv run tests/advanced.py
 uv run tools/render_showcase.py
 ```
 
-The renderer writes its images and configuration record under `.build/showcase`.
-It also produces the [dither comparison](dither-plugin.md#see-the-quantization-pattern).
+The renderer builds the plugins and exports these nodes from the checked-in
+`examples/haldlut/demo.vpy` into `.build/showcase`, alongside the other plugin
+comparisons and a record of the run. Each documentation build regenerates the
+same images. To inspect the script interactively:
+
+```console
+uv run --group preview tools/examples.py preview haldlut
+```
+
+The command builds the canonical `.build/examples/haldlut` library and launches
+VSView. The script generates its cinematic LUT automatically under
+`.build/example-assets`; no separate asset preparation is needed. Output `0`
+is the comparison, `1` the source, and `2` the result. See the
+[preview guide](../guides/previewing-examples.md) for the optional dependency group.
 
 ## Build the plugin and generate a look
 
@@ -56,27 +67,28 @@ The cinematic transform combines a modest S-curve, reduced saturation, cool
 shadows, and warm highlights. It is an example look, with no camera-specific
 calibration.
 
-Build from the repository root:
+The following manual commands build the same `.build/examples/haldlut` library
+used by the preview script and inline Python example:
 
 === "Windows x64"
 
     ```powershell
-    New-Item -ItemType Directory -Force .build | Out-Null
-    odin build examples/haldlut -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/odin_hald.dll
+    New-Item -ItemType Directory -Force .build/examples | Out-Null
+    odin build examples/haldlut -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/examples/haldlut.dll
     ```
 
 === "Linux x64"
 
     ```sh
-    mkdir -p .build
-    odin build examples/haldlut -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/odin_hald.so
+    mkdir -p .build/examples
+    odin build examples/haldlut -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/examples/haldlut.so
     ```
 
 === "macOS ARM64"
 
     ```sh
-    mkdir -p .build
-    odin build examples/haldlut -build-mode:dll -o:speed -vet -out:.build/odin_hald.dylib
+    mkdir -p .build/examples
+    odin build examples/haldlut -build-mode:dll -o:speed -vet -out:.build/examples/haldlut.dylib
     ```
 
 The compiler's `vendor:stb/image` package needs its native static library. If a
@@ -107,7 +119,7 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/odin_hald{suffix}").resolve()))
+vs.core.std.LoadPlugin(path=str(Path(f".build/examples/haldlut{suffix}").resolve()))
 
 source = vs.core.std.BlankClip(
     format=vs.RGB24, width=640, height=360,
@@ -124,8 +136,8 @@ with graded.get_frame(0) as frame:
 ```
 
 When using an installed example wheel, omit `LoadPlugin` and let VapourSynth
-discover the native binary. The checked-in `demo.vpy` creates an RGB gradient and
-places its original and graded versions side by side for a preview host.
+discover the native binary. The checked-in `demo.vpy` creates the shaded-sphere
+scene shown above, with named original, graded, and side-by-side output nodes.
 
 ```python
 result = core.odin_hald.HaldCLUT(clip, path="look.png", strength=1.0)

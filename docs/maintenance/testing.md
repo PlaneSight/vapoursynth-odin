@@ -25,7 +25,7 @@ Explicit distribution builds write their wheel and source archives to `dist`.
 | Six introductory examples | Project Python environment, Odin, matching Python module and core | Core API 4.2 |
 | Dither and Hald correctness; dither benchmark | Project Python environment, Odin, native stb library for Hald | Core API 4.2 |
 | Native wheel build and installation check | Project Python environment, uv, Odin, native stb library | Installed-wheel check uses a matching Python runtime |
-| Documentation | Project Python environment and the `docs` dependency group | None |
+| Documentation | Project Python environment, Odin, and the `docs` dependency group | Core API 4.2, supplied by the docs group |
 
 See [installation](../getting-started/installation.md) for the compiler and runtime
 setup, and [compatibility](compatibility.md) for the exact environment previously
@@ -235,12 +235,15 @@ native wheel's baseline. It generates its own PNG fixtures using Python's
 standard library and compares every active output pixel with independent
 reference calculations.
 
-- **Dither: 68 oracle cases**, covering scalar/SIMD parity, both scaling modes,
-  input depths 8–16, multiple output depths, vector tails, tile and seed
+- **Dither: 410 oracle cases and 28 exact-level checks**, covering scalar/SIMD parity,
+  both scaling modes, input depths 8–16, effective output depths from 1 through
+  the input depth, vector tails, tile and seed
   boundaries, RGB and subsampled YUV planes. Additional checks cover exact
   nominal code points, endpoints, static temporal behavior, malformed sample
   clamping, passthrough, concurrent requests, properties, retained source-frame
-  immutability, and invalid inputs.
+  immutability, and invalid inputs. Low-bit checks verify the eight-bit output
+  container and its expanded sample levels, including eight-bit input reduced
+  to one through seven effective bits. Zero effective bits is rejected.
 - **Hald: 81 oracle cases**, covering RGB/RGBA PNG8/16, all five PNG row filters,
   every tetrahedral ordering, nonlinear lookups across multiple cells, input
   depths 8–16, strengths, identity tables, and levels 2, 3, and 8. Boundary checks
@@ -263,6 +266,16 @@ It performs no package installation.
 
 ## Measure dither throughput
 
+The [FMTConv comparison](dither-performance.md) measures Odin's blue-noise filter
+against FMTConv's `dmode=8` void-and-cluster mode with `core.num_threads = 1`,
+across several integer formats and resolutions through 3840 × 2160. Follow its
+setup and reproduction commands to select the exact plugin binaries and matching
+code-range semantics. `tests/benchmark_fmtconv.py` records per-run samples and
+the environment alongside aggregate timings; a benchmark result should retain
+that machine-readable report.
+
+For a focused comparison between this plugin's scalar and SIMD implementations:
+
 ```console
 uv run tests/benchmark_dither.py
 ```
@@ -280,7 +293,7 @@ they measure end-to-end frame throughput rather than an isolated arithmetic
 kernel. The runner bounds runtime and imposes no speedup threshold. Use
 `--help` to adjust the workload and record the compiler, runtime, CPU, and
 request concurrency with each result. See the
-[dither walkthrough](../examples/dither-plugin.md) for the recorded measurements
+[performance comparison](dither-performance.md) for the recorded measurements
 and their environment.
 
 ## Build and check native distributions
@@ -322,12 +335,16 @@ tag requirements.
 Use the locked documentation dependency group:
 
 ```console
-uv run --group docs python -m zensical build --clean --strict
-uv run --group docs python tools/check_docs.py
+uv run --group docs tools/docs.py build
 uv run python -m unittest discover -s tests -p test_check_docs.py
 ```
 
-The build includes the real Odin sources in reference pages and tutorials.
+The build compiles all eight examples and runs the four visual `.vpy` scripts in
+fresh processes. Their designated first frames become the generated images in
+the site, so broken native code or script evaluation fails the documentation
+build. The `docs` group supplies VapourSynth and NumPy; Odin is required, while
+VSView and Qt are optional. The build includes real Odin sources in reference
+pages and tutorials and invokes Zensical with clean, strict validation.
 The offline checker resolves generated local links, assets, and heading fragments.
 Its small test suite covers missing targets, encoded paths, site prefixes, and
 directory traversal. It does not check availability of external websites.
@@ -347,6 +364,7 @@ describes previewing the rendered result and the GitHub Actions workflow.
 | Dither/Hald callbacks, pixel kernels, or PNG loading | Plugin check and `tests/advanced.py`; measure kernel changes with the dither benchmark when relevant |
 | Native build hook, distribution contents, or autoloading | Packaging unit tests, native wheel and source-archive builds, isolated `tools/packagecheck.py` |
 | Runtime loading or linked declarations | Relevant host execution on the affected platform; linked consumer build when applicable |
+| Preview scripts, shared scene construction, or exported image selections | `tools/examples.py check`, render the outputs, inspect the affected VSView views and generated images |
 | Prose, navigation, CSS, or source includes | Strict documentation build, local link checker, visual preview |
 | Header baseline or API version | Full ABI and runtime suites, followed by the [upgrade procedure](compatibility.md#updating-the-header-baseline) |
 

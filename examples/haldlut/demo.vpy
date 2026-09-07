@@ -1,30 +1,25 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-"""Build the plugin and run generate.py before loading this script in a host."""
+"""Generate a cinematic Hald LUT, then preview its native tetrahedral interpolation."""
 
 from pathlib import Path
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from preview_support import (
+    cinematic_lut, clip_from_rgb, color_scene, load_plugin, rgb16_to_rgb8, set_output,
+)
+
 import vapoursynth as vs
 
-root = Path(__file__).resolve().parents[2]
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(root / ".build" / f"odin_hald{suffix}"))
 
-blank = vs.core.std.BlankClip(width=640, height=360, format=vs.RGB24, length=48)
+load_plugin("haldlut", "odin_hald")
+source = clip_from_rgb(color_scene())
+graded = vs.core.odin_hald.HaldCLUT(source, path=str(cinematic_lut()), strength=1.0)
 
-
-def gradient(n, f):
-    frame = f.copy()
-    for y in range(frame.height):
-        for x in range(frame.width):
-            frame[0][y, x] = x * 255 // (frame.width - 1)
-            frame[1][y, x] = y * 255 // (frame.height - 1)
-            frame[2][y, x] = (x + y) * 255 // (frame.width + frame.height - 2)
-    return frame
-
-
-source = vs.core.std.ModifyFrame(blank, clips=blank, selector=gradient)
-graded = vs.core.odin_hald.HaldCLUT(
-    source, path=str(root / ".build" / "haldlut-luts" / "cinematic.png"), strength=0.8
-)
-vs.core.std.StackHorizontal([source, graded]).set_output()
+# Both display outputs use the same exact full-range RGB16-to-RGB8 rounding.
+original = rgb16_to_rgb8(source)
+processed = rgb16_to_rgb8(graded)
+set_output(vs.core.std.StackHorizontal([original, processed]), 0, "Hald CLUT: source | cinematic")
+set_output(original, 1, "Original synthetic scene")
+set_output(processed, 2, "Cinematic LUT (level 4, strength 1)")
+DOCUMENTATION_OUTPUTS = {1: "hald-source", 2: "hald-cinematic"}

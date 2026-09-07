@@ -21,16 +21,33 @@ filters. The Hald example uses Odin's bundled `vendor:stb/image` library.
 
 ## Reproducible environment and plugin wheels
 
-With [uv](https://docs.astral.sh/uv/) and Odin installed, provision the official
-VapourSynth runtime and run a host without finding its library path manually:
+With [uv](https://docs.astral.sh/uv/) and Odin installed, compile all eight examples
+and open the four visual demonstrations:
 
 ```console
-uv sync --locked
+uv run tools/examples.py build
+uv run --group preview tools/examples.py preview --no-build
+```
+
+`uv run` provisions the environment as needed. `build` writes the binaries into
+`.build/examples`; `preview --no-build` reuses them and opens the `.vpy` scripts
+in **VSView**, with named comparison, source, and filtered outputs. A standalone
+`preview invert dither` command builds those selected filters before opening them.
+
+For an optional headless frame check or an individual host:
+
+```console
+uv run tools/examples.py check --no-build
 uv run tools/run_host.py core_info
 uv run tools/run_host.py easy_host
-uv run tests/examples.py
-uv run tests/advanced.py
 ```
+
+The optional `preview` dependency group installs VSView and Qt only when selected.
+It requires Python 3.12–3.14 and VapourSynth R78 or newer; ordinary `uv sync`
+keeps the GUI dependencies out of the environment. See
+[Build and preview the examples](docs/guides/previewing-examples.md) for the
+complete workflow and output choices. All demonstration input is generated
+locally, so no video downloads or source plugins are needed.
 
 The lockfile selects VapourSynth R79; the raw declarations remain pinned to R76
 API 4.2. Both runtimes have been exercised on Windows x64. Python 3.12 or newer is
@@ -55,11 +72,16 @@ sources directly in tutorials and reference pages.
 To preview it through the locked environment, run from the repository root:
 
 ```console
-uv run --group docs python -m zensical serve
+uv run --group docs tools/docs.py serve
 ```
 
-For validation, run `uv run --group docs python -m zensical build --clean --strict`
-followed by `uv run python tools/check_docs.py`. A generated `requirements-docs.txt`
+For validation, run `uv run --group docs tools/docs.py build`. Both commands
+compile the examples and render documentation images from the same `.vpy` scripts
+used in VSView. A broken plugin build, script, or frame request fails the operation;
+the site does not reuse stale screenshots. The build command also performs a
+strict Zensical build and checks local links. Odin is required; VSView is optional.
+Markdown changes reload while serving; restart the command after changing native
+code or preview scripts to regenerate their images. A generated `requirements-docs.txt`
 also supports pip-based builds. The [publishing guide](docs/maintenance/documentation.md)
 explains the included GitHub Pages workflow, which validates pull requests and
 deploys the repository's default branch once **Settings → Pages → GitHub Actions**
@@ -146,7 +168,7 @@ processing for 8–16 bit integer formats.
 and registers `odin_example.Identity`, which returns a reference to its input clip:
 
 ```console
-odin build examples/plugin -build-mode:dll -out:odin_example.dll
+uv run tools/examples.py build plugin
 ```
 
 Use the platform's shared-library extension for the output on Linux or macOS.
@@ -155,7 +177,7 @@ Load it from a VapourSynth Python script:
 ```python
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path="/absolute/path/to/odin_example.dll")
+vs.core.std.LoadPlugin(path="/absolute/path/to/.build/examples/plugin.dll")
 source = vs.core.std.BlankClip(width=64, height=48, length=1)
 vs.core.odin_example.Identity(source).set_output()
 ```

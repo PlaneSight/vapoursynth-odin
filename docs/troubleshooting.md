@@ -225,7 +225,7 @@ transformation you need, then implement that operation explicitly.
 
 `uv sync` provisions the Python dependencies. The root project's
 `tool.uv.package = false` setting means it does not compile the example plugins.
-Use `uv run tests/advanced.py` for local filter development or `uv build --wheel`
+Use `uv run tools/examples.py build` to compile all examples or `uv build --wheel`
 for a distributable artifact. Odin must be available on `PATH` for either build.
 
 Test wheel installation in a separate environment: an exact `uv sync` can remove
@@ -240,6 +240,32 @@ If Hald CLUT fails to link against `stb`, check the Odin installation's native
 vendor libraries. Source installations on Unix may need
 `vendor/stb/src/build_stb.sh` run inside the Odin toolchain. A Windows toolchain's
 bundled `.lib` files do not supply Linux or macOS static archives.
+
+## Preview and generated documentation images
+
+Run `uv run --group preview tools/examples.py preview` to select the optional
+VSView dependency group. Plain `uv sync` excludes VSView and Qt. The preview group
+requires Python 3.12–3.14; select a compatible interpreter with
+`uv sync --locked --group preview --python 3.14` if the current environment uses
+a newer Python version. Keep `--group preview` on later viewer commands.
+
+Close the viewer before rebuilding a loaded plugin. A live core retains its
+original machine code, and Windows may keep its DLL locked. `--no-build` is
+appropriate only when you deliberately want to reuse the existing binary.
+If a preview fails before showing a frame, run `uv run tools/examples.py check`
+to exercise the scripts without the GUI.
+
+Build documentation with `uv run --group docs tools/docs.py build`. Direct
+Zensical commands do not create the ignored PNGs under `docs/assets/generated`.
+The wrapper builds the examples and renders their actual script outputs before
+validating the site. It stops on a compiler, script, or frame error instead of
+falling back to stale images. When using `tools/docs.py serve`, restart it after
+editing native code or scripts; Markdown changes reload automatically.
+
+The dither comparison intentionally applies the same 20× display contrast gain
+to both sides. Its additional output nodes `3` and `4` expose the unamplified
+source and native result. See the [preview guide](guides/previewing-examples.md)
+for output selection and the documentation rendering contract.
 
 ## Advanced filter input and appearance
 

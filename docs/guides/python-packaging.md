@@ -64,6 +64,23 @@ package installer to attempt a source build with additional native dependencies.
 
 ## Run tests and documentation
 
+To compile all eight examples and exercise their visual scripts:
+
+```console
+uv run tools/examples.py build
+uv run --group preview tools/examples.py preview --no-build
+```
+
+The preview reuses the compiled binaries. To check their script outputs without
+a GUI after building, run `uv run tools/examples.py check --no-build`.
+
+The optional `preview` group installs VSView and Qt. It requires Python 3.12–3.14
+and VapourSynth R78 or newer; the development lock selects R79. Ordinary sync
+does not install this GUI stack. See the
+[preview guide](previewing-examples.md) for selecting filters and their named outputs.
+
+The independent numerical suites and benchmark remain available:
+
 ```console
 uv run tests/examples.py
 uv run tests/advanced.py
@@ -78,12 +95,16 @@ specific to the machine, compiler flags, and frame configuration printed by it.
 Documentation dependencies are in a separate group:
 
 ```console
-uv run --group docs python -m zensical serve
-uv run --group docs python -m zensical build --clean --strict
-uv run --group docs python tools/check_docs.py
+uv run --group docs tools/docs.py serve
+uv run --group docs tools/docs.py build
 ```
 
 A docs-only environment can be synchronized with `uv sync --locked --only-group docs`.
+The group includes NumPy and VapourSynth so the documentation can render the same
+scripts used in VSView. The documentation command compiles all eight examples,
+generates fresh PNGs, then serves or strictly builds the site. Odin is required;
+VSView and Qt are not. Restart the server command after changing native code or
+demonstration scripts to regenerate the images.
 The generated `requirements-docs.txt` also supports the existing pip-based
 documentation workflow. Treat the groups in `pyproject.toml` and `uv.lock` as the
 source of dependency choices; regenerate the requirements export after changing

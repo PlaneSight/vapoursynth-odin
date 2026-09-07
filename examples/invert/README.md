@@ -4,11 +4,25 @@ This example implements a complete video filter with the raw API: plugin
 registration, argument validation, instance ownership, dependency declarations,
 the frame activation protocol, and processing planar pixels with row strides.
 
-Build from the repository root:
+Build and preview from the repository root:
+
+```console
+uv run --group preview tools/examples.py preview invert
+```
+
+The command builds the plugin under `.build/examples` and opens [demo.vpy](demo.vpy)
+in VSView. The optional group installs the viewer and Qt and requires Python
+3.12–3.14. Output `0` compares the synthetic source and inversion side by side;
+outputs `1` and `2` expose them separately. The documentation renders the same
+nodes. See the [preview guide](../../docs/guides/previewing-examples.md) for
+headless checks, multiple examples, and generated images.
+
+For a direct compiler invocation and the minimal Python example below, create
+`.build/examples` first, then run:
 
 ```console
 odin check examples/invert -no-entry-point -vet
-odin build examples/invert -build-mode:dll -out:.build/odin_invert.dll
+odin build examples/invert -build-mode:dll -out:.build/examples/invert.dll
 ```
 
 Use `.so` on Linux or `.dylib` on macOS instead of `.dll`. The plugin requires
@@ -19,15 +33,15 @@ Load the plugin in a VapourSynth Python script:
 ```python
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path="/absolute/path/to/odin_invert.dll")
+vs.core.std.LoadPlugin(path="/absolute/path/to/invert.dll")
 source = vs.core.std.BlankClip(width=640, height=360, format=vs.RGB24,
                              color=[32, 96, 160], length=24)
 vs.core.odin_invert.Invert(source).set_output()
 ```
 
-The included `demo.vpy` defaults to the Windows build above. Run it through your
-usual VapourSynth preview application or `vspipe`, or change its `plugin` path
-for your platform. It needs no input video file.
+The checked-in `demo.vpy` uses `.build/examples/invert` and selects the platform
+extension automatically. Its source is a generated colorful scene rather than
+the constant clip above, so no input video file is required.
 
 The filter accepts constant format and dimensions with 8-16 bit integer Gray,
 RGB, or YUV samples. It computes `(1 << bitsPerSample) - 1 - sample` for every

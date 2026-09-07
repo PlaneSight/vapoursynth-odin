@@ -4,29 +4,56 @@ The identity example is a minimal shared-library plugin. It registers `odin_exam
 
 The package is `examples/plugin`. Its two foreign procedures are the exported initialization entry point and the registered function callback. It does not load the core library, create a core, or request a frame; the VapourSynth host owns that environment and supplies the API.
 
+## See the pass-through
+
+```console
+uv run --group preview tools/examples.py preview plugin
+```
+
+This builds the plugin into `.build/examples` and opens the checked-in
+`examples/plugin/demo.vpy` in VSView. Output `0` compares source and result side
+by side; outputs `1` and `2` show them separately. They should match exactly.
+The [preview guide](../guides/previewing-examples.md) explains the optional
+dependency group and headless checks.
+
+=== "Source"
+
+    ![Synthetic source scene with shaded red, green, and blue spheres above a grayscale ramp](../assets/generated/identity-source.png){ width="768" height="320" }
+
+=== "Identity output"
+
+    ![The same scene returned unchanged by the native Odin identity plugin](../assets/generated/identity-output.png){ width="768" height="320" }
+
+These images are exported from the demonstration's actual output nodes during
+the documentation build. `uv run tools/render_showcase.py` reproduces them under
+`.build/showcase` using the same script.
+
 ## Build the shared library
 
 Run from the repository root:
 
+The following commands and inline Python program show manual compilation and
+loading using the same `.build/examples` layout as the preview command.
+
 === "Windows"
 
     ```powershell
-    New-Item -ItemType Directory -Force .build | Out-Null
-    odin build examples/plugin -build-mode:dll -out:.build/odin_identity.dll
+    New-Item -ItemType Directory -Force .build/examples | Out-Null
+    odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.dll
     ```
 
 === "Linux"
 
     ```sh
-    mkdir -p .build
-    odin build examples/plugin -build-mode:dll -out:.build/odin_identity.so
+    mkdir -p .build/examples
+    odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.so
     ```
 
 === "macOS"
 
     ```sh
-    mkdir -p .build
-    odin build examples/plugin -build-mode:dll -out:.build/odin_identity.dylib
+    mkdir -p .build/examples
+    odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.dylib
     ```
 
 Odin's build-mode flag remains `-build-mode:dll` on all three platforms; the output extension changes. To check the package without linking a shared library:
@@ -48,7 +75,7 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-plugin = Path(".build") / f"odin_identity{suffix}"
+plugin = Path(".build/examples") / f"plugin{suffix}"
 vs.core.std.LoadPlugin(path=str(plugin.resolve()))
 
 source = vs.core.std.BlankClip(
@@ -157,5 +184,11 @@ The complete example suite additionally checks that Identity preserves every pix
 ```odin title="examples/plugin/plugin.odin"
 --8<-- "examples/plugin/plugin.odin"
 ```
+
+??? example "Preview and documentation script"
+
+    ```python title="examples/plugin/demo.vpy"
+    --8<-- "examples/plugin/demo.vpy"
+    ```
 
 Continue with [a complete invert filter](invert-plugin.md), which retains this registration pattern and adds scheduled pixel processing.

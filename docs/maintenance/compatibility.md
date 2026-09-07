@@ -32,6 +32,26 @@ request `VAPOURSYNTH_API_VERSION` through the script table's `getVSAPI` and chec
 the result. The [loading guide](../guides/loading-and-linking.md) explains both
 entry points.
 
+### Python tooling and preview requirements
+
+The uv project requires Python 3.12 or newer and currently locks VapourSynth R79.
+The optional `preview` group pins VSView 0.11.0 and narrows its interpreter range
+to Python 3.12–3.14 for the current PySide6 dependency. VSView also requires
+VapourSynth R78 or newer. These are preview-tool requirements; they do not change
+the raw bindings' core API 4.2 contract or the recorded R76 filter tests.
+
+The `docs` group includes VapourSynth and NumPy to render the checked-in preview
+scripts without importing VSView or Qt. Full documentation builds require Odin
+because they compile the examples before generating their images. The
+[preview guide](../guides/previewing-examples.md) and
+[documentation guide](documentation.md) give the supported commands.
+
+The four preview scripts passed headless checks of the first and last frames of
+all **24 output nodes**, including the expanded low-bit views, on Windows x64
+with R76 and R79. Initial VSView loading of the four demonstrations was verified
+with R79 before those additional views were added. These checks establish script and frame evaluation; the filter
+pixel-oracle suites below provide separate numerical validation.
+
 ## Stable and experimental tables
 
 The stable `VSAPI` contains **117 function pointers** in header order. Its 4.2
@@ -95,9 +115,11 @@ headers; they do not validate a newer runtime's experimental graph suffix.
 Gray8, RGB24, YUV420P10, and Gray16, concurrent requests, preserved properties,
 unchanged retained source frames, double inversion, and rejected inputs.
 
-`tests/advanced.py` passed **68 dither and 81 Hald pixel-oracle cases** on both
-R76 and R79. Dither checks cover both scaling modes, scalar/SIMD parity, bit
-depths, vector tails, padded rows, subsampled planes, seed boundaries, exact
+`tests/advanced.py` passed **410 dither pixel-oracle cases and 28 exact-level
+checks** on both R76 and R79; the Hald suite has **81 pixel-oracle cases** on both
+runtimes. Dither checks cover both scaling modes, scalar/SIMD parity, input
+depths 8–16 and effective depths down to one bit, vector tails, padded rows,
+subsampled planes, seed boundaries, exact
 endpoints, temporal stability, concurrent requests, malformed-sample clamping,
 and rejected parameters. Hald checks cover
 RGB/RGBA PNGs at 8 and 16 bits, all five row filters, all six tetrahedral
@@ -105,10 +127,16 @@ orderings, nonlinear tables, fractional strength, Unicode paths, and malformed
 files, including CRC failures. Both suites also check preserved properties and
 unchanged retained source frames.
 
+Effective dither depths 1–7 use ordinary eight-bit output formats. The expanded
+sample values, byte-reading path for eight-bit input, preserved endpoints, and
+rejection of zero bits are covered by the numerical suite. This feature does not
+change the API version or require a custom sub-eight-bit VapourSynth format.
+
 The dither benchmark passed on R79 using the baseline `x86-64` target. It measures
 end-to-end frame throughput, including frame allocation, scheduling, request
-delivery, and release. The [dither example](../examples/dither-plugin.md) records
-the workload and measured scalar/SIMD results. These timings describe the tested
+delivery, and release. The [performance comparison](dither-performance.md) records
+single-thread measurements against FMTConv across formats and resolutions up to
+4K. These timings describe the tested
 machine and are not a performance guarantee for another target.
 
 Hald was built and tested natively on Windows x64. Its `vendor:stb/image`

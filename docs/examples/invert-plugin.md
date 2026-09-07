@@ -4,29 +4,53 @@ This example implements a complete video filter with the raw API. It registers `
 
 The package is `examples/invert`. Read the [identity plugin](identity-plugin.md) first for registration and map-reference transfer. Here the new responsibilities are persistent instance ownership, VapourSynth's activation protocol, concurrent requests, and planar memory access.
 
+## See the inversion
+
+```console
+uv run --group preview tools/examples.py preview invert
+```
+
+The command builds the plugin and opens its checked-in script in VSView, with
+named comparison, source, and inverted outputs. Both images below come from those
+same output nodes during the documentation build. Reproduce them with
+`uv run tools/render_showcase.py`; see the
+[preview guide](../guides/previewing-examples.md) for optional dependencies and
+headless checks.
+
+=== "Source"
+
+    ![Synthetic scene with shaded red, green, and blue spheres and a neutral ramp](../assets/generated/invert-source.png){ width="768" height="320" }
+
+=== "Inverted output"
+
+    ![Native integer inversion of the scene, with complementary sphere colors and a reversed grayscale ramp](../assets/generated/invert-output.png){ width="768" height="320" }
+
 ## Build and run
 
 Build from the repository root:
 
+These manual commands build the same `.build/examples/invert` library used by
+the inline Python program and checked-in preview script.
+
 === "Windows"
 
     ```powershell
-    New-Item -ItemType Directory -Force .build | Out-Null
-    odin build examples/invert -build-mode:dll -out:.build/odin_invert.dll
+    New-Item -ItemType Directory -Force .build/examples | Out-Null
+    odin build examples/invert -build-mode:dll -out:.build/examples/invert.dll
     ```
 
 === "Linux"
 
     ```sh
-    mkdir -p .build
-    odin build examples/invert -build-mode:dll -out:.build/odin_invert.so
+    mkdir -p .build/examples
+    odin build examples/invert -build-mode:dll -out:.build/examples/invert.so
     ```
 
 === "macOS"
 
     ```sh
-    mkdir -p .build
-    odin build examples/invert -build-mode:dll -out:.build/odin_invert.dylib
+    mkdir -p .build/examples
+    odin build examples/invert -build-mode:dll -out:.build/examples/invert.dylib
     ```
 
 A compile-only check is `odin check examples/invert -no-entry-point -vet`. The plugin requires core API 4.2 and the platform C runtime used by its instance allocation. VapourSynth API calls use the table supplied by the host.
@@ -40,7 +64,7 @@ import sys
 import vapoursynth as vs
 
 suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-plugin = Path(".build") / f"odin_invert{suffix}"
+plugin = Path(".build/examples") / f"invert{suffix}"
 vs.core.std.LoadPlugin(path=str(plugin.resolve()))
 
 source = vs.core.std.BlankClip(
@@ -63,7 +87,10 @@ Expected output:
 RGB samples: [32, 96, 160] -> [223, 159, 95]
 ```
 
-The checked-in `examples/invert/demo.vpy` constructs the same clip and publishes the filtered output for a preview application or `vspipe`. Its library path currently selects `.build/odin_invert.dll`; change the extension when using that script on Linux or macOS. The complete source of the script appears below.
+The checked-in `examples/invert/demo.vpy` constructs the colorful synthetic scene
+shown above. It publishes the comparison at output `0`, source at `1`, and filtered
+result at `2`, selecting the platform extension under `.build/examples`
+automatically. The complete source of the script appears below.
 
 ## Define the supported domain before allocating
 
@@ -221,7 +248,7 @@ Run `python tests/examples.py` in the configured runtime environment. The suite 
 
 An invocation error mentioning constant format or dimensions means the graph metadata failed creation-time validation. An error mentioning 8–16 bit integer video means the sample representation is unsupported. A later frame-request error can come from upstream evaluation or the callback's checked acquisition paths; inspect the host's error message at that boundary.
 
-If only subsampled YUV fails after an edit, inspect per-plane dimensions. If 8-bit works but ten-bit values wrap or exceed 1023, inspect storage width and `sample_max`. If concurrent requests fail while serial ones pass, look for new shared mutable data. If the preview still runs an older binary, restart the process that owns the loaded plugin. The test runner builds plugins under `.build/examples`; the tutorial and checked-in demo use `.build/odin_invert` with the platform extension.
+If only subsampled YUV fails after an edit, inspect per-plane dimensions. If 8-bit works but ten-bit values wrap or exceed 1023, inspect storage width and `sample_max`. If concurrent requests fail while serial ones pass, look for new shared mutable data. If the preview still runs an older binary, close the process that owns the loaded plugin and rerun the preview command. The checked-in demo, manual build, and inline Python example all use `.build/examples/invert` with the platform extension.
 
 A meaningful extension is to add an optional plane selection argument while leaving unselected planes unchanged. Validate that argument during creation, store an immutable selection in the instance, and preserve the same scheduling and ownership contracts. Extend pixel checks to cover both selected and untouched planes.
 

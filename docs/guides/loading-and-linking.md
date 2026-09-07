@@ -159,10 +159,13 @@ Foreign callbacks do not receive Odin's implicit context. If callback code uses 
 Build the minimal example from the repository root:
 
 ```console
-odin build examples/plugin -build-mode:dll -out:odin_example.dll
+uv run tools/examples.py build plugin
 ```
 
-Select the shared-library output extension appropriate to Linux or macOS when building there. The resulting plugin must match the architecture of the VapourSynth process that loads it.
+This writes `.build/examples/plugin` with the platform's shared-library extension.
+The resulting plugin must match the architecture of the VapourSynth process that
+loads it. The [identity tutorial](../examples/identity-plugin.md) also shows the
+direct Odin compiler command for this layout.
 
 ## VSScript is a separate loading decision
 
