@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Build the plugins and export the actual preview scripts' documentation outputs."""
 
-from __future__ import annotations
-
 import argparse
 import hashlib
 import json

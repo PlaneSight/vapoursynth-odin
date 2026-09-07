@@ -11,10 +11,10 @@ You can compile the dynamically loaded host examples and the plugin examples bef
 | Check the bindings and examples | Odin and its platform toolchain. |
 | Run a native host example | Odin and a compatible VapourSynth core library with its dependencies. |
 | Build and run a plugin example | Odin, VapourSynth, and a host that can load the plugin. The documented demonstrations use Python. |
-| Preview the plugin examples in VSView | Odin, uv, a desktop session, and the optional `preview` group with Python 3.12–3.14. |
+| Preview the plugin examples in VSView | Odin, uv, a desktop session, and the optional `preview` group with Python 3.14. |
 | Build the documentation and its filter images | Odin and the `docs` dependency group, including VapourSynth and NumPy. No GUI is needed. |
 | Use normal linker resolution | The above runtime, plus an import library on Windows or the appropriate linker library on other platforms. |
-| Run the ABI suite | Odin, Python 3.10 or newer, and a C compiler. No VapourSynth installation is required. |
+| Run the ABI suite | Odin, Python 3.14 or newer, and a C compiler. No VapourSynth installation is required. |
 
 Install Odin using its [official installation instructions](https://odin-lang.org/docs/install/), including the platform requirements listed there. Verify that the command is available:
 
@@ -80,7 +80,7 @@ uv run tools/run_host.py core_info
 ```
 
 This installs the official VapourSynth runtime in `.venv` and passes its core
-library to the example explicitly. The project requires CPython 3.12 or newer.
+library to the example explicitly. The project requires CPython 3.14 or newer.
 The lockfile selects R79; it does not alter the pinned R76 API 4.2 declarations.
 See [Python environments and wheels](../guides/python-packaging.md) for platform
 availability, documentation dependency groups, and native plugin distribution.

@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Check generated documentation links, assets, and fragment identifiers offline."""
 
-from __future__ import annotations
-
 import argparse
 from html.parser import HTMLParser
 from pathlib import Path

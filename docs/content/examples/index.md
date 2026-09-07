@@ -43,7 +43,7 @@ For an optional headless check after compiling, run
 `uv run tools/examples.py check --no-build`. It executes the four plugin `.vpy`
 scripts and requests their output frames without opening a window.
 
-The optional `preview` group supplies VSView and Qt and requires Python 3.12–3.14.
+The optional `preview` group supplies VSView and Qt and requires Python 3.14.
 The [preview guide](../guides/previewing-examples.md) covers selection, output
 interpretation, and headless rendering. The screenshots in these tutorials are
 generated from the same scripts during each documentation build.

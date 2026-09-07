@@ -2,25 +2,26 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Build and run the examples against an installed VapourSynth API 4.2 runtime.
 
-Requires Python 3.10+, Odin, and the VapourSynth Python module. Use --runtime
+Requires Python 3.14+, Odin, and the VapourSynth Python module. Use --runtime
 to select an existing directory containing that module, and --library to select
 the core library for the host examples. Nothing is downloaded or installed;
 generated binaries stay in .build/examples.
 """
 
-from __future__ import annotations
-
 import argparse
 from contextlib import ExitStack
-from ctypes.util import find_library
 import importlib
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import sysconfig
 
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from tools.native_build import core_library as discover_core_library, native_target
+
 BUILD = ROOT / ".build" / "examples"
 HOSTS = ("core_info", "properties", "easy_host", "host")
 PLUGINS = ("plugin", "invert")
@@ -79,29 +80,18 @@ def core_library(vs, requested: Path | None) -> str:
     if requested is not None:
         require(requested.is_file(), f"Core library does not exist: {requested}")
         return str(requested.resolve())
-    package = Path(vs.__file__).resolve().parent
-    for name in (
-        "libvapoursynth.dll", "libvapoursynth.so.4", "libvapoursynth.4.dylib",
-        "libvapoursynth.so", "libvapoursynth.dylib",
-    ):
-        candidate = package / name
-        if candidate.is_file():
-            return str(candidate)
-    if discovered := find_library("vapoursynth"):
-        return discovered
-    raise RuntimeError("Cannot locate the core library; pass its path with --library.")
+    return discover_core_library(Path(vs.__file__).resolve().parent)
 
 
 def build_examples(odin: str) -> dict[str, Path]:
     executable = shutil.which(odin)
     require(executable is not None, f"Cannot find Odin compiler: {odin}")
     BUILD.mkdir(parents=True, exist_ok=True)
-    executable_suffix = ".exe" if sys.platform == "win32" else ""
-    plugin_suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
+    target = native_target(sysconfig.get_platform())
     binaries = {}
     for name in (*HOSTS, *PLUGINS):
         is_plugin = name in PLUGINS
-        suffix = plugin_suffix if is_plugin else executable_suffix
+        suffix = target.extension if is_plugin else target.executable_suffix
         output = BUILD / f"{name}{suffix}"
         command = [executable, "build", str(ROOT / "examples" / name / "src"), f"-collection:deps={ROOT / 'src'}", "-vet", f"-out:{output}"]
         if is_plugin:

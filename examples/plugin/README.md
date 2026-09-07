@@ -49,7 +49,7 @@ uv run build.py
 uv run --group preview vsview preview.vpy
 ```
 
-The optional group installs VSView and Qt and requires Python 3.12–3.14.
+The optional group installs VSView and Qt and requires Python 3.14.
 The build command builds `.build/plugin` with the platform's shared-library
 extension and opens [preview.vpy](preview.vpy). Named outputs show a side-by-side
 comparison (`0`), original synthetic scene (`1`), and identity output (`2`).
@@ -66,12 +66,12 @@ Load the resulting native library from a script run in this directory:
 
 ```python
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/plugin{suffix}").resolve()))
+project = runpy.run_path("build.py")
+vs.core.std.LoadPlugin(path=str(project["artifact_path"]()))
 source = vs.core.std.BlankClip(width=64, height=48, length=1)
 vs.core.odin_example.Identity(source).set_output()
 ```

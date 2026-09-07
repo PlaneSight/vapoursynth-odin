@@ -3,7 +3,7 @@ name = "vapoursynth-odin"
 version = "0.1.0"
 description = "Development tooling for Odin bindings to VapourSynth API 4.2"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 license = "LGPL-2.1-or-later"
 license-files = ["LICENSE", "THIRD_PARTY_LICENSES.md"]
 dependencies = ["vapoursynth>=76,<80"]
@@ -17,4 +17,4 @@ preview = ["vsview==0.11.0"]
 package = false
 
 [tool.uv.dependency-groups]
-preview = { requires-python = ">=3.12,<3.15" }
+preview = { requires-python = ">=3.14,<3.15" }

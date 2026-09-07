@@ -7,8 +7,6 @@ Generated optimized plugins and PNG fixtures stay in .build/advanced. Nothing
 is downloaded or installed. --runtime selects an existing Python module parent.
 """
 
-from __future__ import annotations
-
 import argparse
 from contextlib import ExitStack
 from itertools import permutations

@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Compile examples, render their preview outputs, and build or serve Zensical."""
 
-from __future__ import annotations
-
 import argparse
 from pathlib import Path
 import subprocess

@@ -8,12 +8,16 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import tomllib
 import zipfile
 
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from tools.native_build import native_target
+
 PROJECTS = {
     name: ROOT / "examples" / name
     for name in (
@@ -53,7 +57,7 @@ def check(name: str, python: str) -> None:
         wheels = list((project / "dist").glob("*.whl"))
         assert len(wheels) == 1, wheels
         with zipfile.ZipFile(wheels[0]) as wheel:
-            libraries = [name for name in wheel.namelist() if name.endswith((".dll", ".so", ".dylib"))]
+            libraries = [name for name in wheel.namelist() if name.endswith(native_target(sysconfig.get_platform()).extension)]
             assert len(libraries) == 1 and libraries[0].startswith("vapoursynth/plugins/"), libraries
             assert not any("/.deps/" in name or "/.venv/" in name for name in wheel.namelist())
         run("venv", "--python", python, ".build/wheel-env")

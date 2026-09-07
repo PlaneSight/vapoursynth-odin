@@ -37,7 +37,7 @@ The command writes the native library under `.build/examples`, selecting its
 extension, architecture, and optimized compiler flags automatically. The
 [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 covers platform prerequisites. The inline Python program below and the preview
-script load this same artifact.
+script load the copy published into the example's local `.build` directory.
 
 A compile-only check is `odin check examples/invert/src -collection:deps=src -no-entry-point -vet`. The plugin requires core API 4.2 and the platform C runtime used by its instance allocation. VapourSynth API calls use the table supplied by the host.
 
@@ -45,13 +45,12 @@ Save the following as `invert_demo.py` in the repository root and run `uv run in
 
 ```python
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-plugin = Path(".build/examples") / f"invert{suffix}"
-vs.core.std.LoadPlugin(path=str(plugin.resolve()))
+project = runpy.run_path("examples/invert/build.py")
+vs.core.std.LoadPlugin(path=str(project["artifact_path"]()))
 
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.RGB24,

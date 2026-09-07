@@ -234,10 +234,10 @@ including the platform-specific plugin filename.
 ## Keep the previewer optional
 
 The `preview` dependency group pins **VSView 0.11.0** and supports
-**Python 3.12–3.14**. VSView requires Python 3.12 or newer and
+**Python 3.14**. VSView requires
 **VapourSynth R78 or newer**; the current PySide6 dependency supplies the upper
 Python bound. The development lock selects R79. The base project still accepts
-Python 3.12 or newer; requesting the preview group adds its narrower interpreter
+Python 3.14 or newer; requesting the preview group adds its narrower interpreter
 constraint. See the
 [VSView release metadata](https://pypi.org/project/vsview/0.11.0/) for its declared
 dependencies.

@@ -192,14 +192,14 @@ describes the required Pages permissions and artifact/deployment sequence.
 
 ### What the workflow does
 
-The **build** job runs for pull requests, matching pushes, and manual dispatches
-on Windows 2025. It installs the pinned Odin development toolchain after verifying
+The **build** job runs for pull requests and manual dispatches
+on Ubuntu 24.04 and Windows 2025. It installs the pinned Odin development toolchain after verifying
 the archive's checksum, provisions the pinned Python 3.14.7 with the locked uv documentation
 group, and executes the full documentation command. That command
 builds the eight binding examples, runs the four visual scripts, generates fresh PNGs,
 performs a clean strict site build, and checks local links. The job stores the
 `.venv/site` preview and generated images as artifacts and has read access to repository
-contents. Windows is the native platform used for the verified plugin builds.
+contents. Both platforms execute native ABI and preview checks; Linux supplies the images for Pages.
 
 The **deploy** job runs after a successful build only for a non-pull-request
 event on the repository's actual default branch. It has the Pages and identity
@@ -250,7 +250,7 @@ Do not commit a generated overlay containing temporary test URLs.
 
 | Symptom | Check |
 | --- | --- |
-| Python version or dependency resolution fails | Select Python 3.12 or newer, matching the project's declared minimum |
+| Python version or dependency resolution fails | Select Python 3.14 or newer, matching the project's declared minimum |
 | `uv sync --locked` reports an outdated lockfile | Update `uv.lock` after changing `pyproject.toml` |
 | Image generation fails | Read the first compiler or script error; run `uv run tools/examples.py check` to exercise the graphs without the site |
 | PNGs are missing after a direct Zensical build | Run `uv run --group docs tools/docs.py build` to generate the ignored assets from current code |

@@ -248,7 +248,7 @@ for supported targets and native requirements.
 
 Run `uv run --group preview tools/examples.py preview` to select the optional
 VSView dependency group. Plain `uv sync` excludes VSView and Qt. The preview group
-requires Python 3.12–3.14; select a compatible interpreter with
+requires Python 3.14; select a compatible interpreter with
 `uv sync --locked --group preview --python 3.14` if the current environment uses
 a newer Python version. Keep `--group preview` on later viewer commands.
 

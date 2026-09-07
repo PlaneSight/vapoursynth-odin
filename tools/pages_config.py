@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Write a disposable Pages configuration from GitHub Actions metadata."""
 
-from __future__ import annotations
-
 import os
 from pathlib import Path
 import tomllib

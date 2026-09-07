@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Run an Odin host example with the core library in the active Python environment."""
 
-from __future__ import annotations
-
 import argparse
 from pathlib import Path
 import subprocess
@@ -13,6 +11,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tools.examples import HOST_NAMES, ROOT, build_examples
+from tools.native_build import core_library
 
 
 
@@ -26,14 +25,10 @@ def main() -> int:
     except ImportError as error:
         parser.error(f"Cannot import VapourSynth; run with 'uv run'. {error}")
 
-    package = Path(vapoursynth.__file__).resolve().parent
-    names = {
-        "win32": ("libvapoursynth.dll",),
-        "darwin": ("libvapoursynth.4.dylib", "libvapoursynth.dylib"),
-    }.get(sys.platform, ("libvapoursynth.so.4", "libvapoursynth.so"))
-    library = next((package / name for name in names if (package / name).is_file()), None)
-    if library is None:
-        parser.error(f"The VapourSynth package at {package} does not contain a core library")
+    try:
+        library = core_library(Path(vapoursynth.__file__).resolve().parent)
+    except RuntimeError as error:
+        parser.error(str(error))
 
     print(f"Core library: {library}", flush=True)
     try:

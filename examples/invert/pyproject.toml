@@ -3,7 +3,7 @@ name = "vapoursynth-odin-invert"
 version = "0.1.0"
 description = "Standalone Odin VapourSynth invert plugin"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 license = "LGPL-2.1-or-later"
 license-files = ["LICENSE", "THIRD_PARTY_LICENSES.md"]
 dependencies = ["vapoursynth>=76,<80", "numpy>=2.5,<3"]
@@ -18,8 +18,8 @@ stb = false
 
 [tool.odin.bindings]
 repository = "PlaneSight/vapoursynth-odin"
-revision = "f292b7c6423a9c641c47a43237e23fe7ec73e9c9"
-sha256 = "bb13ea9ff7d4b4f6b12d8e3a46b1827d7e7e24094af284d9dcdb6e9104a15d23"
+revision = "e2e850dac151b63f3856665f42943f1fb4bfdd11"
+sha256 = "bf290f75df999b5336024c63a62af6857fff2b686ccd0b77b6a3d05fcc45061f"
 
 [build-system]
 requires = ["hatchling==1.32.0"]
@@ -29,7 +29,7 @@ build-backend = "hatchling.build"
 preview = ["vsview==0.11.0"]
 
 [tool.uv.dependency-groups]
-preview = { requires-python = ">=3.12,<3.15" }
+preview = { requires-python = ">=3.14,<3.15" }
 
 [tool.hatch.build.targets.sdist]
 include = ["/src/", "/*.py", "/preview.vpy", "/pyproject.toml", "/uv.lock", "/.python-version", "/.gitignore", "/README.md", "/LICENSE", "/THIRD_PARTY_LICENSES.md"]

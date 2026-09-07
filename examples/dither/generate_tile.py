@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Reproduce the checked-in 64 x 64 ranked blue-noise tile.
 
-Generator-only requirements: Python 3.10+ and NumPy. The Odin plugin needs
+Generator-only requirements: Python 3.14+ and NumPy. The Odin plugin needs
 neither Python nor NumPy: it uses the generated constant directly.
 
 This is an original implementation of Robert Ulichney's void-and-cluster
@@ -37,8 +37,6 @@ each binary threshold to 16 independent, deterministic white permutations.
 This metric checks low-frequency suppression, not every aspect of isotropy or
 the absence of a visible 64-pixel repeat in every image.
 """
-
-from __future__ import annotations
 
 import argparse
 from decimal import Decimal, ROUND_HALF_EVEN, localcontext

@@ -2,18 +2,16 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Create an integer ramp and verify the dither plugin's two implementations."""
 
-from __future__ import annotations
-
 import argparse
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
 
 def default_plugin() -> Path:
-    suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-    return Path(__file__).resolve().parent / ".build" / f"dither{suffix}"
+    project = runpy.run_path(str(Path(__file__).with_name("build.py")))
+    return project["artifact_path"]()
 
 
 def main() -> None:

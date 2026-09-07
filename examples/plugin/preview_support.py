@@ -14,8 +14,8 @@ FRAME_COUNT = 48
 
 def load_plugin(example: str, namespace: str) -> None:
     """Use the local build, refusing to silently preview an installed wheel instead."""
-    suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-    path = ROOT / ".build" / f"{example}{suffix}"
+    project = runpy.run_path(str(ROOT / "build.py"))
+    path = project["artifact_path"]()
     if not path.is_file():
         raise RuntimeError(
             f"Missing example plugin: {path}\nRun: uv run build.py"

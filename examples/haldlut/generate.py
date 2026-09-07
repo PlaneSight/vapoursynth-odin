@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Generate reproducible identity and cinematic Hald PNGs using only Python's stdlib."""
 
-from __future__ import annotations
-
 import argparse
 from pathlib import Path
 import struct

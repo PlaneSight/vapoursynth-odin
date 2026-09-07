@@ -53,7 +53,7 @@ uv run --group preview vsview preview.vpy
 ```
 
 This builds `.build/haldlut` with the platform extension and opens
-[preview.vpy](preview.vpy) in VSView. The optional group requires Python 3.12–3.14 and
+[preview.vpy](preview.vpy) in VSView. The optional group requires Python 3.14 and
 supplies VSView and Qt. The script creates a shaded-sphere scene and generates
 its level-4 RGB16 cinematic table under `.build/example-assets` automatically.
 Named outputs show the comparison (`0`), original (`1`), and graded result (`2`).
@@ -96,12 +96,12 @@ its API table to the plugin.
 
 ```python
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/haldlut{suffix}").resolve()))
+project = runpy.run_path("build.py")
+vs.core.std.LoadPlugin(path=str(project["artifact_path"]()))
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.RGB24, color=[32, 96, 160], length=24
 )

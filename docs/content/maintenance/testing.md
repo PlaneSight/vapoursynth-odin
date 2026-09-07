@@ -20,7 +20,7 @@ Individual plugin examples write optional wheel and source archives to their own
 | Check | Required tools | VapourSynth installation |
 | --- | --- | --- |
 | Package and example type checking | Odin; Hald also needs Odin's native stb library | None |
-| C/Odin ABI verification | Python 3.10+, Odin, native C compiler | None; headers are checked in |
+| C/Odin ABI verification | Python 3.14+, Odin, native C compiler | None; headers are checked in |
 | `easy` ownership and error suite | Odin, matching core shared library | Core API 4.2 |
 | Six introductory examples | Project Python environment, Odin, matching Python module and core | Core API 4.2 |
 | Dither and Hald binding-usage correctness | Project Python environment, Odin, and the Hald native build prerequisites below | Core API 4.2 |
@@ -30,9 +30,10 @@ Individual plugin examples write optional wheel and source archives to their own
 See [installation](../getting-started/installation.md) for the compiler and runtime
 setup, and [compatibility](compatibility.md) for the exact environment previously
 verified. Do not infer runtime support on a target from another target's results.
-The Python project requires **Python 3.12 or newer**. Some standalone verification
-scripts use Python 3.10-compatible syntax, but that does not lower the project's
-requirement or the installed VapourSynth distribution's requirement.
+The root project and every standalone example require **Python 3.14 or newer**.
+Their `.python-version` files select the tested **3.14.7** interpreter; `uv.lock`
+records dependencies. CI uses the same pin on Ubuntu and Windows and checks
+native builds, ABI compatibility, preview outputs, and a copied example project.
 
 ## Select the development environment
 

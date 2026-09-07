@@ -50,7 +50,7 @@ uv run --group preview vsview preview.vpy
 
 The build command builds the plugin under `.build` and opens [preview.vpy](preview.vpy)
 in VSView. The optional group installs the viewer and Qt and requires Python
-3.12–3.14. Output `0` compares the synthetic source and inversion side by side;
+3.14. Output `0` compares the synthetic source and inversion side by side;
 outputs `1` and `2` expose them separately. The documentation renders the same
 nodes. See the [preview guide](https://github.com/PlaneSight/vapoursynth-odin/blob/main/docs/content/guides/previewing-examples.md) for
 headless checks, multiple examples, and generated images.
@@ -69,12 +69,12 @@ Load the plugin in a VapourSynth Python script:
 
 ```python
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/invert{suffix}").resolve()))
+project = runpy.run_path("build.py")
+vs.core.std.LoadPlugin(path=str(project["artifact_path"]()))
 source = vs.core.std.BlankClip(width=640, height=360, format=vs.RGB24,
                              color=[32, 96, 160], length=24)
 vs.core.odin_invert.Invert(source).set_output()

@@ -34,9 +34,9 @@ entry points.
 
 ### Python tooling and preview requirements
 
-The uv project requires Python 3.12 or newer and currently locks VapourSynth R79.
+The uv project requires Python 3.14 or newer and currently locks VapourSynth R79.
 The optional `preview` group pins VSView 0.11.0 and narrows its interpreter range
-to Python 3.12–3.14 for the current PySide6 dependency. VSView also requires
+to Python 3.14 for the current PySide6 dependency. VSView also requires
 VapourSynth R78 or newer. These are preview-tool requirements; they do not change
 the raw bindings' core API 4.2 contract or the recorded R76 filter tests.
 

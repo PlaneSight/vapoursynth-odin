@@ -40,7 +40,7 @@ The command writes the native library under `.build/examples`, selecting its
 extension, architecture, and optimized compiler flags automatically. The
 [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
 covers platform prerequisites. The inline Python program below and the preview
-script load this same artifact.
+script load the copy published into the example's local `.build` directory.
 
 The plugin needs a host implementing core API 4.2. Build for the architecture used by that host. The raw bindings introduce no core-library linker dependency for this plugin because all core operations go through supplied function pointers.
 
@@ -50,13 +50,12 @@ Save this Python example as `identity_demo.py` in the repository root, then run 
 
 ```python
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-plugin = Path(".build/examples") / f"plugin{suffix}"
-vs.core.std.LoadPlugin(path=str(plugin.resolve()))
+project = runpy.run_path("examples/plugin/build.py")
+vs.core.std.LoadPlugin(path=str(project["artifact_path"]()))
 
 source = vs.core.std.BlankClip(
     width=65, height=47, format=vs.GRAY8, color=[17], length=1

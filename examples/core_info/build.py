@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Build this Odin project; uv supplies Python dependencies, Odin supplies the compiler."""
 
-from __future__ import annotations
-
 import argparse
 import hashlib
 import io
@@ -135,16 +133,20 @@ def check_preview() -> None:
         vs.clear_outputs()
 
 
-def run_host(artifact: Path) -> None:
+def artifact_path() -> Path:
+    """Locate this project's output using the same target selection as the build."""
+    native = runpy.run_path(str(bindings_root() / "tools" / "native_build.py"))
+    target = native["native_target"](sysconfig.get_platform())
+    suffix = target.extension if NATIVE["kind"] == "plugin" else target.executable_suffix
+    return ROOT / ".build" / f"{NATIVE['name']}{suffix}"
+
+
+def run_host(artifact: Path, bindings: Path | None = None) -> None:
     import vapoursynth as vs
 
-    directory = Path(vs.__file__).resolve().parent
-    for name in ("libvapoursynth.dll", "libvapoursynth.so.4", "libvapoursynth.4.dylib", "libvapoursynth.so", "libvapoursynth.dylib"):
-        library = directory / name
-        if library.is_file():
-            subprocess.run([str(artifact), str(library)], check=True, timeout=120)
-            return
-    raise RuntimeError(f"Cannot locate the VapourSynth core library in {directory}")
+    native = runpy.run_path(str(bindings_root(bindings) / "tools" / "native_build.py"))
+    library = native["core_library"](Path(vs.__file__).resolve().parent)
+    subprocess.run([str(artifact), library], check=True, timeout=120)
 
 
 def main() -> int:
@@ -157,7 +159,7 @@ def main() -> int:
     try:
         artifact = build(args.odin, bindings=args.bindings)
         if args.execute:
-            check_preview() if NATIVE["kind"] == "plugin" else run_host(artifact)
+            check_preview() if NATIVE["kind"] == "plugin" else run_host(artifact, args.bindings)
     except (OSError, RuntimeError, ValueError, subprocess.SubprocessError, zipfile.BadZipFile) as error:
         print(f"Build failed: {error}", file=sys.stderr)
         return 1

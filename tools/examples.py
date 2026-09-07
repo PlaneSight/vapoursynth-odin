@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Build the Odin examples, check their output frames, or open them in VSView."""
 
-from __future__ import annotations
-
 import argparse
 import importlib.util
 from pathlib import Path

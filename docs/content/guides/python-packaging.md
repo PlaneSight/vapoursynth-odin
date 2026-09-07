@@ -81,3 +81,11 @@ projects outside the checkout, downloads their pinned bindings, executes hosts
 or requests preview frames, and builds plugin wheels from their source
 distributions. It then checks autoloading in isolated environments. This verifies
 the packaging lesson without making packaging part of the bindings themselves.
+
+## Python version files
+
+Every project requires Python 3.14 or newer. `.python-version` selects the exact
+tested interpreter, **3.14.7**, for uv and CI; `requires-python` declares the
+supported range, and `uv.lock` fixes dependency resolution. The pin therefore
+is not redundant. Each example keeps its own pin so copying the directory also
+preserves its development environment. See [uv's Python version selection](https://docs.astral.sh/uv/concepts/python-versions/).

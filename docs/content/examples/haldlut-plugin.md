@@ -117,12 +117,12 @@ Save this as `hald_demo.py` in the repository root and run `uv run hald_demo.py`
 
 ```python
 from pathlib import Path
-import sys
+import runpy
 
 import vapoursynth as vs
 
-suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-vs.core.std.LoadPlugin(path=str(Path(f".build/examples/haldlut{suffix}").resolve()))
+project = runpy.run_path("examples/haldlut/build.py")
+vs.core.std.LoadPlugin(path=str(project["artifact_path"]()))
 
 source = vs.core.std.BlankClip(
     format=vs.RGB24, width=640, height=360,
