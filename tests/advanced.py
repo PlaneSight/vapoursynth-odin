@@ -14,15 +14,19 @@ from contextlib import ExitStack
 from itertools import permutations
 import math
 from pathlib import Path
-import platform
 import re
 import shutil
 import struct
 import subprocess
 import sys
+import sysconfig
+import tempfile
 import zlib
 
 from examples import ROOT, require, run, runtime_module, snapshot
+
+sys.path.insert(0, str(ROOT))
+from tools.native_build import native_target, prepare_stb_image
 
 
 BUILD = ROOT / ".build" / "advanced"
@@ -33,16 +37,16 @@ def build_plugin(odin: str, name: str) -> Path:
     compiler = shutil.which(odin)
     require(compiler is not None, f"Cannot find Odin compiler: {odin}")
     BUILD.mkdir(parents=True, exist_ok=True)
-    suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
-    output = BUILD / f"{name}{suffix}"
+    target = native_target(sysconfig.get_platform())
+    output = BUILD / f"{name}{target.extension}"
     print(f"Building optimized examples/{name}", flush=True)
-    command = [
-        compiler, "build", str(ROOT / "examples" / name), "-vet", "-o:speed",
-        "-build-mode:dll", f"-out:{output}",
-    ]
-    if platform.machine().lower() in ("amd64", "x86_64"):
-        command.append("-microarch:x86-64")
-    run(command)
+    with tempfile.TemporaryDirectory(prefix="compile-", dir=BUILD) as directory:
+        dependencies = prepare_stb_image(compiler, target, Path(directory)) if name == "haldlut" else ()
+        command = [
+            compiler, "build", str(ROOT / "examples" / name), "-vet", "-o:speed",
+            "-build-mode:dll", *target.flags, *dependencies, f"-out:{output}",
+        ]
+        run(command)
     return output
 
 

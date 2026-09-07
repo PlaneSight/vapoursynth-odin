@@ -7,11 +7,14 @@ The clip is 65 x 48 Gray8 with every sample set to 17, giving a checksum of 5304
 Run from the repository root:
 
 ```console
-odin run examples/easy_host -- /absolute/path/to/libvapoursynth.dll
+uv run tools/run_host.py easy_host
 ```
 
-The library path is optional and defaults to `easy.DEFAULT_LIBRARY`. No external
-plugins or source media are required.
+The helper builds the executable and selects the core library from the uv
+environment on every supported platform. Use
+`uv run tools/examples.py build easy_host` to compile without executing it.
+No external plugins or source media are required. See the
+[build guide](../../docs/guides/previewing-examples.md) for prerequisites.
 
 `make_blank_clip` destroys its temporary maps before returning. `map_get_node`
 acquires an independent reference, so the returned node remains valid. The host

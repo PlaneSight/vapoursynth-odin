@@ -32,6 +32,9 @@ nav = [
     { "7 · SIMD blue-noise dither" = "examples/dither-plugin.md" },
     { "8 · Hald CLUT color grading" = "examples/haldlut-plugin.md" },
   ] },
+  { "Plugins" = [
+    { "Dither Plus" = "plugins/dither-plus.md" },
+  ] },
   { "Reference" = [
     "reference/index.md",
     { "Idiomatic interface" = "reference/easy.md" },

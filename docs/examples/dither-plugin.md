@@ -104,38 +104,19 @@ illustrations above during the documentation build.
 
 ## Build and try it
 
-Start with the [uv environment](../guides/python-packaging.md):
+Build from the repository root with the same command on every supported platform:
 
 ```console
-uv sync --locked
+uv run tools/examples.py build dither
 ```
 
-The following manual commands build the same `.build/examples/dither` library
-used by the preview script and inline Python program, with an optimized baseline
-CPU target:
+This prepares the uv environment and builds the optimized
+`.build/examples/dither` library used by the preview script and inline Python
+program. The command chooses the native architecture and shared-library
+extension. See the [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for supported targets and prerequisites.
 
-=== "Windows x64"
-
-    ```powershell
-    New-Item -ItemType Directory -Force .build/examples | Out-Null
-    odin build examples/dither -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/examples/dither.dll
-    ```
-
-=== "Linux x64"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/dither -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/examples/dither.so
-    ```
-
-=== "macOS ARM64"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/dither -build-mode:dll -o:speed -vet -out:.build/examples/dither.dylib
-    ```
-
-The x64 commands keep the binary's baseline at x86-64. The plugin contains
+On x64, the build keeps the binary's baseline at x86-64. The plugin contains
 separate AVX2 functions and calls them only after checking runtime support.
 Sixteen logical SIMD lanes can lower into multiple machine vectors: the portable
 fallback uses the instructions supported by the compiled target, so AVX2 is

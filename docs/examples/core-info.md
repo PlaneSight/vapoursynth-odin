@@ -6,37 +6,21 @@ The package is `examples/core_info`. It uses `easy` for loading, core ownership,
 
 ## Build and run
 
-Run from the repository root, replacing the library path with your installation:
+From the repository root:
 
-=== "Windows"
-
-    ```powershell
-    odin run examples/core_info -- "C:\path\to\libvapoursynth.dll"
-    ```
-
-=== "Linux"
-
-    ```sh
-    odin run examples/core_info -- /absolute/path/to/libvapoursynth.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    odin run examples/core_info -- /absolute/path/to/libvapoursynth.dylib
-    ```
-
-If the core library is on the platform loader's search path:
-
-```sh
-odin run examples/core_info
+```console
+uv run tools/run_host.py core_info
 ```
 
-To check compilation without loading VapourSynth:
+This builds the native executable under `.build/examples` and runs it with the
+VapourSynth core library from the uv environment. The command is the same on
+Windows, Linux, and macOS; see the [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for supported targets. The executable itself uses the native core API and does
+not embed Python.
 
-```sh
-odin check examples/core_info -vet
-```
+To compile without executing the host, run `uv run tools/examples.py build core_info`.
+For a separate native runtime, pass its path as described in the
+[loading guide](../guides/loading-and-linking.md#dynamic-loading-with-easy).
 
 The output begins with the runtime's version string, followed by a line with this shape:
 

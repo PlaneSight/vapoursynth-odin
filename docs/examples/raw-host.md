@@ -6,27 +6,21 @@ The package is `examples/host`. It uses only the root bindings and Odin's standa
 
 ## Run and compare
 
-Run from the repository root:
+From the repository root:
 
-=== "Windows"
+```console
+uv run tools/run_host.py host
+```
 
-    ```powershell
-    odin run examples/host -- "C:\path\to\libvapoursynth.dll"
-    ```
+This builds the native executable under `.build/examples` and runs it with the
+VapourSynth core library from the uv environment. The command is the same on
+Windows, Linux, and macOS; see the [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for supported targets. The executable itself uses the native core API and does
+not embed Python.
 
-=== "Linux"
-
-    ```sh
-    odin run examples/host -- /absolute/path/to/libvapoursynth.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    odin run examples/host -- /absolute/path/to/libvapoursynth.dylib
-    ```
-
-The path is optional. A compile-only check is `odin check examples/host -vet`.
+To compile without executing the host, run `uv run tools/examples.py build host`.
+For a separate native runtime, pass its path as described in the
+[loading guide](../guides/loading-and-linking.md#dynamic-loading-with-easy).
 
 After the core's version information, expect a line with this shape:
 

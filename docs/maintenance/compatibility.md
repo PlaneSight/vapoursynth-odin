@@ -52,6 +52,24 @@ with R76 and R79. Initial VSView loading of the four demonstrations was verified
 with R79 before those additional views were added. These checks establish script and frame evaluation; the filter
 pixel-oracle suites below provide separate numerical validation.
 
+### Dither Plus validation · 2026-09-07
+
+The standalone [Dither Plus plugin](../plugins/dither-plus.md) was verified on
+Windows x64 with VapourSynth R76 and R79. Each runtime passed **1,094 independent
+oracle cases**, **72 exact comparisons with the original blue-noise example**,
+and **70 low-bit level cases**, plus behavioral and invalid-input checks. The
+R79 suite also passed with AVX2 disabled, exercising the portable processing path.
+
+The full plugin passed `odin check plugins/dither -no-entry-point -vet` with
+both `-target:linux_amd64` and `-target:darwin_arm64`. These are compile checks;
+native Linux and macOS execution remains unverified.
+
+A Windows wheel rebuilt from the source distribution passed isolated
+installation, automatic discovery, and frame rendering for all five packaged
+plugins and all five Dither Plus modes. The twelve new preview outputs passed
+headless frame checks. The complete documentation build generated **21 PNGs**
+and **33 pages** from the current sources.
+
 ## Stable and experimental tables
 
 The stable `VSAPI` contains **117 function pointers** in header order. Its 4.2
@@ -139,8 +157,12 @@ single-thread measurements against FMTConv across formats and resolutions up to
 4K. These timings describe the tested
 machine and are not a performance guarantee for another target.
 
-Hald was built and tested natively on Windows x64. Its `vendor:stb/image`
-dependency requires native libraries built for the target platform. The tested
+Hald was built and tested natively on Windows x64. Its Odin stb image
+dependency requires native libraries built for the target platform. The common
+build helper supplies the `stb:image` collection and prepares missing Unix
+archives inside the workspace; see the
+[build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform).
+The tested
 Windows Odin installation does not contain the Unix stb libraries, so the Linux
 and macOS compile checks above do **not** include Hald. No Unix native execution
 or wheel verification is recorded.

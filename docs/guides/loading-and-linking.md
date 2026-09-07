@@ -164,8 +164,8 @@ uv run tools/examples.py build plugin
 
 This writes `.build/examples/plugin` with the platform's shared-library extension.
 The resulting plugin must match the architecture of the VapourSynth process that
-loads it. The [identity tutorial](../examples/identity-plugin.md) also shows the
-direct Odin compiler command for this layout.
+loads it. The [identity tutorial](../examples/identity-plugin.md) shows how to load and
+exercise this artifact from the uv environment.
 
 ## VSScript is a separate loading decision
 

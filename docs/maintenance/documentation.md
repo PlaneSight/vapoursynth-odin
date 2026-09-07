@@ -27,7 +27,7 @@ uv run --group docs tools/docs.py serve
 The first command creates or updates `.venv` from the committed lockfile. The
 project sets `tool.uv.package = false`, so synchronization provisions the Python
 environment without compiling or installing the native Odin examples. The
-documentation command then compiles all eight examples, evaluates the four
+documentation command then compiles the eight examples and Dither Plus, evaluates the five
 plugin preview scripts, renders their designated output frames, and starts
 Zensical. Odin and the VapourSynth runtime are required because the illustrations
 are actual native filter output. VSView and Qt are optional and are not installed
@@ -84,7 +84,7 @@ uv run --locked --group docs tools/docs.py build
 uv run --locked --group docs python -m unittest discover -s tests -p test_check_docs.py
 ```
 
-The build command compiles all eight Odin packages, executes every plugin
+The build command compiles the eight Odin examples and Dither Plus, executes every plugin
 demonstration in a fresh process, and exports the selected first frames into
 `docs/assets/generated`. It then runs Zensical with `--clean --strict` and checks
 the generated links. A failed compilation, script, or frame request fails the
@@ -115,6 +115,7 @@ code, not a visible include directive.
 | `docs/getting-started/` | Installation, first program, interface choice |
 | `docs/guides/` | Concepts and ownership contracts across APIs |
 | `docs/examples/` | Progressive explanations of the eight host and plugin examples |
+| `docs/plugins/` | Standalone plugin guides and visual comparisons |
 | `docs/reference/` | Public declarations, procedure behavior, types, and constants |
 | `docs/maintenance/` | Verification, compatibility, and publishing |
 | `docs/assets/` | Local logo and CSS; ignored `generated/` contains current filter outputs |
@@ -155,7 +156,7 @@ complete Python demonstrations when adding or changing them.
 
 ### Generate illustrations from the real scripts
 
-Identity, invert, dither, and Hald CLUT each have a checked-in `demo.vpy` used by
+Identity, invert, dither, Hald CLUT, and Dither Plus each have a checked-in `demo.vpy` used by
 both VSView and the documentation renderer. Each script publishes named output
 nodes and a `DOCUMENTATION_OUTPUTS` mapping selecting the nodes and filenames to
 export. Shared input construction and display conversions live with the examples.
@@ -172,8 +173,10 @@ This builds the plugins and exports the images with a record of the run under
 `.build/showcase`. The documentation wrapper directs the same rendering process
 to `docs/assets/generated`. PNGs embedded in Markdown therefore reflect the code
 that was compiled for that build. A frame at index zero is exported for each
-selected output; these examples use static scenes. The mappings currently export
-14 images: two each for identity, invert, and Hald, and eight for dither.
+selected output. The exported nodes use static scenes; Dither Plus also provides
+animated outputs for interactive playback. The mappings currently export
+21 images: two each for identity, invert, and Hald, eight for the dither tutorial,
+and seven for Dither Plus.
 
 Keep image captions precise. The shallow-ramp dither illustration applies the
 same 20× contrast gain to its rounding and dither views; the caption must disclose
@@ -225,7 +228,7 @@ The **build** job runs for pull requests, matching pushes, and manual dispatches
 on Windows 2025. It installs the pinned Odin development toolchain after verifying
 the archive's checksum, provisions Python 3.14.6 with the locked uv documentation
 group, and executes the full documentation command. That command
-builds all eight examples, runs the four visual scripts, generates fresh PNGs,
+builds the eight examples and Dither Plus, runs the five visual scripts, generates fresh PNGs,
 performs a clean strict site build, and checks local links. The job stores the
 site preview and generated images as artifacts and has read access to repository
 contents. Windows is the native platform used for the verified plugin builds.

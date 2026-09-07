@@ -28,11 +28,18 @@ class NativePackaging(unittest.TestCase):
                 self.assertNotIn("manylinux", target.wheel_platform)
                 self.assertNotIn("native", target.microarch)
 
-    def test_unsupported_or_universal_platforms_fail_explicitly(self):
-        for platform_name in ("win32", "win-arm64", "linux-i686", "macosx-13.0-universal2", "freebsd-14-amd64"):
+    def test_unsupported_platforms_fail_explicitly(self):
+        for platform_name in ("win32", "win-arm64", "linux-i686", "freebsd-14-amd64"):
             with self.subTest(platform=platform_name):
-                with self.assertRaisesRegex(RuntimeError, "Unsupported native wheel platform"):
+                with self.assertRaisesRegex(RuntimeError, "Unsupported"):
                     native_target(platform_name)
+
+    def test_universal_python_produces_an_honest_single_architecture_wheel(self):
+        for architecture in ("arm64", "x86_64"):
+            with self.subTest(architecture=architecture):
+                target = native_target("macosx-13.0-universal2", machine=architecture)
+                self.assertEqual(target.wheel_platform, f"macosx_13_0_{architecture}")
+                self.assertNotIn("universal", target.wheel_platform)
 
     def test_missing_sources_fail_before_compilation(self):
         with tempfile.TemporaryDirectory() as directory, patch("hatch_build.subprocess.run") as run:
@@ -63,8 +70,12 @@ class NativePackaging(unittest.TestCase):
                 self.assertIn("-microarch:x86-64", command)
                 self.assertTrue(kwargs["check"])
 
-            with patch("hatch_build.subprocess.run", side_effect=compile_plugin):
-                artifacts = build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
+            with patch("hatch_build.prepare_stb_image", return_value=("-collection:stb=private stb",)) as prepare:
+                with patch("hatch_build.subprocess.run", side_effect=compile_plugin) as run:
+                    artifacts = build_plugins(root, native_target("win-amd64"), "odin", root / ".build/packaging/unit")
+            prepare.assert_called_once_with("odin", native_target("win-amd64"), root / ".build/packaging/unit")
+            for (source, _), call in zip(PLUGINS, run.call_args_list, strict=True):
+                self.assertEqual("-collection:stb=private stb" in call.args[0], source == "examples/haldlut")
             self.assertEqual(
                 set(artifacts.values()),
                 {f"{INSTALL_DIRECTORY}/{name}.dll" for _, name in PLUGINS},
@@ -91,7 +102,7 @@ class NativePackaging(unittest.TestCase):
     @staticmethod
     def create_sources(root):
         for source, _ in PLUGINS:
-            package = root / "examples" / source
+            package = root / source
             package.mkdir(parents=True)
             (package / "plugin.odin").write_text("package example\n", encoding="utf-8")
 

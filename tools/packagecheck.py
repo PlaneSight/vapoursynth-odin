@@ -19,7 +19,7 @@ from packaging.utils import parse_wheel_filename
 
 
 ROOT = Path(__file__).resolve().parent.parent
-PLUGIN_NAMES = {"odin_example", "odin_invert", "odin_dither", "odin_hald"}
+PLUGIN_NAMES = {"odin_example", "odin_invert", "odin_dither", "odin_hald", "odin_dither_plus"}
 PLUGIN_DIRECTORY = "vapoursynth/plugins/odin_examples"
 
 SMOKE_TEST = r'''
@@ -30,7 +30,7 @@ import vapoursynth as vs
 
 destination = (Path(vs.get_plugin_dir()) / "odin_examples").resolve()
 plugins = {plugin.namespace: plugin for plugin in vs.core.plugins()}
-expected = {"odin_example", "odin_invert", "odin_dither", "odin_hald"}
+expected = {"odin_example", "odin_invert", "odin_dither", "odin_hald", "odin_dither_plus"}
 for namespace in sorted(expected):
     if namespace not in plugins:
         raise RuntimeError(f"Plugin did not autoload: {namespace}")
@@ -61,7 +61,12 @@ with graded.get_frame(0) as frame:
     for plane, expected_value in enumerate((32, 96, 192)):
         if any(abs(value - expected_value) > 1 for row in frame[plane].tolist() for value in row):
             raise RuntimeError("Unexpected Hald identity output in installed wheel")
-print(f"PASS installed wheel: all four plugins autoloaded and rendered frames with VapourSynth {vs.__version__}")
+for mode in ("blue_noise", "bayer", "none", "floyd_steinberg", "sierra_lite"):
+    quantized = vs.core.odin_dither_plus.Dither(deep, bits=2, scale=1, mode=mode)
+    with quantized.get_frame(0) as frame:
+        if frame.format.id != vs.GRAY8 or any(value not in (85, 170) for row in frame[0].tolist() for value in row):
+            raise RuntimeError(f"Unexpected DitherPlus {mode} output in installed wheel")
+print(f"PASS installed wheel: all five plugins autoloaded and rendered frames with VapourSynth {vs.__version__}")
 print(f"Plugin directory: {destination}")
 '''
 
@@ -95,7 +100,7 @@ def check_archive(wheel: Path) -> None:
         for license_name in ("LICENSE", "THIRD_PARTY_LICENSES.md"):
             if not any(name.endswith(f".dist-info/licenses/{license_name}") for name in names):
                 raise ValueError(f"Required license notice missing from wheel: {license_name}")
-    print(f"PASS archive: exactly four native plugins, native metadata, and license notices: {wheel.name}", flush=True)
+    print(f"PASS archive: exactly five native plugins, native metadata, and license notices: {wheel.name}", flush=True)
 
 
 def check_install(wheel: Path, runtime_version: str) -> None:

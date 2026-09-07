@@ -30,43 +30,23 @@ the documentation build. `uv run tools/render_showcase.py` reproduces them under
 
 ## Build the shared library
 
-Run from the repository root:
+Build from the repository root with the same command on every supported platform:
 
-The following commands and inline Python program show manual compilation and
-loading using the same `.build/examples` layout as the preview command.
-
-=== "Windows"
-
-    ```powershell
-    New-Item -ItemType Directory -Force .build/examples | Out-Null
-    odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.dll
-    ```
-
-=== "Linux"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.dylib
-    ```
-
-Odin's build-mode flag remains `-build-mode:dll` on all three platforms; the output extension changes. To check the package without linking a shared library:
-
-```sh
-odin check examples/plugin -no-entry-point -vet
+```console
+uv run tools/examples.py build plugin
 ```
+
+The command writes the native library under `.build/examples`, selecting its
+extension, architecture, and optimized compiler flags automatically. The
+[build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+covers platform prerequisites. The inline Python program below and the preview
+script load this same artifact.
 
 The plugin needs a host implementing core API 4.2. Build for the architecture used by that host. The root bindings introduce no core-library linker dependency for this plugin because all core operations go through supplied function pointers.
 
 ## Load and exercise it
 
-Save this Python example as `identity_demo.py` in the repository root, then run `python identity_demo.py` in an environment where `import vapoursynth` works:
+Save this Python example as `identity_demo.py` in the repository root, then run `uv run identity_demo.py`:
 
 ```python
 from pathlib import Path

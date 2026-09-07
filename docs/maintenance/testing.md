@@ -23,8 +23,8 @@ Explicit distribution builds write their wheel and source archives to `dist`.
 | C/Odin ABI verification | Python 3.10+, Odin, native C compiler | None; headers are checked in |
 | `easy` ownership and error suite | Odin, matching core shared library | Core API 4.2 |
 | Six introductory examples | Project Python environment, Odin, matching Python module and core | Core API 4.2 |
-| Dither and Hald correctness; dither benchmark | Project Python environment, Odin, native stb library for Hald | Core API 4.2 |
-| Native wheel build and installation check | Project Python environment, uv, Odin, native stb library | Installed-wheel check uses a matching Python runtime |
+| Dither and Hald correctness; dither benchmark | Project Python environment, Odin, and the Hald native build prerequisites below | Core API 4.2 |
+| Native wheel build and installation check | Project Python environment, uv, Odin, and the Hald native build prerequisites below | Installed-wheel check uses a matching Python runtime |
 | Documentation | Project Python environment, Odin, and the `docs` dependency group | Core API 4.2, supplied by the docs group |
 
 See [installation](../getting-started/installation.md) for the compiler and runtime
@@ -68,7 +68,6 @@ odin check examples/host -vet
 odin check examples/plugin -no-entry-point -vet
 odin check examples/invert -no-entry-point -vet
 odin check examples/dither -no-entry-point -vet
-odin check examples/haldlut -no-entry-point -vet
 ```
 
 The library packages and plugins have no application `main`; this is why those
@@ -76,12 +75,18 @@ commands specify `-no-entry-point`. The optional `link` packages are exercised
 by a consuming application when the platform's import library or shared library
 is available. A dynamic host does not need that link-time dependency.
 
-Hald imports `vendor:stb/image`, which needs the matching native stb static
-library in the Odin installation. On Unix, build that library natively using
-the bundled stb build instructions; see the
-[Hald walkthrough](../examples/haldlut-plugin.md). The Windows compiler
-installation used for verification did not contain the Unix stb libraries,
-so its cross-target checks do not establish Hald support on Linux or macOS.
+Build Hald through the common helper so its `stb:image` import receives the
+correct collection and any missing Unix image libraries are prepared:
+
+```console
+uv run tools/examples.py build haldlut
+```
+
+The helper reuses Odin's supplied stb archives or compiles missing Unix archives
+privately under `.build` with `cc` and `ar`; see the
+[Hald walkthrough](../examples/haldlut-plugin.md#import-an-odin-vendor-library).
+The recorded Windows cross-target checks do not establish native Hald execution
+on Linux or macOS.
 
 To type-check another target, add Odin's `-target` option. For example:
 
@@ -264,6 +269,36 @@ The `--runtime` directory must contain the intended VapourSynth Python module.
 The runner verifies its provenance and prints the imported module and version.
 It performs no package installation.
 
+## Check the standalone Dither Plus plugin
+
+```console
+uv run tests/dither_plus.py
+uv run tools/examples.py check --no-build dither_plus
+```
+
+The first command compares all five methods with independent integer and
+diffusion references. It exercises widths around SIMD and tile boundaries,
+low-bit expansion, scaling, per-plane correlation, deterministic frame phases,
+and invalid parameters. The second requests the first and last frame of every
+preview output, including its animated fade and pan. This plugin has its own
+suite so adding algorithms does not turn the focused dither tutorial into a
+larger product interface.
+
+For a bounded single-thread comparison against the original example:
+
+```console
+uv run tests/benchmark_dither_plus.py --no-build --json
+```
+
+The default workload is Gray16 and RGB48 to eight bits at 720p, 1080p, and 4K,
+using one VapourSynth worker and four queued requests. It records five runs of
+eight measured frames after two warmup frames, with method order rotated between
+runs. These short defaults are for a first comparison; increase `--frames` and
+`--runs` when assessing small differences. See the
+[plugin guide](../plugins/dither-plus.md) for algorithm contracts and the preview
+comparisons. Keep its measurements separate from the recorded FMTConv study,
+which covers the original blue-noise example.
+
 ## Measure dither throughput
 
 The [FMTConv comparison](dither-performance.md) measures Odin's blue-noise filter
@@ -313,10 +348,10 @@ uv run tools/packagecheck.py dist/vapoursynth_odin_examples-0.1.0-py3-none-win_a
 ```
 
 Use the actual filename produced by the native build on your platform. The
-checker audits the archive's four plugin binaries, native tags, metadata, and
+checker audits the archive's five plugin binaries, native tags, metadata, and
 license notices. It then creates an isolated environment under `.build/packaging`,
 installs the wheel and the chosen VapourSynth version, starts a fresh process,
-and verifies automatic discovery and frame output from all four plugins. This
+and verifies automatic discovery and frame output from all five plugins. This
 step invokes uv to install dependencies; unlike the runtime correctness runners,
 it can require package downloads. `--runtime 76` selects R76 explicitly; the
 default uses the active environment's VapourSynth version.
@@ -339,7 +374,7 @@ uv run --group docs tools/docs.py build
 uv run python -m unittest discover -s tests -p test_check_docs.py
 ```
 
-The build compiles all eight examples and runs the four visual `.vpy` scripts in
+The build compiles the eight examples and Dither Plus and runs the five visual `.vpy` scripts in
 fresh processes. Their designated first frames become the generated images in
 the site, so broken native code or script evaluation fails the documentation
 build. The `docs` group supplies VapourSynth and NumPy; Odin is required, while

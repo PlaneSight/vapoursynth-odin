@@ -15,11 +15,17 @@ import sysconfig
 import tempfile
 from collections.abc import Iterable, Sequence
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from tools.native_build import native_target, prepare_stb_image
+
 
 ROOT = Path(__file__).resolve().parent.parent
 HOST_NAMES = ("core_info", "properties", "easy_host", "host")
-PLUGIN_NAMES = ("plugin", "invert", "dither", "haldlut")
+PLUGIN_NAMES = ("plugin", "invert", "dither", "haldlut", "dither_plus")
 EXAMPLES = {name: ROOT / "examples" / name for name in (*HOST_NAMES, *PLUGIN_NAMES)}
+EXAMPLES["dither_plus"] = ROOT / "plugins" / "dither"
 BUILD_TIMEOUT = 300
 CHECK_TIMEOUT = 120
 
@@ -33,37 +39,13 @@ def selected_examples(names: Iterable[str], *, plugins_only: bool = False) -> tu
     return selected or available
 
 
-def native_build_options(platform_name: str) -> tuple[str, str, tuple[str, ...]]:
-    """Return executable/library suffixes and portable native compiler flags."""
-    targets = {
-        "win-amd64": (".exe", ".dll", "windows_amd64", "x86-64"),
-        "linux-x86_64": ("", ".so", "linux_amd64", "x86-64"),
-        "linux-aarch64": ("", ".so", "linux_arm64", "generic"),
-    }
-    if platform_name in targets:
-        executable, library, target, microarch = targets[platform_name]
-        return executable, library, (f"-target:{target}", f"-microarch:{microarch}")
-    if platform_name.startswith("macosx-"):
-        architecture = platform_name.rsplit("-", 1)[-1]
-        mac_targets = {"x86_64": ("darwin_amd64", "x86-64"), "arm64": ("darwin_arm64", "generic")}
-        if architecture in mac_targets:
-            target, microarch = mac_targets[architecture]
-            return "", ".dylib", (
-                f"-target:{target}", f"-microarch:{microarch}", "-minimum-os-version:13.0.0",
-            )
-    raise RuntimeError(
-        f"Unsupported build platform: {platform_name}. "
-        "Use Windows x64, Linux x64/ARM64, or single-architecture macOS x64/ARM64 Python."
-    )
-
-
 def build_examples(names: Iterable[str], odin: str = "odin") -> dict[str, Path]:
     """Compile selected examples and publish artifacts only after all builds succeed."""
     selected = selected_examples(names)
     compiler = shutil.which(odin)
     if compiler is None:
         raise RuntimeError(f"Cannot find Odin compiler: {odin}. Install Odin or pass --odin PATH.")
-    executable_suffix, library_suffix, flags = native_build_options(sysconfig.get_platform())
+    target = native_target(sysconfig.get_platform())
     for name in selected:
         source = EXAMPLES[name]
         if not source.is_dir() or not any(source.glob("*.odin")):
@@ -72,14 +54,15 @@ def build_examples(names: Iterable[str], odin: str = "odin") -> dict[str, Path]:
     build_directory = ROOT / ".build" / "examples"
     build_directory.mkdir(parents=True, exist_ok=True)
     artifacts = {
-        name: build_directory / f"{name}{library_suffix if name in PLUGIN_NAMES else executable_suffix}"
+        name: build_directory / f"{name}{target.extension if name in PLUGIN_NAMES else target.executable_suffix}"
         for name in selected
     }
     with tempfile.TemporaryDirectory(prefix="compile-", dir=build_directory) as directory:
         staging = Path(directory)
         for name, artifact in artifacts.items():
             output = staging / artifact.name
-            command = [compiler, "build", str(EXAMPLES[name]), "-vet", "-o:speed", *flags]
+            dependencies = prepare_stb_image(compiler, target, staging) if name == "haldlut" else ()
+            command = [compiler, "build", str(EXAMPLES[name]), "-vet", "-o:speed", *target.flags, *dependencies]
             if name in PLUGIN_NAMES:
                 command.append("-build-mode:dll")
             command.append(f"-out:{output}")
@@ -126,7 +109,7 @@ def check_script(script: Path) -> None:
                     if (frame.width, frame.height, frame.format.id) != (clip.width, clip.height, clip.format.id):
                         raise RuntimeError(f"output {index}, frame {frame_number} differs from its declared video format")
             print(
-                f"{script.parent.name}: output {index}: {clip.width} x {clip.height} {clip.format.name}, "
+                f"{script.relative_to(ROOT).as_posix()}: output {index}: {clip.width} x {clip.height} {clip.format.name}, "
                 f"{clip.num_frames} frames; first and last frames passed",
                 flush=True,
             )
@@ -160,9 +143,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     for command, description in (
-        ("build", "Compile all eight examples, or only the selected names."),
-        ("check", "Build and render every output of the four plugin demonstrations without a GUI."),
-        ("preview", "Build and open the four plugin demonstrations in VSView; pass its options after --."),
+        ("build", "Compile the eight examples and DitherPlus, or only the selected names."),
+        ("check", "Build and render every output of the plugin demonstrations without a GUI."),
+        ("preview", "Build and open the plugin demonstrations in VSView; pass its options after --."),
     ):
         subparser = subparsers.add_parser(command, help=description, description=description)
         available = tuple(EXAMPLES) if command == "build" else PLUGIN_NAMES

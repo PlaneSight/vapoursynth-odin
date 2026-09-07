@@ -12,20 +12,12 @@ With the repository's [uv environment](../guides/python-packaging.md) synchroniz
 uv run tools/run_host.py core_info
 ```
 
-The helper selects the core library from the active VapourSynth Python package.
-The equivalent manual command below is useful with a separate native installation.
-
-After [installing Odin and a compatible core](installation.md), run this command from the repository root, replacing the path with your actual core library:
-
-```console
-odin run examples/core_info -- /absolute/path/to/libvapoursynth.dll
-```
-
-Use `.so` on Linux or `.dylib` on macOS. If the platform loader can already locate the library, omit the argument:
-
-```console
-odin run examples/core_info
-```
+The helper compiles the native executable under `.build/examples`, selects the
+core library from the active VapourSynth Python package, and runs the host. The
+same command works on every [supported platform](../guides/previewing-examples.md#one-build-command-on-every-supported-platform).
+To build without running it, use `uv run tools/examples.py build core_info`.
+For a separate native installation, see the explicit library-path instructions
+in [loading and linking](../guides/loading-and-linking.md).
 
 The program prints the runtime's version string, numeric core version, reported API version, and thread count. Exact values depend on the installed runtime and machine. Successful output establishes that Odin can call the core through the API table; it does not establish that every optional plugin you may use is installed.
 
@@ -49,10 +41,10 @@ There are four decisions in this small program that remain useful as an applicat
 
 ## Request a frame
 
-Run the next host example with the same library path:
+Run the next host example with the same environment:
 
 ```console
-odin run examples/easy_host -- /absolute/path/to/libvapoursynth.dll
+uv run tools/run_host.py easy_host
 ```
 
 It creates a one-frame, 65 × 48 Gray8 clip with every sample equal to 17. It then sums the active pixels and verifies a checksum of **53,040**. Its printed stride depends on the runtime's allocation; the checksum excludes any row padding.

@@ -21,13 +21,18 @@ For a host application, start at step 1 and work through step 4. For a filter pl
 
 Steps 7 and 8 build on that lifecycle. Dither concentrates on quantization quality, vector arithmetic, and performance measurement. Hald CLUT demonstrates native library integration, creation-time asset loading, and color interpolation. Both have independent numerical tests and generated visual comparisons.
 
+For a larger application of these ideas, explore the standalone
+[Dither Plus plugin](../plugins/dither-plus.md). Its alternative quantizers,
+RGB correlation controls, and moving masks have their own plugin guide outside
+this eight-step learning sequence.
+
 ## What you need
 
 Run all commands from the repository root. Follow the [quickstart](../getting-started/quickstart.md) to make the Odin compiler and an API 4.2 runtime available. The examples use relative package imports, so their directories must remain inside the repository when built without modifying those imports.
 
 The four host executables accept an optional path to the VapourSynth **core** library. They use `std.BlankClip` where a clip is needed; no video file, source plugin, or Python interpreter is involved in those hosts. Plugin autoloading is disabled when their cores are created, while the built-in `std` plugin remains available.
 
-The four plugin demonstrations need a VapourSynth host to load them. Their tutorials use Python with the VapourSynth module installed. Match the plugin architecture to that host and its core library. See [loading and linking](../guides/loading-and-linking.md) for library selection and deployment details. The [Python packaging guide](../guides/python-packaging.md) explains how to provision the runtime with uv and build all four plugins into a native wheel.
+The four plugin demonstrations need a VapourSynth host to load them. Their tutorials use Python with the VapourSynth module installed. Match the plugin architecture to that host and its core library. See [loading and linking](../guides/loading-and-linking.md) for library selection and deployment details. The [Python packaging guide](../guides/python-packaging.md) explains how to provision the runtime with uv and build these plugins and Dither Plus into a native wheel.
 
 ## Build and inspect the examples
 
@@ -36,13 +41,13 @@ uv run tools/examples.py build
 uv run --group preview tools/examples.py preview --no-build
 ```
 
-The first command compiles all eight packages. The second reuses those binaries
-and opens all four plugin demonstrations in VSView. Select individual
+The first command compiles all eight examples and Dither Plus. The second reuses
+those binaries and opens all five plugin demonstrations in VSView. Select individual
 filters with `preview invert dither`; every script supplies named comparison,
 source or baseline, and filtered outputs.
 
 For an optional headless check after compiling, run
-`uv run tools/examples.py check --no-build`. It executes the four plugin `.vpy`
+`uv run tools/examples.py check --no-build`. It executes the five plugin `.vpy`
 scripts and requests their output frames without opening a window.
 
 The optional `preview` group supplies VSView and Qt and requires Python 3.12–3.14.
@@ -59,27 +64,14 @@ uv sync --locked
 uv run tools/run_host.py core_info
 ```
 
-The helper selects the core library from the active Python environment. To select a separately installed runtime directly:
+The helper builds the selected executable and supplies the core library from
+the active Python environment. Substitute another host name from the table to
+run it. To build a host without running it, use
+`uv run tools/examples.py build core_info`.
 
-=== "Windows"
-
-    ```powershell
-    odin run examples/core_info -- "C:\path\to\libvapoursynth.dll"
-    ```
-
-=== "Linux"
-
-    ```sh
-    odin run examples/core_info -- /absolute/path/to/libvapoursynth.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    odin run examples/core_info -- /absolute/path/to/libvapoursynth.dylib
-    ```
-
-Substitute another host package from the table to run it. If the library is already discoverable by your platform's loader, omit the path and the `--`. A successful example exits with status zero; a reported failure exits with status one.
+For a separately installed runtime, see
+[loading and linking](../guides/loading-and-linking.md). A successful example
+exits with status zero; a reported failure exits with status one.
 
 ## Run the example suites
 

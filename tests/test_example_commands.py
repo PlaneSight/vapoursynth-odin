@@ -136,22 +136,52 @@ class ExampleCommands(unittest.TestCase):
                 with patch.object(examples.subprocess, "run", side_effect=failure):
                     self.assertEqual(examples.main(["check", "plugin", "--no-build"]), 1)
 
-    def test_platforms_choose_native_suffixes_and_portable_baselines(self):
+    def test_native_targets_control_compiler_flags_and_artifact_names(self):
         cases = {
-            "win-amd64": (".exe", ".dll", "-microarch:x86-64"),
-            "linux-x86_64": ("", ".so", "-microarch:x86-64"),
-            "linux-aarch64": ("", ".so", "-microarch:generic"),
-            "macosx-13.0-x86_64": ("", ".dylib", "-microarch:x86-64"),
-            "macosx-13.0-arm64": ("", ".dylib", "-microarch:generic"),
+            "win-amd64": (".dll", "windows_amd64", "x86-64"),
+            "linux-x86_64": (".so", "linux_amd64", "x86-64"),
+            "linux-aarch64": (".so", "linux_arm64", "generic"),
+            "macosx-13.0-x86_64": (".dylib", "darwin_amd64", "x86-64"),
+            "macosx-13.0-arm64": (".dylib", "darwin_arm64", "generic"),
         }
-        for platform, (executable, library, microarch) in cases.items():
+        for platform, (extension, target, microarch) in cases.items():
             with self.subTest(platform=platform):
-                result = examples.native_build_options(platform)
-                self.assertEqual(result[:2], (executable, library))
-                self.assertIn(microarch, result[2])
-        for platform in ("win32", "win-arm64", "linux-i686", "macosx-13.0-universal2"):
-            with self.subTest(platform=platform), self.assertRaisesRegex(RuntimeError, "Unsupported build platform"):
-                examples.native_build_options(platform)
+                with self.compiler_environment(), patch.object(examples.sysconfig, "get_platform", return_value=platform):
+                    with patch.object(examples.subprocess, "run", side_effect=self.write_artifact) as run:
+                        artifacts = examples.build_examples(["plugin"])
+                self.assertEqual(artifacts["plugin"].name, f"plugin{extension}")
+                command = run.call_args.args[0]
+                self.assertIn(f"-target:{target}", command)
+                self.assertIn(f"-microarch:{microarch}", command)
+                if target.startswith("darwin"):
+                    self.assertIn("-minimum-os-version:13.0.0", command)
+
+    def test_stb_is_prepared_only_for_hald_and_not_published(self):
+        self.add_hald_source()
+        dependency_flags = ("-collection:stb=private stb",)
+        with self.compiler_environment(), patch.object(examples, "prepare_stb_image", return_value=dependency_flags) as prepare:
+            with patch.object(examples.subprocess, "run", side_effect=self.write_artifact) as run:
+                artifacts = examples.build_examples(["plugin", "haldlut"])
+        prepare.assert_called_once()
+        staging = prepare.call_args.args[2]
+        self.assertTrue(staging.is_relative_to(self.root / ".build" / "examples"))
+        self.assertFalse(staging.exists())
+        self.assertNotIn(dependency_flags[0], run.call_args_list[0].args[0])
+        self.assertIn(dependency_flags[0], run.call_args_list[1].args[0])
+        self.assertEqual(set((self.root / ".build" / "examples").iterdir()), set(artifacts.values()))
+
+    def test_dependency_failure_preserves_previous_plugins(self):
+        self.add_hald_source()
+        outputs = self.root / ".build" / "examples"
+        outputs.mkdir(parents=True)
+        for name in ("plugin", "haldlut"):
+            (outputs / f"{name}.dll").write_bytes(b"previous build")
+        with self.compiler_environment(), patch.object(examples, "prepare_stb_image", side_effect=RuntimeError("missing cc")):
+            with patch.object(examples.subprocess, "run", side_effect=self.write_artifact):
+                with self.assertRaisesRegex(RuntimeError, "missing cc"):
+                    examples.build_examples(["plugin", "haldlut"])
+        self.assertEqual(sorted(path.name for path in outputs.iterdir()), ["haldlut.dll", "plugin.dll"])
+        self.assertTrue(all(path.read_bytes() == b"previous build" for path in outputs.iterdir()))
 
     @unittest.skipUnless(importlib.util.find_spec("vapoursynth"), "VapourSynth is not installed")
     def test_script_without_registered_outputs_is_rejected(self):
@@ -178,8 +208,14 @@ class ExampleCommands(unittest.TestCase):
             sysconfig=unittest.mock.Mock(get_platform=unittest.mock.Mock(return_value="win-amd64")),
         )
 
+    def add_hald_source(self):
+        source = self.root / "examples" / "haldlut"
+        source.mkdir(parents=True)
+        (source / "plugin.odin").write_text("package haldlut\n", encoding="utf-8")
+        examples.EXAMPLES["haldlut"] = source
+
     @staticmethod
-    def write_artifact(command):
+    def write_artifact(command, **kwargs):
         output = Path(next(argument[5:] for argument in command if argument.startswith("-out:")))
         output.write_bytes(b"new native artifact")
         return output

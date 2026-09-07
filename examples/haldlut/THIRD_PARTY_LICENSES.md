@@ -1,6 +1,7 @@
 # Third-party notice: stb_image
 
-This example imports Odin's `vendor:stb/image`, which links the bundled
+This example imports Odin's bundled image binding as `stb:image`, with the build
+mapping that collection to Odin's stb package. The binding links the bundled
 `stb_image` implementation statically into the native plugin. The source in the
 Odin distribution (`vendor/stb/src/stb_image.h`) offers the MIT license or a
 public-domain alternative. This example preserves the MIT notice below.

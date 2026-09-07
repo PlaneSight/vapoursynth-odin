@@ -1,64 +1,32 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-"""Build the four native examples for an explicit, non-editable wheel build."""
+"""Build native plugins for an explicit, non-editable wheel build."""
 
-from dataclasses import dataclass
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import sysconfig
 import tempfile
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tools.native_build import NativeTarget, native_target, prepare_stb_image
+
 
 PLUGINS = (
-    ("plugin", "odin_example"),
-    ("invert", "odin_invert"),
-    ("dither", "odin_dither"),
-    ("haldlut", "odin_hald"),
+    ("examples/plugin", "odin_example"),
+    ("examples/invert", "odin_invert"),
+    ("examples/dither", "odin_dither"),
+    ("examples/haldlut", "odin_hald"),
+    ("plugins/dither", "odin_dither_plus"),
 )
 INSTALL_DIRECTORY = "vapoursynth/plugins/odin_examples"
 
 
-@dataclass(frozen=True)
-class NativeTarget:
-    wheel_platform: str
-    odin_target: str
-    extension: str
-    microarch: str
-    extra_flags: tuple[str, ...] = ()
-
-
-def native_target(platform_name: str) -> NativeTarget:
-    """Map the interpreter's native platform to an honest local wheel target."""
-    targets = {
-        "win-amd64": NativeTarget("win_amd64", "windows_amd64", ".dll", "x86-64"),
-        "linux-x86_64": NativeTarget("linux_x86_64", "linux_amd64", ".so", "x86-64"),
-        "linux-aarch64": NativeTarget("linux_aarch64", "linux_arm64", ".so", "generic"),
-    }
-    if platform_name in targets:
-        return targets[platform_name]
-    if platform_name.startswith("macosx-"):
-        arch = platform_name.rsplit("-", 1)[-1]
-        if arch == "x86_64":
-            return NativeTarget(
-                "macosx_13_0_x86_64", "darwin_amd64", ".dylib", "x86-64",
-                ("-minimum-os-version:13.0.0",),
-            )
-        if arch == "arm64":
-            return NativeTarget(
-                "macosx_13_0_arm64", "darwin_arm64", ".dylib", "generic",
-                ("-minimum-os-version:13.0.0",),
-            )
-    raise RuntimeError(
-        f"Unsupported native wheel platform: {platform_name}. "
-        "Use a 64-bit Windows x64, Linux x64/ARM64, or single-architecture macOS x64/ARM64 Python."
-    )
-
-
 def build_plugins(root: Path, target: NativeTarget, odin: str, build_directory: Path) -> dict[str, str]:
     """Return explicit artifact-to-wheel paths after every compiler call succeeds."""
-    sources = [(root / "examples" / source, name) for source, name in PLUGINS]
+    sources = [(root / source, name) for source, name in PLUGINS]
     for source, _ in sources:
         if not source.is_dir() or not any(source.glob("*.odin")):
             raise RuntimeError(f"Missing Odin plugin sources: {source}")
@@ -68,14 +36,14 @@ def build_plugins(root: Path, target: NativeTarget, odin: str, build_directory: 
     build_directory.mkdir(parents=True, exist_ok=True)
     artifacts: dict[str, str] = {}
     for source, name in sources:
+        dependencies = prepare_stb_image(odin, target, build_directory) if source.name == "haldlut" else ()
         artifact = build_directory / f"{name}{target.extension}"
         command = [
             odin, "build", str(source), "-build-mode:dll", "-o:speed", "-vet",
-            f"-target:{target.odin_target}", f"-microarch:{target.microarch}",
-            *target.extra_flags, f"-out:{artifact}",
+            *target.flags, *dependencies, f"-out:{artifact}",
         ]
         print(f"Building {source.relative_to(root)} for {target.odin_target}", flush=True)
-        subprocess.run(command, cwd=root, check=True)
+        subprocess.run(command, cwd=root, check=True, timeout=300)
         if not artifact.is_file() or artifact.stat().st_size == 0:
             raise RuntimeError(f"Odin did not produce a nonempty plugin: {artifact}")
         artifacts[str(artifact)] = f"{INSTALL_DIRECTORY}/{artifact.name}"

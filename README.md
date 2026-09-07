@@ -17,19 +17,26 @@ resource ownership, plugin invocation, synchronous frame requests, durable error
 diagnostics, and stride-aware row views. Start with the
 [eight examples](examples/README.md), which progress from core information and map
 properties to parallel invert, SIMD blue-noise dither, and Hald CLUT color-grading
-filters. The Hald example uses Odin's bundled `vendor:stb/image` library.
+filters. The Hald example uses Odin's bundled stb image library.
+
+The standalone [Dither Plus plugin](plugins/dither/README.md) builds on that
+foundation with five quantization methods, RGB threshold correlation, and
+deterministic moving masks. It lives under `plugins/`, keeping the eight teaching
+examples focused on their individual API and implementation lessons.
 
 ## Reproducible environment and plugin wheels
 
-With [uv](https://docs.astral.sh/uv/) and Odin installed, compile all eight examples
-and open the four visual demonstrations:
+With [uv](https://docs.astral.sh/uv/) and Odin installed, compile the eight examples
+and Dither Plus, then open the five visual demonstrations:
 
 ```console
 uv run tools/examples.py build
 uv run --group preview tools/examples.py preview --no-build
 ```
 
-`uv run` provisions the environment as needed. `build` writes the binaries into
+The commands are identical on Windows x64, Linux x64/ARM64, and macOS x64/ARM64.
+`uv run` provisions the environment as needed. `build` selects the native target,
+CPU baseline, and file extensions, then writes the binaries into
 `.build/examples`; `preview --no-build` reuses them and opens the `.vpy` scripts
 in **VSView**, with named comparison, source, and filtered outputs. A standalone
 `preview invert dither` command builds those selected filters before opening them.
@@ -49,12 +56,18 @@ keeps the GUI dependencies out of the environment. See
 complete workflow and output choices. All demonstration input is generated
 locally, so no video downloads or source plugins are needed.
 
+For Hald CLUT, the build reuses Odin's bundled stb image libraries or builds
+missing Unix archives privately under `.build`. That fallback needs a native C
+compiler and archiver on Linux, or Xcode command line tools on macOS. The Odin
+installation is left intact. macOS builds require macOS 13 or newer and select
+the running Python process's architecture, including universal2 installations.
+
 The lockfile selects VapourSynth R79; the raw declarations remain pinned to R76
 API 4.2. Both runtimes have been exercised on Windows x64. Python 3.12 or newer is
 required by the runtime distribution. Odin remains the native compiler.
 
 Ordinary sync installs development dependencies. An explicit `uv build` compiles
-the four native plugins and packages them as a platform-specific wheel under
+the five native plugins and packages them as a platform-specific wheel under
 `vapoursynth/plugins/odin_examples`, following VapourSynth's autoload convention.
 The Python distribution is named `vapoursynth-odin-examples`; it distributes
 native example filters. Odin applications import the source packages as usual.
@@ -65,7 +78,8 @@ layout, source builds, third-party notices, and installation verification.
 
 The [documentation site](docs/index.md) includes installation and first-program
 guides, ownership and error handling, maps and frame layout, all eight example
-walkthroughs, complete API references, and testing and compatibility guidance.
+walkthroughs, the Dither Plus plugin guide, complete API references, and testing
+and compatibility guidance.
 It is built with [Zensical](https://zensical.org/) and includes the actual Odin
 sources directly in tutorials and reference pages.
 
@@ -120,10 +134,13 @@ resolve `getVapourSynthAPI`, create a core, invoke `std.BlankClip`, and read a f
 It releases its frames, nodes, maps, and core before unloading the library.
 
 ```console
-odin run examples/host -- /absolute/path/to/libvapoursynth.dll
+uv run tools/run_host.py host
 ```
 
-The path is optional. Defaults are `libvapoursynth.dll` on Windows,
+The helper builds the executable and selects the core library supplied by the
+uv environment. For a separate native installation, run
+`odin run examples/host -- /absolute/path/to/core-library` with its actual path.
+Omitting that path uses `libvapoursynth.dll` on Windows,
 `libvapoursynth.so` on Linux, and `libvapoursynth.dylib` on macOS. The file and its
 dependencies must be available to the platform loader. Core API 4.2 requires
 VapourSynth R74 or newer; older libraries return `nil` for this version request.
@@ -171,13 +188,17 @@ and registers `odin_example.Identity`, which returns a reference to its input cl
 uv run tools/examples.py build plugin
 ```
 
-Use the platform's shared-library extension for the output on Linux or macOS.
+The build command selects the platform's shared-library extension automatically.
 Load it from a VapourSynth Python script:
 
 ```python
+from pathlib import Path
+import sys
+
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path="/absolute/path/to/.build/examples/plugin.dll")
+suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
+vs.core.std.LoadPlugin(path=str(Path(f".build/examples/plugin{suffix}").resolve()))
 source = vs.core.std.BlankClip(width=64, height=48, length=1)
 vs.core.odin_example.Identity(source).set_output()
 ```

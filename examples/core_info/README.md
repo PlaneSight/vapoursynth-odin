@@ -7,10 +7,11 @@ Deferred cleanup releases the core before unloading the library.
 Run from the repository root:
 
 ```console
-odin run examples/core_info -- /absolute/path/to/libvapoursynth.dll
+uv run tools/run_host.py core_info
 ```
 
-The path is optional; `easy.DEFAULT_LIBRARY` selects the platform's library name.
-Use the appropriate `.so` or `.dylib` on Linux or macOS. The loader must also be
-able to locate the library's dependencies. The example disables automatic plugin
-loading, so it does not depend on plugins installed on the machine.
+The helper builds the native executable and selects the core library from the
+uv environment. The same command works on every supported platform. To compile
+without executing it, run `uv run tools/examples.py build core_info`. The example
+disables automatic plugin loading, so it does not depend on installed plugins.
+See the [build guide](../../docs/guides/previewing-examples.md) for prerequisites.

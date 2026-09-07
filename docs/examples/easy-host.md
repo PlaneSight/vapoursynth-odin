@@ -8,25 +8,19 @@ The package is `examples/easy_host`. Its width is deliberately 65 pixels, so ass
 
 From the repository root:
 
-=== "Windows"
+```console
+uv run tools/run_host.py easy_host
+```
 
-    ```powershell
-    odin run examples/easy_host -- "C:\path\to\libvapoursynth.dll"
-    ```
+This builds the native executable under `.build/examples` and runs it with the
+VapourSynth core library from the uv environment. The command is the same on
+Windows, Linux, and macOS; see the [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for supported targets. The executable itself uses the native core API and does
+not embed Python.
 
-=== "Linux"
-
-    ```sh
-    odin run examples/easy_host -- /absolute/path/to/libvapoursynth.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    odin run examples/easy_host -- /absolute/path/to/libvapoursynth.dylib
-    ```
-
-The path is optional when the default core library is discoverable. This executable uses the built-in `std` plugin with user plugin autoloading disabled. It needs neither Python nor an input file. A compile-only check is `odin check examples/easy_host -vet`.
+To compile without executing the host, run `uv run tools/examples.py build easy_host`.
+For a separate native runtime, pass its path as described in the
+[loading guide](../guides/loading-and-linking.md#dynamic-loading-with-easy).
 
 The output has this shape:
 

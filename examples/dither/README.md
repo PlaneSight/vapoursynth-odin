@@ -34,24 +34,29 @@ Documentation images are exported from these same nodes during each site build.
 See the [preview guide](../../docs/guides/previewing-examples.md) for headless checks
 and image generation.
 
-The same library can be built and loaded directly:
+To build the same optimized library without opening a viewer:
 
-Run `uv sync --locked` from the repository root to provision the configured Python environment and runtime. Build an optimized Windows x64 plugin for the baseline x86-64 instruction set:
-
-```powershell
-New-Item -ItemType Directory -Force .build/examples | Out-Null
-odin build examples/dither -build-mode:dll -out:.build/examples/dither.dll -vet -o:speed -microarch:x86-64
+```console
+uv run tools/examples.py build dither
 ```
 
-On Linux x64, use `.so` for the output extension with the same flags. On macOS ARM64, use `.dylib` and omit `-microarch:x86-64`. Odin's shared-library build mode is named `dll` on all these platforms. The explicit x64 baseline avoids inheriting the compiler's newer default microarchitecture. Separate AVX2 row functions are selected only after checking runtime support, so loading the plugin does not require an AVX2-capable CPU.
+This command selects the native target, output extension, and CPU baseline on
+every supported platform. On x64, the baseline is x86-64. Separate AVX2 row
+functions are selected only after checking runtime support, so loading the
+plugin does not require an AVX2-capable CPU. See the
+[build guide](../../docs/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for prerequisites.
 
 In a Python environment with VapourSynth installed:
 
 ```python
 from pathlib import Path
+import sys
+
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path=str(Path(".build/examples/dither.dll").resolve()))
+suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
+vs.core.std.LoadPlugin(path=str(Path(f".build/examples/dither{suffix}").resolve()))
 source = vs.core.std.BlankClip(
     width=640, height=360, format=vs.YUV420P16,
     color=[4096, 32768, 32768], length=24,

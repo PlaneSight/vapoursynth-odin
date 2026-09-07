@@ -80,7 +80,7 @@ The lockfile selects R79; it does not alter the pinned R76 API 4.2 declarations.
 See [Python environments and wheels](../guides/python-packaging.md) for platform
 availability, documentation dependency groups, and native plugin distribution.
 
-To compile all eight examples and inspect the four plugin demonstrations:
+To compile the eight examples and Dither Plus and inspect the five plugin demonstrations:
 
 ```console
 uv run tools/examples.py build
@@ -89,6 +89,14 @@ uv run --group preview tools/examples.py preview --no-build
 
 The second command reuses the first command's binaries. An optional headless
 check is `uv run tools/examples.py check --no-build`.
+
+The build command selects the target, CPU baseline, and output filenames on
+Windows x64, Linux x64/ARM64, and macOS x64/ARM64. macOS builds target version
+13 or newer, including when Python comes from a universal2 installation. Hald
+CLUT reuses Odin's supplied stb image libraries or builds missing Unix archives
+privately with a native C compiler and archiver. See the
+[build requirements](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for the platform tools needed by that fallback.
 
 The optional `preview` group adds VSView and Qt when selected; plain `uv sync`
 does not install them. See [Build and preview the examples](../guides/previewing-examples.md)

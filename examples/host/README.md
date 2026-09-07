@@ -6,8 +6,12 @@ and checks its first pixel. Explicit error checks and `defer` statements show
 the C API's reference and object lifetimes.
 
 ```console
-odin run examples/host -- /absolute/path/to/libvapoursynth.dll
+uv run tools/run_host.py host
 ```
+
+The helper builds the executable and selects the core library from the uv
+environment on every supported platform. Use
+`uv run tools/examples.py build host` to compile without executing it.
 
 Compare it with [easy_host](../easy_host) to see the typed wrapper interface.
 See the [example guide](../README.md) for platform paths and prerequisites.

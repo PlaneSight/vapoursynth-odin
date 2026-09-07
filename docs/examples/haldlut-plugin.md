@@ -7,7 +7,7 @@ description: Load a 16-bit Hald PNG through Odin's stb_image binding and apply a
 
 `odin_hald.HaldCLUT` applies a three-dimensional color lookup table stored in a
 PNG image. It combines VapourSynth's planar frame API with Odin's
-`vendor:stb/image` binding, loads the table once during filter creation, and
+bundled stb image binding, loads the table once during filter creation, and
 uses tetrahedral interpolation to grade 8–16 bit integer RGB video.
 
 The [invert filter](invert-plugin.md) introduces the callback lifecycle. This
@@ -67,46 +67,49 @@ The cinematic transform combines a modest S-curve, reduced saturation, cool
 shadows, and warm highlights. It is an example look, with no camera-specific
 calibration.
 
-The following manual commands build the same `.build/examples/haldlut` library
-used by the preview script and inline Python example:
+Build the native library with the same command on every supported platform:
 
-=== "Windows x64"
-
-    ```powershell
-    New-Item -ItemType Directory -Force .build/examples | Out-Null
-    odin build examples/haldlut -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/examples/haldlut.dll
-    ```
-
-=== "Linux x64"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/haldlut -build-mode:dll -o:speed -vet -microarch:x86-64 -out:.build/examples/haldlut.so
-    ```
-
-=== "macOS ARM64"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/haldlut -build-mode:dll -o:speed -vet -out:.build/examples/haldlut.dylib
-    ```
-
-The compiler's `vendor:stb/image` package needs its native static library. If a
-source-built Odin installation lacks that library, build the bundled stb sources
-using the instructions and `build_stb.sh` in that installation's `vendor/stb/src`
-directory. Build for the same platform and architecture as the plugin. This is
-a compiler installation dependency; installing a Python image package does not
-provide it.
-
-```sh
-sh /absolute/path/to/Odin/vendor/stb/src/build_stb.sh
+```console
+uv run tools/examples.py build haldlut
 ```
+
+The command creates `.build/examples/haldlut` with the correct native extension,
+architecture, and optimized compiler flags. It reuses the stb image libraries
+supplied by Odin's stb image package. If Unix archives are missing, it
+builds the bundled C sources in a private staging directory under `.build` with
+`cc` and `ar`. Install a native C compiler and archiver on Linux, or Xcode
+command line tools on macOS, for that fallback. Windows uses the vendor
+libraries shipped with Odin. The build does not modify the Odin installation.
+The [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+explains target selection and platform prerequisites.
 
 The repository also packages the compiled Hald plugin through `uv build --wheel`.
 See [Python environments and wheels](../guides/python-packaging.md) for native
 dependency notices and automatic discovery. The binary statically links stb_image;
 its bundled third-party notice accompanies redistribution, as described in
 [license and provenance](../license.md).
+
+## Import an Odin vendor library
+
+The plugin uses Odin's supplied stb image declarations through a small custom
+collection:
+
+```odin
+import stbi "stb:image"
+```
+
+The common build helper maps `stb` to the compiler installation's `vendor/stb`
+directory. If native archives are missing on Unix, it copies the image bindings
+into a private build directory, compiles the missing archives there, and points
+the same collection at that prepared package. The plugin calls the same Odin
+stb API in either case.
+
+This explicit collection keeps dependency preparation within the workspace;
+Odin's built-in `vendor` collection cannot be replaced. The uv build, preview,
+test, and wheel commands pass the collection automatically. If integrating this
+example into a different build system, provide a `stb` collection pointing to
+Odin's `vendor/stb` directory or an equivalent prepared copy containing native
+libraries for your target.
 
 ## Apply a table
 

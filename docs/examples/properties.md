@@ -8,25 +8,19 @@ The package is `examples/properties`. It reuses the library and core lifetime fr
 
 From the repository root:
 
-=== "Windows"
+```console
+uv run tools/run_host.py properties
+```
 
-    ```powershell
-    odin run examples/properties -- "C:\path\to\libvapoursynth.dll"
-    ```
+This builds the native executable under `.build/examples` and runs it with the
+VapourSynth core library from the uv environment. The command is the same on
+Windows, Linux, and macOS; see the [build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for supported targets. The executable itself uses the native core API and does
+not embed Python.
 
-=== "Linux"
-
-    ```sh
-    odin run examples/properties -- /absolute/path/to/libvapoursynth.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    odin run examples/properties -- /absolute/path/to/libvapoursynth.dylib
-    ```
-
-Omit the argument when your platform loader can find the default core library. You can check the package without a runtime using `odin check examples/properties -vet`.
+To compile without executing the host, run `uv run tools/examples.py build properties`.
+For a separate native runtime, pass its path as described in the
+[loading guide](../guides/loading-and-linking.md#dynamic-loading-with-easy).
 
 A successful run prints:
 

@@ -19,19 +19,63 @@ uv run --group preview tools/examples.py preview --no-build
 ```
 
 `uv run` prepares the project environment as needed. The first command compiles
-all eight Odin packages. The second reuses those binaries and launches the four
-plugin scripts in VSView, ready to inspect. For an optional headless check of
+the eight example packages and standalone Dither Plus. The second reuses those
+binaries and launches the five plugin scripts in VSView, ready to inspect.
+For an optional headless check of
 their output frames after the build:
 
 ```console
 uv run tools/examples.py check --no-build
 ```
 
+## One build command on every supported platform
+
+Use the same `uv run tools/examples.py build` command on Windows x64, Linux
+x64 or ARM64, and macOS x64 or ARM64. It creates the output directory, selects
+the Odin target and library extension, enables optimized builds, and uses a
+baseline CPU instruction set. macOS builds target macOS 13 or newer.
+
+The build follows the architecture of the Python process that will load the
+plugins. A universal2 Python installation on macOS produces a single-architecture
+plugin for its running process, including x64 when Python runs under Rosetta.
+It does not create a universal binary. Odin and the platform's native development
+tools must be installed; uv supplies the Python environment and VapourSynth.
+
+Hald CLUT imports Odin's bundled stb image package. The build reuses the image
+libraries supplied by your Odin installation. When Unix archives are missing,
+it compiles the bundled C sources into a private build directory under `.build`,
+using `cc` and `ar`. This requires a native C compiler and archiver on Linux, or
+the Xcode command line tools on macOS. The build does not modify your Odin
+installation. On Windows, use an Odin distribution that includes its native
+vendor libraries.
+
+The helper supplies the plugin's `stb:image` import through a custom collection,
+pointing it at Odin's package or the privately prepared copy. See the
+[Hald walkthrough](../examples/haldlut-plugin.md#import-an-odin-vendor-library)
+for how that native dependency is integrated.
+
+Only builds selecting `haldlut` need these stb libraries. To build a smaller
+selection:
+
+```console
+uv run tools/examples.py build invert dither
+```
+
+The same native build support is used by preview, image generation, documentation,
+host execution, and `uv build --wheel`. Builds compile into temporary directories
+before publishing the requested artifacts. If a compiler invocation fails, the
+command reports failure and leaves the previous binaries available.
+
+Native execution has been verified on Windows x64. Platform selection and build
+commands for the other supported targets are tested separately; see the
+[compatibility record](../maintenance/compatibility.md) for the limits of that
+evidence.
+
 ## Choose what to build or preview
 
 The build command writes host executables and native plugins under
-`.build/examples`, using each example directory's name and the platform's file
-extension. Its default selection is all eight packages:
+`.build/examples`, using the build selector and the platform's file extension.
+Its default selection is the eight examples plus Dither Plus:
 
 | Host executables | Plugin demonstrations |
 | --- | --- |
@@ -39,16 +83,19 @@ extension. Its default selection is all eight packages:
 | `properties` | `invert` |
 | `easy_host` | `dither` |
 | `host` | `haldlut` |
+| — | `dither_plus` — standalone plugin in `plugins/dither` |
 
 Preview one filter or several by name:
 
 ```console
 uv run --group preview tools/examples.py preview invert
 uv run --group preview tools/examples.py preview dither haldlut
+uv run --group preview tools/examples.py preview dither_plus
 ```
 
 The preview command builds its selected plugins before launching their checked-in
-`examples/<name>/demo.vpy` files. To reuse binaries from a previous build:
+`demo.vpy` files: `examples/<name>/demo.vpy` for the teaching examples and
+`plugins/dither/demo.vpy` for Dither Plus. To reuse binaries from a previous build:
 
 ```console
 uv run --group preview tools/examples.py preview --no-build dither
@@ -66,7 +113,7 @@ its VapourSynth namespace remains `odin_example`.
 
 ## Read the named outputs
 
-Every demonstration publishes the same first three output nodes. Use VSView's output selector
+The four teaching demonstrations publish the same first three output nodes. Use VSView's output selector
 to switch between the comparison and either side at full size.
 
 | Output | Contents |
@@ -105,7 +152,14 @@ levels across `0..255`, and returns ordinary eight-bit samples. Two-bit RGB uses
 only `0`, `85`, `170`, and `255` in each channel. The
 [dither walkthrough](../examples/dither-plugin.md#effective-depth-and-storage-depth)
 explains the exact mapping and the distinction between quantization levels and
-storage depth. There are **24 output nodes** across all four demonstrations.
+storage depth.
+
+The standalone [Dither Plus preview](../plugins/dither-plus.md#reproduce-the-illustrations)
+has its own output layout. Output `0` is the RGB16 scene; outputs `1`–`5` compare
+nearest, Bayer, blue noise, Floyd–Steinberg, and Sierra Lite at two bits. Outputs
+`6`–`7` compare independent and shared RGB thresholds on a neutral input.
+Outputs `8`–`11` demonstrate a fade and pan, including static and moving
+blue-noise masks. There are **36 output nodes** across the five demonstrations.
 
 The scripts name their outputs through VSView's user API when running inside
 the previewer. Headless evaluation uses ordinary VapourSynth output nodes and does
@@ -169,8 +223,10 @@ process, and exports the first frame of the outputs declared in that script's
 under `.build/showcase`. The scene construction, filter calls, and comparison
 display transforms all live in the example scripts and their shared helpers.
 Changing those examples changes both the viewer and the generated illustrations.
-The current mappings export **14 images**: two each for identity, invert, and
-Hald, plus the amplified eight-bit dither pair and three low-bit comparison pairs.
+The current mappings export **21 images**: two each for identity, invert, and
+Hald, eight for the focused dither tutorial, and seven for Dither Plus. The
+animated Dither Plus outputs are reserved for playback; its static method and
+RGB-correlation comparisons supply the documentation images.
 
 To regenerate the images in the site and validate the whole documentation:
 
@@ -178,7 +234,7 @@ To regenerate the images in the site and validate the whole documentation:
 uv run --group docs tools/docs.py build
 ```
 
-This builds all eight Odin examples, evaluates all four visual demonstrations,
+This builds the eight Odin examples and Dither Plus, evaluates all five visual demonstrations,
 exports their images into the ignored `docs/assets/generated` directory, runs a
 clean strict Zensical build, and checks local links and assets. Failure to compile,
 evaluate, or render stops the build; there is no fallback to checked-in screenshots.

@@ -6,23 +6,21 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-ROOT = Path(__file__).resolve().parent.parent
-HOSTS = ("core_info", "properties", "easy_host", "host")
+from tools.examples import HOST_NAMES, ROOT, build_examples
+
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("example", choices=HOSTS)
+    parser.add_argument("example", choices=HOST_NAMES)
     parser.add_argument("--odin", default="odin", help="Odin compiler executable")
     args = parser.parse_args()
-    odin = shutil.which(args.odin)
-    if odin is None:
-        parser.error(f"Cannot find Odin compiler: {args.odin}")
     try:
         import vapoursynth
     except ImportError as error:
@@ -38,8 +36,13 @@ def main() -> int:
         parser.error(f"The VapourSynth package at {package} does not contain a core library")
 
     print(f"Core library: {library}", flush=True)
-    command = [odin, "run", str(ROOT / "examples" / args.example), "-vet", "--", str(library)]
-    return subprocess.run(command, cwd=ROOT, check=False).returncode
+    try:
+        artifacts = build_examples([args.example], odin=args.odin)
+        command = [str(artifacts[args.example]), str(library)]
+        return subprocess.run(command, cwd=ROOT, check=False).returncode
+    except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+        print(f"Host example failed: {error}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

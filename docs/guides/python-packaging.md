@@ -33,9 +33,10 @@ VapourSynth wheel. The root project requires CPython 3.12 or newer. `uv sync`
 creates a local `.venv`; it does not install a global multimedia runtime.
 The Odin compiler remains an external prerequisite.
 
-`tools/run_host.py` finds the core library beside the active Python module and
-passes its absolute path to the selected Odin example. It also checks that Odin
-is available and prints the selected library. This avoids depending on whether
+`tools/run_host.py` builds the selected Odin example through the common build
+helper, finds the core library beside the active Python module, and passes its
+absolute path to the executable. It checks that Odin is available and prints the
+selected library. This avoids depending on whether
 a Python environment's package directory is in the platform loader's search path.
 Use `core_info`, `properties`, `easy_host`, or `host` as the example argument.
 
@@ -64,7 +65,7 @@ package installer to attempt a source build with additional native dependencies.
 
 ## Run tests and documentation
 
-To compile all eight examples and exercise their visual scripts:
+To compile the eight examples and Dither Plus and exercise their visual scripts:
 
 ```console
 uv run tools/examples.py build
@@ -73,6 +74,13 @@ uv run --group preview tools/examples.py preview --no-build
 
 The preview reuses the compiled binaries. To check their script outputs without
 a GUI after building, run `uv run tools/examples.py check --no-build`.
+
+These commands select the native target, CPU baseline, and output extensions
+on Windows x64, Linux x64/ARM64, and macOS x64/ARM64. macOS builds target version
+13 or newer; universal2 Python installations build for the architecture of the
+running process. The [build guide](previewing-examples.md#one-build-command-on-every-supported-platform)
+describes native toolchain requirements, including automatic preparation of
+missing Unix stb image libraries for Hald CLUT.
 
 The optional `preview` group installs VSView and Qt. It requires Python 3.12–3.14
 and VapourSynth R78 or newer; the development lock selects R79. Ordinary sync
@@ -84,12 +92,14 @@ The independent numerical suites and benchmark remain available:
 ```console
 uv run tests/examples.py
 uv run tests/advanced.py
+uv run tests/dither_plus.py
 uv run tests/benchmark_dither.py --help
 ```
 
 The first runner covers the six introductory examples. The advanced runner
 checks dither and Hald CLUT separately, with numerical reference calculations and
-failure cases. The benchmark measures scalar and SIMD execution; its result is
+failure cases. Dither Plus has its own independent numerical suite. The benchmark
+measures the original dither's scalar and SIMD execution; its result is
 specific to the machine, compiler flags, and frame configuration printed by it.
 
 Documentation dependencies are in a separate group:
@@ -101,7 +111,7 @@ uv run --group docs tools/docs.py build
 
 A docs-only environment can be synchronized with `uv sync --locked --only-group docs`.
 The group includes NumPy and VapourSynth so the documentation can render the same
-scripts used in VSView. The documentation command compiles all eight examples,
+scripts used in VSView. The documentation command compiles the eight examples and Dither Plus,
 generates fresh PNGs, then serves or strictly builds the site. Odin is required;
 VSView and Qt are not. Restart the server command after changing native code or
 demonstration scripts to regenerate the images.
@@ -123,7 +133,7 @@ uv build --sdist
 ```
 
 The custom build hook invokes Odin in optimized shared-library mode, stages the
-four plugin binaries, and gives the wheel a native platform tag. The wheel's
+five plugin binaries, and gives the wheel a native platform tag. The wheel's
 layout is conceptually:
 
 ```text
@@ -133,6 +143,7 @@ vapoursynth/
         ├── odin_example.dll
         ├── odin_invert.dll
         ├── odin_dither.dll
+        ├── odin_dither_plus.dll
         └── odin_hald.dll
 ```
 
@@ -142,10 +153,12 @@ does not replace VapourSynth's `__init__.py` or core library.
 
 The source distribution includes the imported Odin declarations and plugin
 sources so the wheel can be rebuilt outside the original Git checkout. The
-Hald plugin also uses Odin's bundled `vendor:stb/image` binding and its native
-library. A source-installed Odin toolchain on Unix may need its bundled
-`vendor/stb/src/build_stb.sh` run first. See the [Hald walkthrough](../examples/haldlut-plugin.md)
-for that build dependency and its licensing notices. The native build and
+Hald plugin also uses Odin's bundled stb image binding and its native
+libraries. The wheel build uses the same dependency preparation as the example
+command: missing Unix archives are compiled into its private staging directory
+with `cc` and `ar`, leaving the Odin installation intact. See the
+[Hald walkthrough](../examples/haldlut-plugin.md) for that dependency and its
+licensing notices. The native build and
 installed-wheel checks have been executed on Windows x64; other platforms need
 their own native validation.
 
@@ -176,7 +189,7 @@ test of a newly installed package.
 
 The repository includes a repeatable check that creates a temporary environment,
 installs the wheel and its runtime dependency, verifies native archive metadata,
-and requests a frame from all four autoloaded plugins:
+and requests a frame from all five autoloaded plugins:
 
 ```console
 uv run tools/packagecheck.py dist/vapoursynth_odin_examples-0.1.0-py3-none-win_amd64.whl

@@ -19,16 +19,22 @@ Both sides should match exactly. `uv run tools/examples.py check` checks all
 four scripts without a GUI; the [preview guide](../../docs/guides/previewing-examples.md)
 explains the shared workflow. Documentation images come from these same outputs.
 
-For a minimal manual build and load, create `.build/examples` first, then run:
+To build without opening a viewer:
 
 ```console
-odin build examples/plugin -build-mode:dll -out:.build/examples/plugin.dll
+uv run tools/examples.py build plugin
 ```
 
+Load the resulting native library from a script run at the repository root:
+
 ```python
+from pathlib import Path
+import sys
+
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path="/absolute/path/to/plugin.dll")
+suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
+vs.core.std.LoadPlugin(path=str(Path(f".build/examples/plugin{suffix}").resolve()))
 source = vs.core.std.BlankClip(width=64, height=48, length=1)
 vs.core.odin_example.Identity(source).set_output()
 ```

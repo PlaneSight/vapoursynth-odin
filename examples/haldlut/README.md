@@ -2,7 +2,7 @@
 
 This advanced example implements `core.odin_hald.HaldCLUT(clip, path,
 strength=1.0)`: an RGB color transform described by a Hald color lookup image.
-It demonstrates loading external data through Odin's bundled `vendor:stb/image`,
+It demonstrates loading external data through Odin's bundled stb image binding,
 validating that data before allocation-heavy decoding, caching immutable state,
 tetrahedral interpolation, and processing three planar channels together.
 
@@ -23,31 +23,33 @@ The documentation uses images exported from those same output nodes; see the
 [preview guide](../../docs/guides/previewing-examples.md) for headless checks and
 rendering. No external video or PNG download is required.
 
-For the manual build and minimal Python program below, run:
+To build the native plugin and generate LUTs for the minimal Python program
+below, run the same commands on every supported platform:
 
-```powershell
-New-Item -ItemType Directory -Force .build/examples | Out-Null
-odin check examples/haldlut -no-entry-point -vet
-odin build examples/haldlut -build-mode:dll -o:speed -out:.build/examples/haldlut.dll
-python examples/haldlut/generate.py
+```console
+uv run tools/examples.py build haldlut
+uv run examples/haldlut/generate.py
 ```
 
-On Linux or macOS, create the output directory with `mkdir -p .build/examples` and use
-`.so` or `.dylib` for the plugin extension. The Odin build mode remains `dll`.
+The build selects the native target and shared-library extension automatically.
 The generator requires only Python's standard library and writes
 `.build/haldlut-luts/identity.png` and `.build/haldlut-luts/cinematic.png`.
 No PNG assets are checked into the repository.
 
-Odin's Windows distribution includes the static stb libraries. On Linux/macOS,
-if `vendor:stb/image` reports a missing compiled library, run the installed
-compiler's build script with a native C compiler and archiver available:
+The build reuses Odin's supplied stb image libraries. When Unix archives are
+missing, it compiles the bundled C sources into a private directory under
+`.build` with `cc` and `ar`. That fallback requires a native C compiler and
+archiver on Linux, or Xcode command line tools on macOS. Windows uses the
+libraries shipped with Odin. The compiler installation is left intact; see the
+[build guide](../../docs/guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for platform prerequisites.
 
-```sh
-sh /absolute/path/to/Odin/vendor/stb/src/build_stb.sh
-```
+The source imports `stb:image`. The build helper supplies the `stb` collection,
+mapping it to Odin's `vendor/stb` directory or a private copy with prepared
+libraries. This keeps the compiler installation intact while using its original
+bindings and C sources. The [walkthrough](../../docs/examples/haldlut-plugin.md#import-an-odin-vendor-library)
+explains how to provide the collection in another build system.
 
-This writes libraries into that Odin installation. The script selects the
-native platform; a cross-compiled plugin needs a corresponding target library.
 Runtime verification for this example was performed on Windows x64. The core
 API is 4.2; no VapourSynth import library is needed because the host supplies
 its API table to the plugin.

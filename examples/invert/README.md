@@ -17,23 +17,26 @@ outputs `1` and `2` expose them separately. The documentation renders the same
 nodes. See the [preview guide](../../docs/guides/previewing-examples.md) for
 headless checks, multiple examples, and generated images.
 
-For a direct compiler invocation and the minimal Python example below, create
-`.build/examples` first, then run:
+To build without opening a viewer:
 
 ```console
-odin check examples/invert -no-entry-point -vet
-odin build examples/invert -build-mode:dll -out:.build/examples/invert.dll
+uv run tools/examples.py build invert
 ```
 
-Use `.so` on Linux or `.dylib` on macOS instead of `.dll`. The plugin requires
-VapourSynth core API 4.2 and links to the platform C runtime for `malloc`/`free`.
+The command selects the native architecture and library extension automatically.
+The plugin requires VapourSynth core API 4.2 and links to the platform C runtime
+for `malloc`/`free`.
 
 Load the plugin in a VapourSynth Python script:
 
 ```python
+from pathlib import Path
+import sys
+
 import vapoursynth as vs
 
-vs.core.std.LoadPlugin(path="/absolute/path/to/invert.dll")
+suffix = {"win32": ".dll", "darwin": ".dylib"}.get(sys.platform, ".so")
+vs.core.std.LoadPlugin(path=str(Path(f".build/examples/invert{suffix}").resolve()))
 source = vs.core.std.BlankClip(width=640, height=360, format=vs.RGB24,
                              color=[32, 96, 160], length=24)
 vs.core.odin_invert.Invert(source).set_output()

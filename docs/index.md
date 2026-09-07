@@ -97,13 +97,13 @@ uv run --group preview tools/examples.py preview --no-build
 ```
 
 The optional preview group adds VSView and Qt. The command reuses the build and opens the
-four visual plugin demonstrations with named comparison, source, and result
+five visual plugin demonstrations with named comparison, source, and result
 outputs. Use `uv run tools/examples.py check --no-build` for a headless frame check. See
 [Build and preview the examples](guides/previewing-examples.md) for setup and
 selection. The tutorial images are rendered from these same scripts during
 the documentation build.
 
-An explicit `uv build` packages the four native plugins into a Python wheel that
+An explicit `uv build` packages the five native plugins into a Python wheel that
 VapourSynth can discover automatically. The Odin packages remain ordinary source
 imports. Read [Python environments and wheels](guides/python-packaging.md) for
 the build and distribution model.
@@ -111,6 +111,11 @@ the build and distribution model.
 For the advanced examples, start with [SIMD blue-noise dithering](examples/dither-plugin.md)
 or [Hald CLUT color grading](examples/haldlut-plugin.md). Their walkthroughs connect
 numerical algorithms with frame layout, immutable filter data, and native library use.
+
+The standalone [Dither Plus plugin](plugins/dither-plus.md) extends the dithering
+work into a five-method comparison with RGB threshold correlation and moving
+masks. It has its own plugin guide and preview, keeping the eight examples a
+focused learning sequence.
 
 ## Learn the contracts that matter
 

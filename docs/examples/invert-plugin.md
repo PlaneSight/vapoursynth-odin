@@ -27,35 +27,21 @@ headless checks.
 
 ## Build and run
 
-Build from the repository root:
+Build from the repository root with the same command on every supported platform:
 
-These manual commands build the same `.build/examples/invert` library used by
-the inline Python program and checked-in preview script.
+```console
+uv run tools/examples.py build invert
+```
 
-=== "Windows"
-
-    ```powershell
-    New-Item -ItemType Directory -Force .build/examples | Out-Null
-    odin build examples/invert -build-mode:dll -out:.build/examples/invert.dll
-    ```
-
-=== "Linux"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/invert -build-mode:dll -out:.build/examples/invert.so
-    ```
-
-=== "macOS"
-
-    ```sh
-    mkdir -p .build/examples
-    odin build examples/invert -build-mode:dll -out:.build/examples/invert.dylib
-    ```
+The command writes the native library under `.build/examples`, selecting its
+extension, architecture, and optimized compiler flags automatically. The
+[build guide](../guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+covers platform prerequisites. The inline Python program below and the preview
+script load this same artifact.
 
 A compile-only check is `odin check examples/invert -no-entry-point -vet`. The plugin requires core API 4.2 and the platform C runtime used by its instance allocation. VapourSynth API calls use the table supplied by the host.
 
-Save the following as `invert_demo.py` in the repository root and run `python invert_demo.py` in your VapourSynth Python environment:
+Save the following as `invert_demo.py` in the repository root and run `uv run invert_demo.py`:
 
 ```python
 from pathlib import Path
@@ -248,7 +234,7 @@ Run `python tests/examples.py` in the configured runtime environment. The suite 
 
 An invocation error mentioning constant format or dimensions means the graph metadata failed creation-time validation. An error mentioning 8–16 bit integer video means the sample representation is unsupported. A later frame-request error can come from upstream evaluation or the callback's checked acquisition paths; inspect the host's error message at that boundary.
 
-If only subsampled YUV fails after an edit, inspect per-plane dimensions. If 8-bit works but ten-bit values wrap or exceed 1023, inspect storage width and `sample_max`. If concurrent requests fail while serial ones pass, look for new shared mutable data. If the preview still runs an older binary, close the process that owns the loaded plugin and rerun the preview command. The checked-in demo, manual build, and inline Python example all use `.build/examples/invert` with the platform extension.
+If only subsampled YUV fails after an edit, inspect per-plane dimensions. If 8-bit works but ten-bit values wrap or exceed 1023, inspect storage width and `sample_max`. If concurrent requests fail while serial ones pass, look for new shared mutable data. If the preview still runs an older binary, close the process that owns the loaded plugin and rerun the preview command. The checked-in demo, build command, and inline Python example all use `.build/examples/invert` with the platform extension.
 
 A meaningful extension is to add an optional plane selection argument while leaving unselected planes unchanged. Validate that argument during creation, store an immutable selection in the instance, and preserve the same scheduling and ownership contracts. Extend pixel checks to cover both selected and untouched planes.
 

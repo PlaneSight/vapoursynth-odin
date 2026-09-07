@@ -231,15 +231,20 @@ for a distributable artifact. Odin must be available on `PATH` for either build.
 Test wheel installation in a separate environment: an exact `uv sync` can remove
 a manually installed wheel that is not declared by the development project.
 Start a fresh Python process after installation and inspect
-`vapoursynth.get_plugin_dir()`. The four plugin files belong beneath that
+`vapoursynth.get_plugin_dir()`. The five plugin files belong beneath that
 directory. A core created with `ccfDisableAutoLoading` will not discover them.
 The [packaging guide](guides/python-packaging.md) includes a clean-environment
 check that requests actual frames through every packaged plugin.
 
-If Hald CLUT fails to link against `stb`, check the Odin installation's native
-vendor libraries. Source installations on Unix may need
-`vendor/stb/src/build_stb.sh` run inside the Odin toolchain. A Windows toolchain's
-bundled `.lib` files do not supply Linux or macOS static archives.
+If Hald CLUT fails while preparing `stb`, check the reported native tool or
+source file. The common build command reuses Odin's supplied image libraries;
+on Unix it compiles missing archives privately under `.build` using `cc` and
+`ar`. Install a native C compiler and archiver on Linux, or the Xcode command
+line tools on macOS, then rerun the command. A missing Windows vendor library
+indicates an incomplete Odin installation. The build never writes libraries
+into the compiler installation. See the
+[build guide](guides/previewing-examples.md#one-build-command-on-every-supported-platform)
+for supported targets and native requirements.
 
 ## Preview and generated documentation images
 

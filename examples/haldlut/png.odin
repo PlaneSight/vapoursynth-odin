@@ -4,7 +4,7 @@ package haldlut
 import "core:c"
 import "core:c/libc"
 import "core:hash"
-import stbi "vendor:stb/image"
+import stbi "stb:image"
 
 import vs "../.."
 
